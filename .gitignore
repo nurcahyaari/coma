@@ -1,0 +1,26 @@
+
+# ignore env
+.env
+.env-*
+.env.yaml
+*.env
+*.yaml
+
+build/
+temp/
+tmp/
+.idea
+docs
+
+src/user_cart
+
+# ignore wire
+wire_gen.go
+
+
+# RSA key
+.public
+.private
+
+*fakes
+database/
