@@ -27,6 +27,11 @@ func NewWebsocketHandler() *WebsocketHandler {
 	return websocketHandler
 }
 
+func (w *WebsocketHandler) Close() {
+	log.Warn().Msg("Clossing websocket connection")
+	w.connection.close <- true
+}
+
 func (w *WebsocketHandler) Websocket(c *websocket.Conn) {
 	// add client
 	w.connection.client <- Client{
@@ -44,14 +49,7 @@ func (w *WebsocketHandler) Websocket(c *websocket.Conn) {
 		if err != nil {
 			log.Error().
 				Err(err).
-				Msg("[Websocket] err: marshaling")
-			continue
-		}
-
-		if errs := data.Validate(); len(errs) > 0 {
-			log.Error().
-				Err(err).
-				Msg("[Websocket] there is an error on the request object")
+				Msg("[Websocket] err: marshaling from message")
 			continue
 		}
 
@@ -63,25 +61,33 @@ func (w *WebsocketHandler) Websocket(c *websocket.Conn) {
 		if err != nil {
 			log.Error().
 				Err(err).
-				Msg("[Websocket] err: marshaling")
+				Msg("[Websocket] err: unmarshaling to struct")
 			continue
 		}
 
-		broadcast, err := w.connection.broadcast(ContentType(data.ContentType))
+		if errs := data.Validate(); len(errs) > 0 {
+			log.Error().
+				Errs("validate", errs).
+				Msg("[Websocket] there is an error on the request object")
+			continue
+		}
+
+		byt, err := json.Marshal(data)
 		if err != nil {
-			log.Error().Err(err).Msg("[Websocket] error when searching which method should be used")
+			log.Error().
+				Err(err).
+				Msg("[Websocket] err: marshaling to byte")
 			continue
 		}
 
-		clients, err := broadcast([]byte(msg),
-			SetClientId(data.ApiToken),
-			SetContentType(ContentType(data.ContentType)))
+		clients, err := w.connection.broadcast(byt,
+			SetClientId(data.ApiToken))
 		if err != nil {
 			w.connection.clientsRemoved <- clients
 			log.Error().
 				Err(err).
 				Msg("[Websocket] err: send message")
-			return
+			continue
 		}
 
 		log.Info().

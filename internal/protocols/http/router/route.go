@@ -18,6 +18,11 @@ func (h *HttpRouterImpl) Router(r *chi.Mux) {
 
 	r.Mount("/swagger", httpswagger.WrapHandler)
 }
+
+func (h *HttpRouterImpl) CloseWebsocket() {
+	h.wsHandler.Close()
+}
+
 func NewHttpRouter(
 	handler *http.HttpHandlerImpl,
 	wsHandler *websockethandler.WebsocketHandler,

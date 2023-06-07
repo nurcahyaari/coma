@@ -22,7 +22,8 @@ type Config struct {
 			}
 		} `mapstructure:"KEY"`
 		Graceful struct {
-			MaxSecond time.Duration `mapstructure:"MAX_SECOND"`
+			ShutdownPeriod time.Duration `mapstructure:"SHUTDOWN_PERIOD"`
+			WarnPeriod     time.Duration `mapstructure:"WARN_PERIOD"`
 		} `mapstructure:"GRACEFUL"`
 	} `mapstructure:"APPLICATION"`
 
@@ -40,6 +41,15 @@ type Config struct {
 			Name string `mapstructure:"NAME"`
 		} `mapstructure:"CLOVER"`
 	} `mapstructure:"DB"`
+
+	External struct {
+		Coma struct {
+			Websocket struct {
+				Url       string `mapstructure:"URL"`
+				OriginUrl string `mapstructure:"ORIGIN_URL"`
+			} `mapstructure:"WEBSOCKET"`
+		} `mapstructure:"COMA"`
+	} `mapstructure:"EXTERNAL"`
 }
 
 var cfg Config

@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/coma/coma/config"
 	"github.com/coma/coma/infrastructure/database"
@@ -16,6 +17,9 @@ import (
 	"github.com/coma/coma/src/domains/auth/dto"
 	"github.com/coma/coma/src/domains/auth/repository"
 	"github.com/coma/coma/src/domains/auth/service"
+
+	distributorsvc "github.com/coma/coma/src/domains/distributor/service"
+	distributorextsvc "github.com/coma/coma/src/external/distributor/service"
 	httphandler "github.com/coma/coma/src/handlers/http"
 	websockethandler "github.com/coma/coma/src/handlers/websocket"
 )
@@ -46,18 +50,33 @@ func main() {
 		dto.Oauth:  service.NewOauth(repo),
 	})
 
+	distributorExtSvc := distributorextsvc.New()
+
+	distributorSvc := distributorsvc.New(distributorExtSvc)
+
 	httpProtocol := initHttpProtocol(authSvc)
 
-	graceful.GracefulShutdown(
-		context.TODO(),
-		config.Get().Application.Graceful.MaxSecond,
-		map[string]graceful.Operation{
-			// place your service that need to graceful shutdown here
-		},
-	)
-
 	// init http protocol
-	httpProtocol.Listen()
+	go httpProtocol.Listen()
 
 	// init other protocols here
+	go distributorExtSvc.Connect()
+
+	go func() {
+		time.Sleep(10 * time.Second)
+		distributorSvc.SendMessage()
+	}()
+
+	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
+	graceful.GracefulShutdown(
+		ctx,
+		graceful.RequestGraceful{
+			ShutdownPeriod: config.Get().Application.Graceful.ShutdownPeriod,
+			Operations: map[string]graceful.Operation{
+				// place your service that need to graceful shutdown here
+				"http": httpProtocol.Shutdown,
+			},
+		},
+	)
 }
