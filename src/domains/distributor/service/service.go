@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 
 	"github.com/coma/coma/src/domains/distributor/dto"
-	distributorextdto "github.com/coma/coma/src/external/distributor/dto"
-	distributorextsvc "github.com/coma/coma/src/external/distributor/service"
+	selfextdto "github.com/coma/coma/src/external/self/dto"
+	selfextsvc "github.com/coma/coma/src/external/self/service"
 )
 
 type Servicer interface {
@@ -13,12 +13,12 @@ type Servicer interface {
 }
 
 type Service struct {
-	distributor distributorextsvc.WSServicer
+	selfExtSvc selfextsvc.WSServicer
 }
 
-func New(distributor distributorextsvc.WSServicer) Servicer {
+func New(distributor selfextsvc.WSServicer) Servicer {
 	return &Service{
-		distributor: distributor,
+		selfExtSvc: distributor,
 	}
 }
 
@@ -30,7 +30,7 @@ func (s *Service) SendMessage() error {
 
 	vJson, _ := json.Marshal(messageJson)
 
-	s.distributor.Send(distributorextdto.RequestSendMessage{
+	s.selfExtSvc.Send(selfextdto.RequestSendMessage{
 		Message: vJson,
 	})
 

@@ -19,7 +19,7 @@ import (
 	"github.com/coma/coma/src/domains/auth/service"
 
 	distributorsvc "github.com/coma/coma/src/domains/distributor/service"
-	distributorextsvc "github.com/coma/coma/src/external/distributor/service"
+	selfextsvc "github.com/coma/coma/src/external/self/service"
 	httphandler "github.com/coma/coma/src/handlers/http"
 	websockethandler "github.com/coma/coma/src/handlers/websocket"
 )
@@ -50,7 +50,7 @@ func main() {
 		dto.Oauth:  service.NewOauth(repo),
 	})
 
-	distributorExtSvc := distributorextsvc.New()
+	distributorExtSvc := selfextsvc.New()
 
 	distributorSvc := distributorsvc.New(distributorExtSvc)
 
@@ -63,7 +63,7 @@ func main() {
 	go distributorExtSvc.Connect()
 
 	go func() {
-		time.Sleep(10 * time.Second)
+		time.Sleep(20 * time.Second)
 		distributorSvc.SendMessage()
 	}()
 

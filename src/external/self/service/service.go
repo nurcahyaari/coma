@@ -2,7 +2,7 @@ package service
 
 import (
 	"github.com/coma/coma/config"
-	"github.com/coma/coma/src/external/distributor/dto"
+	"github.com/coma/coma/src/external/self/dto"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/websocket"
 )
