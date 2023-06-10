@@ -8,18 +8,28 @@ import (
 	"github.com/coma/coma/src/domains/auth/repository"
 )
 
-type OauthServicer interface {
-	AuthServicer
-}
-
 type OauthService struct {
-	repo repository.RepositoryReader
+	repositoryReader repository.RepositoryReader
+	repositoryWriter repository.RepositoryWriter
 }
 
-func NewOauth(repo repository.RepositoryReader) OauthServicer {
-	return &OauthService{
-		repo: repo,
+type OauthServiceOption func(s *OauthService)
+
+func SetOauthRepository(repositoryReader repository.RepositoryReader, repositoryWriter repository.RepositoryWriter) OauthServiceOption {
+	return func(s *OauthService) {
+		s.repositoryWriter = repositoryWriter
+		s.repositoryReader = repositoryReader
 	}
+}
+
+func NewOauth(opts ...OauthServiceOption) AuthServicer {
+	svc := &OauthService{}
+
+	for _, opt := range opts {
+		opt(svc)
+	}
+
+	return svc
 }
 
 func (s *OauthService) ValidateToken(ctx context.Context, request dto.RequestAuthValidate) (dto.ResponseValidateKey, error) {

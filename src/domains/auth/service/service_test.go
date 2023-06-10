@@ -79,15 +79,17 @@ func TestValidateToken(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			repo := repositoryfakes.FakeRepositoryReader{}
+			repoReader := repositoryfakes.FakeRepositoryReader{}
+			repoWriter := repositoryfakes.FakeRepositoryWriter{}
+
 			test.fakes(fakes{
-				repoReaderFake: &repo,
+				repoReaderFake: &repoReader,
 			})
 
-			svc := service.New(&repo, map[dto.Method]service.AuthServicer{
-				dto.Apikey: service.NewApiKey(&repo),
-				dto.Oauth:  service.NewOauth(&repo),
-			})
+			svc := service.New(service.SetAuthSvc(map[dto.Method]service.AuthServicer{
+				dto.Apikey: service.NewApiKey(service.SetApiKeyRepository(&repoReader, repoWriter)),
+				dto.Oauth:  service.NewOauth(service.SetOauthRepository(&repoReader, repoWriter)),
+			}), service.SetRepository(&repoReader, repoWriter))
 
 			res, err := svc.ValidateToken(context.Background(), test.data)
 

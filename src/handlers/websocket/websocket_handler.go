@@ -3,7 +3,6 @@ package websocket
 import (
 	"encoding/json"
 
-	distributiondto "github.com/coma/coma/src/domains/distributor/dto"
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/websocket"
@@ -42,7 +41,7 @@ func (w *WebsocketHandler) Websocket(c *websocket.Conn) {
 	for {
 		var (
 			msg  string
-			data distributiondto.RequestDistribute
+			data RequestDistribute
 		)
 
 		err := websocket.Message.Receive(c, &msg)

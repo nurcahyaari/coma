@@ -1,10 +1,10 @@
-package dto_test
+package websocket_test
 
 import (
 	"errors"
 	"testing"
 
-	"github.com/coma/coma/src/domains/distributor/dto"
+	"github.com/coma/coma/src/handlers/websocket"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,9 +18,9 @@ func TestRequestDistributeValidate(t *testing.T) {
 			name:     "test1-valid all",
 			expected: nil,
 			actual: func() []error {
-				return dto.RequestDistribute{
+				return websocket.RequestDistribute{
 					ApiToken: "12345",
-					Data:     `"{\n  \"apiToken\": \"123456\",\n  \"data\": {\n    \"port\": \"1234\"\n  }\n}"`,
+					Data:     []byte(`"{\n  \"apiToken\": \"123456\",\n  \"data\": {\n    \"port\": \"1234\"\n  }\n}"`),
 				}.Validate()
 			},
 		},
@@ -30,23 +30,22 @@ func TestRequestDistributeValidate(t *testing.T) {
 				errors.New("api token cannot be nulled or empty"),
 			},
 			actual: func() []error {
-				return dto.RequestDistribute{
+				return websocket.RequestDistribute{
 					ApiToken: "",
-					Data:     `"{\n  \"apiToken\": \"123456\",\n  \"data\": {\n    \"port\": \"1234\"\n  }\n}"`,
+					Data:     []byte(`"{\n  \"apiToken\": \"123456\",\n  \"data\": {\n    \"port\": \"1234\"\n  }\n}"`),
 				}.Validate()
 			},
 		},
 		{
 			name: "test3 - invalid all",
 			expected: []error{
-				errors.New("content type cannot be nulled or empty"),
 				errors.New("api token cannot be nulled or empty"),
 				errors.New("data must be a valid json"),
 			},
 			actual: func() []error {
-				return dto.RequestDistribute{
+				return websocket.RequestDistribute{
 					ApiToken: "",
-					Data:     "",
+					Data:     []byte(""),
 				}.Validate()
 			},
 		},

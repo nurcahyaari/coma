@@ -1,12 +1,13 @@
-package dto
+package websocket
 
 import (
+	"encoding/json"
 	"errors"
 )
 
 type RequestDistribute struct {
-	ApiToken string `json:"apiToken"`
-	Data     string `json:"data"`
+	ApiToken string          `json:"apiToken"`
+	Data     json.RawMessage `json:"data"`
 }
 
 func (r RequestDistribute) Validate() []error {
@@ -16,9 +17,9 @@ func (r RequestDistribute) Validate() []error {
 		errs = append(errs, errors.New("api token cannot be nulled or empty"))
 	}
 
-	// if !json.Valid(r.Data) {
-	// 	errs = append(errs, errors.New("data must be a valid json"))
-	// }
+	if !json.Valid(r.Data) {
+		errs = append(errs, errors.New("data must be a valid json"))
+	}
 
 	return errs
 }

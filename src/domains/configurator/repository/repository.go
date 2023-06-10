@@ -2,13 +2,6 @@ package repository
 
 import "github.com/coma/coma/infrastructure/database"
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . Repositorier
-type Repositorier interface {
-	NewRepositoryReader() RepositoryReader
-	NewRepositoryWriter() RepositoryWriter
-}
-
-//counterfeiter:generate . Repository
 type Repository struct {
 	db *database.Clover
 }

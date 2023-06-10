@@ -10,26 +10,26 @@ import (
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . RepositoryReader
-type ApiKeyRepositoryReader interface {
+type RepositoryReader interface {
 	FindTokenById(ctx context.Context, id int64) (model.Apikey, error)
 	FindTokenByToken(ctx context.Context, token string) (model.Apikey, error)
 }
 
-type ApiKeyRepository struct {
-	DB *database.Clover
+type RepositoryRead struct {
+	db *database.Clover
 }
 
-//counterfeiter:generate . Repository
-func NewApiKey(db *database.Clover) ApiKeyRepositoryReader {
+//counterfeiter:generate . RepositoryRead
+func NewRepositoryReader(db *database.Clover) RepositoryReader {
 	db.DB.CreateCollection("apikey")
-	return &ApiKeyRepository{
-		DB: db,
+	return &RepositoryRead{
+		db: db,
 	}
 }
 
-func (r *ApiKeyRepository) FindTokenById(ctx context.Context, id int64) (model.Apikey, error) {
+func (r *RepositoryRead) FindTokenById(ctx context.Context, id int64) (model.Apikey, error) {
 	var apiKey model.Apikey
-	doc, err := r.DB.DB.Query("apikey").FindById(fmt.Sprintf("%d", id))
+	doc, err := r.db.DB.Query("apikey").FindById(fmt.Sprintf("%d", id))
 	if err != nil {
 		return apiKey, err
 	}
@@ -42,13 +42,13 @@ func (r *ApiKeyRepository) FindTokenById(ctx context.Context, id int64) (model.A
 	return apiKey, nil
 }
 
-func (r *ApiKeyRepository) FindTokenByToken(ctx context.Context, token string) (model.Apikey, error) {
+func (r *RepositoryRead) FindTokenByToken(ctx context.Context, token string) (model.Apikey, error) {
 	var apiKey model.Apikey
 
 	criteria := clover.Field("key").
 		Eq(token)
 
-	doc, err := r.DB.DB.Query("apikey").
+	doc, err := r.db.DB.Query("apikey").
 		Where(criteria).
 		FindFirst()
 	if err != nil {

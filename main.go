@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/coma/coma/config"
 	"github.com/coma/coma/infrastructure/database"
@@ -15,17 +14,20 @@ import (
 	"github.com/coma/coma/internal/protocols/http"
 	httprouter "github.com/coma/coma/internal/protocols/http/router"
 	"github.com/coma/coma/src/domains/auth/dto"
-	"github.com/coma/coma/src/domains/auth/repository"
-	"github.com/coma/coma/src/domains/auth/service"
+	authrepo "github.com/coma/coma/src/domains/auth/repository"
+	authsvc "github.com/coma/coma/src/domains/auth/service"
+	configuratorrepo "github.com/coma/coma/src/domains/configurator/repository"
+	configuratorsvc "github.com/coma/coma/src/domains/configurator/service"
 
-	distributorsvc "github.com/coma/coma/src/domains/distributor/service"
 	selfextsvc "github.com/coma/coma/src/external/self/service"
 	httphandler "github.com/coma/coma/src/handlers/http"
 	websockethandler "github.com/coma/coma/src/handlers/websocket"
 )
 
-func initHttpProtocol(svc service.Servicer) *http.HttpImpl {
-	handler := httphandler.NewHttpHandler(svc)
+func initHttpProtocol(authSvc authsvc.Servicer, configuratorSvc configuratorsvc.Servicer) *http.HttpImpl {
+	handler := httphandler.NewHttpHandler(
+		httphandler.SetDomains(authSvc, configuratorSvc))
+
 	websocketHandler := websockethandler.NewWebsocketHandler()
 	router := httprouter.NewHttpRouter(
 		handler,
@@ -43,29 +45,27 @@ func main() {
 		Name: config.Get().DB.Clover.Name,
 	})
 
-	repo := repository.NewApiKey(cloverDB)
-
-	authSvc := service.New(repo, map[dto.Method]service.AuthServicer{
-		dto.Apikey: service.NewApiKey(repo),
-		dto.Oauth:  service.NewOauth(repo),
-	})
-
 	distributorExtSvc := selfextsvc.New()
 
-	distributorSvc := distributorsvc.New(distributorExtSvc)
+	authRepo := authrepo.New(cloverDB)
+	authSvc := authsvc.New(authsvc.SetRepository(authRepo.NewRepositoryReader(), authRepo.NewRepositoryWriter()),
+		authsvc.SetAuthSvc(map[dto.Method]authsvc.AuthServicer{
+			dto.Apikey: authsvc.NewApiKey(authsvc.SetApiKeyRepository(authRepo.NewRepositoryReader(), authRepo.NewRepositoryWriter())),
+			dto.Oauth:  authsvc.NewOauth(authsvc.SetOauthRepository(authRepo.NewRepositoryReader(), authRepo.NewRepositoryWriter())),
+		}))
 
-	httpProtocol := initHttpProtocol(authSvc)
+	configuratorRepo := configuratorrepo.New(cloverDB)
+	configuratorSvc := configuratorsvc.New(
+		configuratorsvc.SetExternalService(distributorExtSvc),
+		configuratorsvc.SetRepository(configuratorRepo.NewRepositoryReader(), configuratorRepo.NewRepositoryWriter()))
+
+	httpProtocol := initHttpProtocol(authSvc, configuratorSvc)
 
 	// init http protocol
 	go httpProtocol.Listen()
 
 	// init other protocols here
 	go distributorExtSvc.Connect()
-
-	go func() {
-		time.Sleep(20 * time.Second)
-		distributorSvc.SendMessage()
-	}()
 
 	ctx, cancel := context.WithCancel(context.TODO())
 	defer cancel()

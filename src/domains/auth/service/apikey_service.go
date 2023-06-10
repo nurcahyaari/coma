@@ -10,18 +10,28 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type ApiKeyServicer interface {
-	AuthServicer
-}
-
 type ApiKeyService struct {
-	repo repository.RepositoryReader
+	repositoryReader repository.RepositoryReader
+	repositoryWriter repository.RepositoryWriter
 }
 
-func NewApiKey(repo repository.RepositoryReader) ApiKeyServicer {
-	return &ApiKeyService{
-		repo: repo,
+type ApiKeyServiceOption func(s *ApiKeyService)
+
+func SetApiKeyRepository(repositoryReader repository.RepositoryReader, repositoryWriter repository.RepositoryWriter) ApiKeyServiceOption {
+	return func(s *ApiKeyService) {
+		s.repositoryWriter = repositoryWriter
+		s.repositoryReader = repositoryReader
 	}
+}
+
+func NewApiKey(opts ...ApiKeyServiceOption) AuthServicer {
+	svc := &ApiKeyService{}
+
+	for _, opt := range opts {
+		opt(svc)
+	}
+
+	return svc
 }
 
 func (s *ApiKeyService) ValidateToken(ctx context.Context, request dto.RequestAuthValidate) (dto.ResponseValidateKey, error) {
@@ -31,7 +41,7 @@ func (s *ApiKeyService) ValidateToken(ctx context.Context, request dto.RequestAu
 		err    error
 	)
 
-	apikey, err = s.repo.FindTokenByToken(ctx, request.Token)
+	apikey, err = s.repositoryReader.FindTokenByToken(ctx, request.Token)
 	if err != nil {
 		log.Error().Err(err).Msg("[ApiKeyService][ValidateToken] err on FindTokenById")
 		return resp, err

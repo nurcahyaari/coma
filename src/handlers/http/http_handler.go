@@ -1,28 +1,44 @@
 package http
 
 import (
-	"fmt"
-	"net/http"
-	"time"
-
-	"github.com/coma/coma/internal/protocols/http/response"
-	"github.com/coma/coma/src/domains/auth/service"
+	authsvc "github.com/coma/coma/src/domains/auth/service"
+	configuratorsvc "github.com/coma/coma/src/domains/configurator/service"
 	"github.com/go-chi/chi/v5"
 )
 
-type HttpHandlerImpl struct {
-	svc service.Servicer
+type HttpHandle struct {
+	authSvc          authsvc.Servicer
+	configurationSvc configuratorsvc.Servicer
 }
 
-func (h HttpHandlerImpl) Router(r *chi.Mux) {
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("Hello test")
-		time.Sleep(10 * time.Second)
-		response.Text(w, 200, "hello")
+func (h HttpHandle) Router(r *chi.Mux) {
+	r.Route("/", func(r chi.Router) {
+		r.Route("/auth", func(r chi.Router) {
+			r.Route("/oauth", func(r chi.Router) {
+				r.Post("/login", h.OauthLogin)
+			})
+		})
+		r.Route("/configurator", func(r chi.Router) {
+			r.Post("/", h.SetConfiguration)
+		})
 	})
 }
-func NewHttpHandler(svc service.Servicer) *HttpHandlerImpl {
-	return &HttpHandlerImpl{
-		svc: svc,
+
+type HttpOption func(h *HttpHandle)
+
+func SetDomains(authSvc authsvc.Servicer, configuratorSvc configuratorsvc.Servicer) HttpOption {
+	return func(h *HttpHandle) {
+		h.authSvc = authSvc
+		h.configurationSvc = configuratorSvc
 	}
+}
+
+func NewHttpHandler(opts ...HttpOption) *HttpHandle {
+	httpHandle := &HttpHandle{}
+
+	for _, opt := range opts {
+		opt(httpHandle)
+	}
+
+	return httpHandle
 }

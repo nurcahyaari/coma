@@ -13,15 +13,34 @@ type Servicer interface {
 }
 
 type Service struct {
-	repo     repository.RepositoryReader
-	authSvcs map[dto.Method]AuthServicer
+	repositoryReader repository.RepositoryReader
+	repositoryWriter repository.RepositoryWriter
+	authSvcs         map[dto.Method]AuthServicer
 }
 
-func New(repo repository.RepositoryReader, svcs map[dto.Method]AuthServicer) Servicer {
-	return &Service{
-		repo:     repo,
-		authSvcs: svcs,
+type ServiceOption func(s *Service)
+
+func SetRepository(repositoryReader repository.RepositoryReader, repositoryWriter repository.RepositoryWriter) ServiceOption {
+	return func(s *Service) {
+		s.repositoryReader = repositoryReader
+		s.repositoryWriter = repositoryWriter
 	}
+}
+
+func SetAuthSvc(authSvcs map[dto.Method]AuthServicer) ServiceOption {
+	return func(s *Service) {
+		s.authSvcs = authSvcs
+	}
+}
+
+func New(opts ...ServiceOption) Servicer {
+	svc := &Service{}
+
+	for _, opt := range opts {
+		opt(svc)
+	}
+
+	return svc
 }
 
 func (s *Service) ValidateToken(ctx context.Context, req dto.RequestValidateToken) (dto.ResponseValidateKey, error) {

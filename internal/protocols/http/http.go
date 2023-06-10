@@ -34,7 +34,6 @@ func (h *HttpImpl) cors(r *chi.Mux) {
 
 func (h *HttpImpl) shutdownStateMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("server state", h.serverState)
 		switch h.serverState {
 		case graceful.StateShutdown:
 			response.Json[string](w, http.StatusInternalServerError, "server is shutting down", "")
