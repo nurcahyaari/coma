@@ -12,27 +12,35 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/rs/zerolog/log"
+
+	_ "github.com/coma/coma/docs"
+	httpswagger "github.com/swaggo/http-swagger"
 )
 
-type HttpImpl struct {
-	HttpRouter  *router.HttpRouterImpl
+type Http struct {
+	HttpRouter  *router.HttpRoute
 	httpServer  *http.Server
 	serverState graceful.ServerState
 }
 
-func NewHttp(httpRouter *router.HttpRouterImpl) *HttpImpl {
-	return &HttpImpl{HttpRouter: httpRouter}
+func NewHttp(httpRouter *router.HttpRoute) *Http {
+	return &Http{HttpRouter: httpRouter}
 }
 
-func (p *HttpImpl) setupRouter(app *chi.Mux) {
+func (p *Http) setupRouter(app *chi.Mux) {
 	p.HttpRouter.Router(app)
 }
 
-func (h *HttpImpl) cors(r *chi.Mux) {
+func (h *Http) cors(r *chi.Mux) {
 	r.Use(cors.AllowAll().Handler)
 }
 
-func (h *HttpImpl) shutdownStateMiddleware(next http.Handler) http.Handler {
+func (h *Http) setupSwagger(app *chi.Mux) {
+	app.Mount("/swagger", httpswagger.WrapHandler)
+	app.Handle("/public/*", http.StripPrefix("/public/", http.FileServer(http.Dir("public"))))
+}
+
+func (h *Http) shutdownStateMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch h.serverState {
 		case graceful.StateShutdown:
@@ -44,12 +52,13 @@ func (h *HttpImpl) shutdownStateMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func (p *HttpImpl) Listen() {
+func (p *Http) Listen() {
 	app := chi.NewRouter()
 
 	p.cors(app)
 	app.Use(p.shutdownStateMiddleware)
 	p.setupRouter(app)
+	p.setupSwagger(app)
 
 	serverPort := fmt.Sprintf(":%d", config.Get().Application.Port)
 	p.httpServer = &http.Server{
@@ -61,7 +70,7 @@ func (p *HttpImpl) Listen() {
 	p.httpServer.ListenAndServe()
 }
 
-func (h *HttpImpl) Shutdown(ctx context.Context) error {
+func (h *Http) Shutdown(ctx context.Context) error {
 	h.serverState = graceful.StateShutdown
 	if err := h.httpServer.Shutdown(ctx); err != nil {
 		return err

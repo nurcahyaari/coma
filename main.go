@@ -24,7 +24,7 @@ import (
 	websockethandler "github.com/coma/coma/src/handlers/websocket"
 )
 
-func initHttpProtocol(authSvc authsvc.Servicer, configuratorSvc configuratorsvc.Servicer) *http.HttpImpl {
+func initHttpProtocol(authSvc authsvc.Servicer, configuratorSvc configuratorsvc.Servicer) *http.Http {
 	handler := httphandler.NewHttpHandler(
 		httphandler.SetDomains(authSvc, configuratorSvc))
 
