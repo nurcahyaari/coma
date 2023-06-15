@@ -10,6 +10,7 @@ type RepositoryWrite struct {
 }
 
 func NewRepositoryWriter(db *database.Clover) RepositoryWriter {
+	db.DB.CreateCollection("configuration")
 	return &RepositoryWrite{
 		db: db,
 	}

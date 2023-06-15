@@ -1,14 +1,14 @@
 package error
 
 import (
-	 "fmt"
-	 "net/http"
-	 "regexp"
+	"fmt"
+	"net/http"
+	"regexp"
 )
 
 type RespError struct {
-	Code	int
-	Message	string
+	Code    int
+	Message string
 }
 
 func (r *RespError) Error() string {
@@ -17,29 +17,29 @@ func (r *RespError) Error() string {
 
 func InternalServerError(msg string) error {
 	return &RespError{
-		Code:		http.StatusInternalServerError,
-		Message:	msg,
+		Code:    http.StatusInternalServerError,
+		Message: msg,
 	}
 }
 
 func BadRequest(msg string) error {
 	return &RespError{
-		Code:		http.StatusBadRequest,
-		Message:	msg,
+		Code:    http.StatusBadRequest,
+		Message: msg,
 	}
 }
 
 func NotFound(msg string) error {
 	return &RespError{
-		Code:		http.StatusNotFound,
-		Message:	msg,
+		Code:    http.StatusNotFound,
+		Message: msg,
 	}
 }
 
 func Unauthorization(msg string) error {
 	return &RespError{
-		Code:		http.StatusUnauthorized,
-		Message:	msg,
+		Code:    http.StatusUnauthorized,
+		Message: msg,
 	}
 }
 
