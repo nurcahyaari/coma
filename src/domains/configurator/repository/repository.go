@@ -7,6 +7,7 @@ type Repository struct {
 }
 
 func New(db *database.Clover) *Repository {
+	db.DB.CreateCollection("configuration")
 	return &Repository{
 		db: db,
 	}

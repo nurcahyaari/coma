@@ -14,6 +14,7 @@ type Repository struct {
 }
 
 func New(db *database.Clover) *Repository {
+	db.DB.CreateCollection("apikey")
 	return &Repository{
 		db: db,
 	}

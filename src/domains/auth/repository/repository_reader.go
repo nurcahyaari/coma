@@ -21,7 +21,6 @@ type RepositoryRead struct {
 
 //counterfeiter:generate . RepositoryRead
 func NewRepositoryReader(db *database.Clover) RepositoryReader {
-	db.DB.CreateCollection("apikey")
 	return &RepositoryRead{
 		db: db,
 	}
