@@ -4,6 +4,8 @@ go 1.18
 
 require github.com/stretchr/testify v1.8.3
 
+require github.com/go-ozzo/ozzo-validation v3.6.0+incompatible // indirect
+
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect

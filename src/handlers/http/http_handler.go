@@ -12,7 +12,7 @@ type HttpHandle struct {
 }
 
 func (h HttpHandle) Router(r *chi.Mux) {
-	r.Route("/", func(r chi.Router) {
+	r.Route("/v1", func(r chi.Router) {
 		r.Route("/auth", func(r chi.Router) {
 			r.Route("/oauth", func(r chi.Router) {
 				r.Post("/login", h.OauthLogin)
@@ -20,6 +20,7 @@ func (h HttpHandle) Router(r *chi.Mux) {
 		})
 		r.Route("/configurator", func(r chi.Router) {
 			r.Post("/", h.SetConfiguration)
+			r.Put("/", h.UpdateConfiguration)
 		})
 	})
 }

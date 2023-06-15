@@ -19,7 +19,9 @@ func JwtVerifyToken(next http.Handler) http.Handler {
 		JwtToken := strings.Replace(r.Header.Get("Authorization"), fmt.Sprintf("%s ", "Bearer"), "", 1)
 
 		if JwtToken == "" {
-			httpresponse.Json(w, http.StatusUnauthorized, "", "token is empty")
+			httpresponse.Json(w,
+				httpresponse.SetData("token is empty"),
+				httpresponse.SetHttpCode[string](http.StatusUnauthorized))
 			return
 		}
 
@@ -42,21 +44,27 @@ func JwtVerifyToken(next http.Handler) http.Handler {
 
 		if err != nil || !token.Valid {
 			log.Err(err)
-			httpresponse.Json(w, http.StatusUnauthorized, "", "Token is not valid")
+			httpresponse.Json(w,
+				httpresponse.SetData("Token is not valid"),
+				httpresponse.SetHttpCode[string](http.StatusUnauthorized))
 			return
 		}
 
 		rawId := token.Claims.(jwt.MapClaims)["id"].(float64)
 		id := fmt.Sprintf("%d", int(rawId))
 		if id == "" {
-			httpresponse.Json(w, http.StatusUnauthorized, "", "Token not Found")
+			httpresponse.Json(w,
+				httpresponse.SetData("Token not Found"),
+				httpresponse.SetHttpCode[string](http.StatusUnauthorized))
 			return
 		}
 
 		rawExp := token.Claims.(jwt.MapClaims)["exp"].(float64)
 		exp := int64(rawExp)
 		if exp < time.Now().Unix() {
-			httpresponse.Json(w, http.StatusUnauthorized, "", "Token has expired")
+			httpresponse.Json(w,
+				httpresponse.SetData("Token has expired"),
+				httpresponse.SetHttpCode[string](http.StatusUnauthorized))
 			return
 		}
 
@@ -71,7 +79,9 @@ func JwtVerifyRefreshToken(next http.Handler) http.Handler {
 		JwtToken := strings.Replace(r.Header.Get("Authorization"), fmt.Sprintf("%s ", "Bearer"), "", 1)
 
 		if JwtToken == "" {
-			httpresponse.Json(w, http.StatusUnauthorized, "", "Refresh token is empty")
+			httpresponse.Json(w,
+				httpresponse.SetData("Refresh token is empty"),
+				httpresponse.SetHttpCode[string](http.StatusUnauthorized))
 			return
 		}
 
@@ -93,21 +103,27 @@ func JwtVerifyRefreshToken(next http.Handler) http.Handler {
 
 		if err != nil || !token.Valid {
 			log.Err(err).Msg("")
-			httpresponse.Json(w, http.StatusUnauthorized, "", "Refresh token is not valid")
+			httpresponse.Json(w,
+				httpresponse.SetData("Refresh token is not valid"),
+				httpresponse.SetHttpCode[string](http.StatusUnauthorized))
 			return
 		}
 
 		rawId := token.Claims.(jwt.MapClaims)["id"].(float64)
 		id := fmt.Sprintf("%d", int(rawId))
 		if id == "" {
-			httpresponse.Json(w, http.StatusUnauthorized, "", "Refresh token not Found")
+			httpresponse.Json(w,
+				httpresponse.SetData("Refresh token not Found"),
+				httpresponse.SetHttpCode[string](http.StatusUnauthorized))
 			return
 		}
 
 		rawExp := token.Claims.(jwt.MapClaims)["exp"].(float64)
 		exp := int64(rawExp)
 		if exp < time.Now().Unix() {
-			httpresponse.Json(w, http.StatusUnauthorized, "", "Refresh token has expired")
+			httpresponse.Json(w,
+				httpresponse.SetData("Refresh token has expired"),
+				httpresponse.SetHttpCode[string](http.StatusUnauthorized))
 			return
 		}
 

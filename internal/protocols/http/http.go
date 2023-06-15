@@ -44,7 +44,10 @@ func (h *Http) shutdownStateMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch h.serverState {
 		case graceful.StateShutdown:
-			response.Json[string](w, http.StatusInternalServerError, "server is shutting down", "")
+			// response.Json[string](w, http.StatusInternalServerError, "server is shutting down", "")
+			response.Json[string](w,
+				response.SetHttpCode[string](http.StatusInternalServerError),
+				response.SetMessage[string]("server is shutting down"))
 			return
 		default:
 			next.ServeHTTP(w, r)
