@@ -16,6 +16,7 @@ type Servicer interface {
 	GetConfiguration(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurations, error)
 	SetConfiguration(ctx context.Context, req dto.RequestSetConfiguration) error
 	UpdateConfiguration(ctx context.Context, req dto.RequestUpdateConfiguration) error
+	UpsertConfiguration(ctx context.Context, req dto.RequestSetConfiguration) error
 	DeleteConfiguration(ctx context.Context, req dto.RequestDeleteConfiguration) error
 }
 
@@ -164,6 +165,52 @@ func (s *Service) UpdateConfiguration(ctx context.Context, req dto.RequestUpdate
 				Msg("[UpdateConfiguration] error on update configuration")
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (s *Service) UpsertConfiguration(ctx context.Context, req dto.RequestSetConfiguration) error {
+	clientConfigurations, err := s.readerRepo.FindClientConfiguration(ctx, model.FilterConfiguration{
+		ClientKey: req.XClientKey,
+		Field:     req.Field,
+	})
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("field", req.Field).
+			Msg("[UpdateConfiguration] error on search configuration")
+		return err
+	}
+
+	switch clientConfigurations.Exists() {
+	case true:
+		// when true it means the client configuration already exists
+		// so we need to update it
+		err = s.UpdateConfiguration(ctx, dto.RequestUpdateConfiguration{
+			XClientKey: clientConfigurations[0].ClientKey,
+			Id:         clientConfigurations[0].Id,
+			Field:      req.Field,
+			Value:      req.Value,
+		})
+		if err != nil {
+			log.Error().
+				Err(err).
+				Str("field", req.Field).
+				Msg("[UpsertConfiguration] error on update configuration")
+			return err
+		}
+
+	default:
+		err = s.SetConfiguration(ctx, req)
+		if err != nil {
+			log.Error().
+				Err(err).
+				Str("field", req.Field).
+				Msg("[UpsertConfiguration] error on insert configuration")
+			return err
+		}
+
 	}
 
 	return nil

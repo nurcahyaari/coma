@@ -104,6 +104,24 @@ func (h *HttpHandle) UpdateConfiguration(w http.ResponseWriter, r *http.Request)
 // @Produce json
 // @Router /v1/configurator/upsert [POST]
 func (h *HttpHandle) UpsertConfiguration(w http.ResponseWriter, r *http.Request) {
+	request := configuratordto.RequestSetConfiguration{
+		XClientKey: r.Header.Get("x-clientkey"),
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		response.Err[string](w,
+			response.SetMessage[string](err.Error()))
+		return
+	}
+
+	err = h.configurationSvc.UpsertConfiguration(r.Context(), request)
+	if err != nil {
+		response.Err[string](w,
+			response.SetErr[string](err.Error()))
+		return
+	}
+
 	response.Json[string](w,
 		response.SetMessage[string]("success"))
 }

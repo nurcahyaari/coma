@@ -4,13 +4,14 @@ import (
 	"github.com/coma/coma/src/domains/configurator/model"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/google/uuid"
+	"gopkg.in/guregu/null.v4"
 )
 
 type RequestSetConfiguration struct {
-	XClientKey  string `json:"-"`
-	ParentField string `json:"parentField"`
-	Field       string `json:"field"`
-	Value       string `json:"value"`
+	XClientKey  string      `json:"-"`
+	ParentField null.String `json:"parentField"`
+	Field       string      `json:"field"`
+	Value       string      `json:"value"`
 }
 
 func (r RequestSetConfiguration) Validate() error {
