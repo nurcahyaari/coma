@@ -19,8 +19,11 @@ func (h HttpHandle) Router(r *chi.Mux) {
 			})
 		})
 		r.Route("/configurator", func(r chi.Router) {
+			r.Get("/", h.GetConfiguration)
 			r.Post("/", h.SetConfiguration)
 			r.Put("/", h.UpdateConfiguration)
+			r.Post("/upsert", h.UpsertConfiguration)
+			r.Delete("/{id}", h.DeleteConfiguration)
 		})
 	})
 }

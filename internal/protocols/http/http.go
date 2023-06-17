@@ -10,6 +10,7 @@ import (
 	"github.com/coma/coma/internal/protocols/http/response"
 	"github.com/coma/coma/internal/protocols/http/router"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/rs/zerolog/log"
 
@@ -55,10 +56,19 @@ func (h *Http) shutdownStateMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+func (h *Http) incomingRequestLogger(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Info().Msgf("host: %s method: %s path: %s", r.Host, r.Method, r.URL.Path)
+		next.ServeHTTP(w, r)
+	})
+}
+
 func (p *Http) Listen() {
 	app := chi.NewRouter()
 
 	p.cors(app)
+	app.Use(middleware.Logger)
+	app.Use(middleware.Recoverer)
 	app.Use(p.shutdownStateMiddleware)
 	p.setupRouter(app)
 	p.setupSwagger(app)

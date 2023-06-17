@@ -6,17 +6,45 @@ import (
 
 	"github.com/coma/coma/internal/protocols/http/response"
 	configuratordto "github.com/coma/coma/src/domains/configurator/dto"
+	"github.com/go-chi/chi/v5"
 )
+
+// GetConfiguration get it's config
+// @Summary set new config
+// @Description Set new config
+// @Param x-clientkey header string true "<Client Key>"
+// @Tags Config
+// @Produce json
+// @Router /v1/configurator [GET]
+func (h *HttpHandle) GetConfiguration(w http.ResponseWriter, r *http.Request) {
+	request := configuratordto.RequestGetConfiguration{
+		XClientKey: r.Header.Get("x-clientkey"),
+	}
+
+	resp, err := h.configurationSvc.GetConfiguration(r.Context(), request)
+	if err != nil {
+		response.Err[string](w,
+			response.SetErr[string](err.Error()))
+		return
+	}
+
+	response.Json[configuratordto.ResponseGetConfigurations](w,
+		response.SetData[configuratordto.ResponseGetConfigurations](resp),
+		response.SetMessage[configuratordto.ResponseGetConfigurations]("success"))
+}
 
 // SetConfiguration set new config
 // @Summary set new config
 // @Description Set new config
+// @Param x-clientkey header string true "<Client Key>"
 // @Param RequestSetConfiguration body configuratordto.RequestSetConfiguration true "create new field of config"
 // @Tags Config
 // @Produce json
 // @Router /v1/configurator [POST]
 func (h *HttpHandle) SetConfiguration(w http.ResponseWriter, r *http.Request) {
-	request := configuratordto.RequestSetConfiguration{}
+	request := configuratordto.RequestSetConfiguration{
+		XClientKey: r.Header.Get("x-clientkey"),
+	}
 
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
@@ -40,18 +68,67 @@ func (h *HttpHandle) SetConfiguration(w http.ResponseWriter, r *http.Request) {
 // @Summary update new config
 // @Description update new config
 // @Tags Config
+// @Param x-clientkey header string true "<Client Key>"
+// @Param RequestUpdateConfiguration body configuratordto.RequestUpdateConfiguration true "update data of config"
 // @Produce json
 // @Router /v1/configurator [PUT]
 func (h *HttpHandle) UpdateConfiguration(w http.ResponseWriter, r *http.Request) {
+	request := configuratordto.RequestUpdateConfiguration{
+		XClientKey: r.Header.Get("x-clientkey"),
+	}
 
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		response.Err[string](w,
+			response.SetMessage[string](err.Error()))
+		return
+	}
+
+	err = h.configurationSvc.UpdateConfiguration(r.Context(), request)
+	if err != nil {
+		response.Err[string](w,
+			response.SetErr[string](err.Error()))
+		return
+	}
+
+	response.Json[string](w,
+		response.SetMessage[string]("success"))
 }
 
-// GetConfiguration get it's config
-// @Summary set new config
-// @Description Set new config
+// UpsertConfiguration update/set configuration
+// @Summary update or set configuration
+// @Description update or set configuration
+// @Param x-clientkey header string true "<Client Key>"
+// @Param RequestSetConfiguration body configuratordto.RequestSetConfiguration true "create new field of config"
 // @Tags Config
 // @Produce json
-// @Router /v1/configurator [GET]
-func (h *HttpHandle) GetConfiguration(w http.ResponseWriter, r *http.Request) {
+// @Router /v1/configurator/upsert [POST]
+func (h *HttpHandle) UpsertConfiguration(w http.ResponseWriter, r *http.Request) {
+	response.Json[string](w,
+		response.SetMessage[string]("success"))
+}
 
+// DeleteConfiguration delete configuration based on it's id
+// @Summary delete a config
+// @Description delete a config
+// @Param x-clientkey header string true "<Client Key>"
+// @Param id path string true "The config field identifier it's a UUID."
+// @Tags Config
+// @Produce json
+// @Router /v1/configurator/{id} [DELETE]
+func (h *HttpHandle) DeleteConfiguration(w http.ResponseWriter, r *http.Request) {
+	request := configuratordto.RequestDeleteConfiguration{
+		XClientKey: r.Header.Get("x-clientkey"),
+		Id:         chi.URLParam(r, "id"),
+	}
+
+	err := h.configurationSvc.DeleteConfiguration(r.Context(), request)
+	if err != nil {
+		response.Err[string](w,
+			response.SetErr[string](err.Error()))
+		return
+	}
+
+	response.Json[string](w,
+		response.SetMessage[string]("success"))
 }
