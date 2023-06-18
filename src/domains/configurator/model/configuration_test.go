@@ -5,6 +5,7 @@ import (
 
 	"github.com/coma/coma/src/domains/configurator/model"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/guregu/null.v4"
 )
 
 func TestConfiguration(t *testing.T) {
@@ -21,7 +22,7 @@ func TestConfiguration(t *testing.T) {
 				Id:        "1",
 				ClientKey: "1",
 				Field:     "1",
-				Value:     "1",
+				Value:     null.StringFrom("1"),
 			},
 			expected: map[string]interface{}{
 				"id":        "1",
@@ -62,12 +63,12 @@ func TestUpdateConfiguration(t *testing.T) {
 				{
 					Id:    "1",
 					Field: "app",
-					Value: "test",
+					Value: null.StringFrom("test"),
 				},
 				{
 					Id:    "2",
 					Field: "port",
-					Value: "1234",
+					Value: null.StringFrom("1234"),
 				},
 			},
 			actual: func() model.Configurations {
@@ -75,12 +76,12 @@ func TestUpdateConfiguration(t *testing.T) {
 					{
 						Id:    "1",
 						Field: "app",
-						Value: "test",
+						Value: null.StringFrom("test"),
 					},
 					{
 						Id:    "2",
 						Field: "port",
-						Value: "1234",
+						Value: null.StringFrom("1234"),
 					},
 				}
 				newData := model.Configurations{}
@@ -96,12 +97,12 @@ func TestUpdateConfiguration(t *testing.T) {
 				{
 					Id:    "1",
 					Field: "app",
-					Value: "test",
+					Value: null.StringFrom("test"),
 				},
 				{
 					Id:    "2",
 					Field: "port",
-					Value: "1234",
+					Value: null.StringFrom("1234"),
 				},
 			},
 			actual: func() model.Configurations {
@@ -109,19 +110,19 @@ func TestUpdateConfiguration(t *testing.T) {
 					{
 						Id:    "1",
 						Field: "app",
-						Value: "test",
+						Value: null.StringFrom("test"),
 					},
 					{
 						Id:    "2",
 						Field: "ports",
-						Value: "12312",
+						Value: null.StringFrom("12312"),
 					},
 				}
 				newData := model.Configurations{
 					{
 						Id:    "2",
 						Field: "port",
-						Value: "1234",
+						Value: null.StringFrom("1234"),
 					},
 				}
 
@@ -136,12 +137,12 @@ func TestUpdateConfiguration(t *testing.T) {
 				{
 					Id:    "1",
 					Field: "app",
-					Value: "test",
+					Value: null.StringFrom("test"),
 				},
 				{
 					Id:    "2",
 					Field: "port",
-					Value: "1234",
+					Value: null.StringFrom("1234"),
 				},
 			},
 			actual: func() model.Configurations {
@@ -149,24 +150,24 @@ func TestUpdateConfiguration(t *testing.T) {
 					{
 						Id:    "1",
 						Field: "app",
-						Value: "test1",
+						Value: null.StringFrom("test1"),
 					},
 					{
 						Id:    "2",
 						Field: "ports",
-						Value: "12312",
+						Value: null.StringFrom("12312"),
 					},
 				}
 				newData := model.Configurations{
 					{
 						Id:    "1",
 						Field: "app",
-						Value: "test",
+						Value: null.StringFrom("test"),
 					},
 					{
 						Id:    "2",
 						Field: "port",
-						Value: "1234",
+						Value: null.StringFrom("1234"),
 					},
 				}
 

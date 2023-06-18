@@ -5,13 +5,14 @@ import (
 
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/ostafen/clover"
+	"gopkg.in/guregu/null.v4"
 )
 
 type Configuration struct {
 	Id        string `json:"id"`
 	ClientKey string `json:"clientKey"`
 	Field     string `json:"field"`
-	Value     string `json:"value"`
+	Value     any    `json:"value"`
 }
 
 func (c Configuration) Validate() error {
@@ -66,8 +67,8 @@ func (rs Configurations) Update(mapConfiguration MapConfigurationById) {
 	}
 }
 
-func (rs Configurations) MapFieldValue() (map[string]string, error) {
-	mapFieldValue := make(map[string]string)
+func (rs Configurations) MapFieldValue() (map[string]any, error) {
+	mapFieldValue := make(map[string]any)
 
 	for _, r := range rs {
 		mapFieldValue[r.Field] = r.Value
@@ -88,9 +89,10 @@ type MapConfigurationById map[string]Configuration
 
 // FilterConfiguration lets you filter its data, the argument is "and"
 type FilterConfiguration struct {
-	Id        string
-	ClientKey string
-	Field     string
+	Id          string
+	ParentField null.String
+	ClientKey   string
+	Field       string
 }
 
 func (f FilterConfiguration) Filter() *clover.Criteria {
@@ -106,6 +108,10 @@ func (f FilterConfiguration) Filter() *clover.Criteria {
 
 	if f.Field != "" {
 		criterias = append(criterias, clover.Field("field").Eq(f.Field))
+	}
+
+	if f.ParentField.Valid {
+		criterias = append(criterias, clover.Field("parentField").Eq(f.ParentField))
 	}
 
 	filter := &clover.Criteria{}

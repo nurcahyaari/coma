@@ -18,6 +18,7 @@ func (h HttpHandle) Router(r *chi.Mux) {
 				r.Post("/login", h.OauthLogin)
 			})
 		})
+
 		r.Route("/configurator", func(r chi.Router) {
 			r.Get("/", h.GetConfiguration)
 			r.Post("/", h.SetConfiguration)

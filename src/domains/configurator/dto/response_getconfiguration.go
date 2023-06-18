@@ -4,21 +4,22 @@ import (
 	"encoding/json"
 
 	"github.com/coma/coma/src/domains/configurator/model"
+	"gopkg.in/guregu/null.v4"
 )
 
-type ResponseGetClientConfiguration struct {
+type ResponseGetConfigurationViewTypeJSON struct {
 	ClientKey string          `json:"clientKey"`
 	Data      json.RawMessage `json:"data"`
 }
 
-type ResponseGetClientConfigurator interface {
+type ResponseGetConfiguratorViewType interface {
 	model.Configurations
 }
 
-func NewResponseGetClientConfiguration[T ResponseGetClientConfigurator](data T) (ResponseGetClientConfiguration, error) {
+func NewResponseGetConfigurationViewTypeJSON[T ResponseGetConfiguratorViewType](data T) (ResponseGetConfigurationViewTypeJSON, error) {
 	var (
-		response      = ResponseGetClientConfiguration{}
-		mapFieldValue = make(map[string]string)
+		response      = ResponseGetConfigurationViewTypeJSON{}
+		mapFieldValue = make(map[string]interface{})
 	)
 
 	if len(data) == 0 {
@@ -40,15 +41,16 @@ func NewResponseGetClientConfiguration[T ResponseGetClientConfigurator](data T) 
 	return response, nil
 }
 
-type ResponseGetConfiguration struct {
-	Id        string `json:"id"`
-	ClientKey string `json:"clientKey"`
-	Field     string `json:"field"`
-	Value     string `json:"value"`
+type ResponseGetConfigurationViewTypeSchema struct {
+	Id          string      `json:"id"`
+	ClientKey   string      `json:"clientKey"`
+	ParentField null.String `json:"parentField"`
+	Field       string      `json:"field"`
+	Value       any         `json:"value"`
 }
 
-func NewResponseGetConfiguration(data model.Configuration) ResponseGetConfiguration {
-	return ResponseGetConfiguration{
+func NewResponseGetConfigurationViewTypeSchema(data model.Configuration) ResponseGetConfigurationViewTypeSchema {
+	return ResponseGetConfigurationViewTypeSchema{
 		Id:        data.Id,
 		ClientKey: data.ClientKey,
 		Field:     data.Field,
@@ -56,12 +58,12 @@ func NewResponseGetConfiguration(data model.Configuration) ResponseGetConfigurat
 	}
 }
 
-type ResponseGetConfigurations []ResponseGetConfiguration
+type ResponseGetConfigurationsViewTypeSchema []ResponseGetConfigurationViewTypeSchema
 
-func NewResponseGetConfigurations(data model.Configurations) ResponseGetConfigurations {
-	responses := make(ResponseGetConfigurations, 0)
+func NewResponseGetConfigurationsViewTypeSchema(data model.Configurations) ResponseGetConfigurationsViewTypeSchema {
+	responses := make(ResponseGetConfigurationsViewTypeSchema, 0)
 	for _, d := range data {
-		responses = append(responses, NewResponseGetConfiguration(d))
+		responses = append(responses, NewResponseGetConfigurationViewTypeSchema(d))
 	}
 	return responses
 }

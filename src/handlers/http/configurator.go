@@ -13,6 +13,7 @@ import (
 // @Summary set new config
 // @Description Set new config
 // @Param x-clientkey header string true "<Client Key>"
+// @Param viewType query string true "<View Type>" Enums(JSON, schema)
 // @Tags Config
 // @Produce json
 // @Router /v1/configurator [GET]
@@ -21,16 +22,34 @@ func (h *HttpHandle) GetConfiguration(w http.ResponseWriter, r *http.Request) {
 		XClientKey: r.Header.Get("x-clientkey"),
 	}
 
-	resp, err := h.configurationSvc.GetConfiguration(r.Context(), request)
-	if err != nil {
-		response.Err[string](w,
-			response.SetErr[string](err.Error()))
+	viewType := r.FormValue("viewType")
+
+	switch viewType {
+	case configuratordto.ViewTypeJSON:
+		resp, err := h.configurationSvc.GetClientConfiguration(r.Context(), request)
+		if err != nil {
+			response.Err[string](w,
+				response.SetErr[string](err.Error()))
+			return
+		}
+
+		response.Json[configuratordto.ResponseGetConfigurationViewTypeJSON](w,
+			response.SetData[configuratordto.ResponseGetConfigurationViewTypeJSON](resp),
+			response.SetMessage[configuratordto.ResponseGetConfigurationViewTypeJSON]("success"))
+		return
+	default:
+		resp, err := h.configurationSvc.GetConfiguration(r.Context(), request)
+		if err != nil {
+			response.Err[string](w,
+				response.SetErr[string](err.Error()))
+			return
+		}
+
+		response.Json[configuratordto.ResponseGetConfigurationsViewTypeSchema](w,
+			response.SetData[configuratordto.ResponseGetConfigurationsViewTypeSchema](resp),
+			response.SetMessage[configuratordto.ResponseGetConfigurationsViewTypeSchema]("success"))
 		return
 	}
-
-	response.Json[configuratordto.ResponseGetConfigurations](w,
-		response.SetData[configuratordto.ResponseGetConfigurations](resp),
-		response.SetMessage[configuratordto.ResponseGetConfigurations]("success"))
 }
 
 // SetConfiguration set new config

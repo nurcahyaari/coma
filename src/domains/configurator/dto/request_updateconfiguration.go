@@ -1,12 +1,14 @@
 package dto
 
-import "github.com/coma/coma/src/domains/configurator/model"
+import (
+	"github.com/coma/coma/src/domains/configurator/model"
+)
 
 type RequestUpdateConfiguration struct {
 	XClientKey string `json:"-"`
 	Id         string `json:"id"`
 	Field      string `json:"field"`
-	Value      string `json:"value"`
+	Value      any    `json:"value"`
 }
 
 func (r RequestUpdateConfiguration) Configuration() model.Configuration {

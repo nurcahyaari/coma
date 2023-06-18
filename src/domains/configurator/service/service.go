@@ -12,8 +12,8 @@ import (
 )
 
 type Servicer interface {
-	GetClientConfiguration(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetClientConfiguration, error)
-	GetConfiguration(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurations, error)
+	GetClientConfiguration(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationViewTypeJSON, error)
+	GetConfiguration(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationsViewTypeSchema, error)
 	SetConfiguration(ctx context.Context, req dto.RequestSetConfiguration) error
 	UpdateConfiguration(ctx context.Context, req dto.RequestUpdateConfiguration) error
 	UpsertConfiguration(ctx context.Context, req dto.RequestSetConfiguration) error
@@ -51,9 +51,9 @@ func New(opts ...ServiceOption) Servicer {
 	return svc
 }
 
-func (s *Service) GetClientConfiguration(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetClientConfiguration, error) {
+func (s *Service) GetClientConfiguration(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationViewTypeJSON, error) {
 	var (
-		response dto.ResponseGetClientConfiguration
+		response dto.ResponseGetConfigurationViewTypeJSON
 		err      error
 	)
 
@@ -65,7 +65,7 @@ func (s *Service) GetClientConfiguration(ctx context.Context, req dto.RequestGet
 		return response, err
 	}
 
-	response, err = dto.NewResponseGetClientConfiguration[model.Configurations](configurations)
+	response, err = dto.NewResponseGetConfigurationViewTypeJSON[model.Configurations](configurations)
 	if err != nil {
 		log.Error().Err(err).Msg("[GetConfiguration] error NewResponseGetConfiguration")
 		return response, err
@@ -74,9 +74,9 @@ func (s *Service) GetClientConfiguration(ctx context.Context, req dto.RequestGet
 	return response, nil
 }
 
-func (s *Service) GetConfiguration(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurations, error) {
+func (s *Service) GetConfiguration(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationsViewTypeSchema, error) {
 	var (
-		response dto.ResponseGetConfigurations
+		response dto.ResponseGetConfigurationsViewTypeSchema
 		err      error
 	)
 
@@ -88,7 +88,7 @@ func (s *Service) GetConfiguration(ctx context.Context, req dto.RequestGetConfig
 		return response, err
 	}
 
-	response = dto.NewResponseGetConfigurations(configurations)
+	response = dto.NewResponseGetConfigurationsViewTypeSchema(configurations)
 
 	return response, nil
 }
@@ -99,10 +99,12 @@ func (s *Service) SetConfiguration(ctx context.Context, req dto.RequestSetConfig
 		return err
 	}
 
-	clientConfigurations, err := s.readerRepo.FindClientConfiguration(ctx, model.FilterConfiguration{
+	filterConfiguration := model.FilterConfiguration{
 		ClientKey: req.XClientKey,
 		Field:     req.Field,
-	})
+	}
+
+	clientConfigurations, err := s.readerRepo.FindClientConfiguration(ctx, filterConfiguration)
 	if err != nil {
 		log.Error().
 			Err(err).
