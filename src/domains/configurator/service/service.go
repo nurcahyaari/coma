@@ -12,8 +12,8 @@ import (
 )
 
 type Servicer interface {
-	GetClientConfiguration(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationViewTypeJSON, error)
-	GetConfiguration(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationsViewTypeSchema, error)
+	GetConfigurationViewTypeJSON(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationViewTypeJSON, error)
+	GetConfigurationVIewTypeSchema(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationsViewTypeSchema, error)
 	SetConfiguration(ctx context.Context, req dto.RequestSetConfiguration) error
 	UpdateConfiguration(ctx context.Context, req dto.RequestUpdateConfiguration) error
 	UpsertConfiguration(ctx context.Context, req dto.RequestSetConfiguration) error
@@ -51,7 +51,7 @@ func New(opts ...ServiceOption) Servicer {
 	return svc
 }
 
-func (s *Service) GetClientConfiguration(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationViewTypeJSON, error) {
+func (s *Service) GetConfigurationViewTypeJSON(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationViewTypeJSON, error) {
 	var (
 		response dto.ResponseGetConfigurationViewTypeJSON
 		err      error
@@ -74,7 +74,7 @@ func (s *Service) GetClientConfiguration(ctx context.Context, req dto.RequestGet
 	return response, nil
 }
 
-func (s *Service) GetConfiguration(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationsViewTypeSchema, error) {
+func (s *Service) GetConfigurationVIewTypeSchema(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationsViewTypeSchema, error) {
 	var (
 		response dto.ResponseGetConfigurationsViewTypeSchema
 		err      error
