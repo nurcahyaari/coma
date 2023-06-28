@@ -13,6 +13,8 @@ import (
 	"github.com/coma/coma/internal/logger"
 	"github.com/coma/coma/internal/protocols/http"
 	httprouter "github.com/coma/coma/internal/protocols/http/router"
+	applicationrepo "github.com/coma/coma/src/domains/application/repository"
+	applicationsvc "github.com/coma/coma/src/domains/application/service"
 	"github.com/coma/coma/src/domains/auth/dto"
 	authrepo "github.com/coma/coma/src/domains/auth/repository"
 	authsvc "github.com/coma/coma/src/domains/auth/service"
@@ -24,9 +26,12 @@ import (
 	websockethandler "github.com/coma/coma/src/handlers/websocket"
 )
 
-func initHttpProtocol(authSvc authsvc.Servicer, configuratorSvc configuratorsvc.Servicer) *http.Http {
+func initHttpProtocol(
+	authSvc authsvc.Servicer,
+	configuratorSvc configuratorsvc.Servicer,
+	applicationStageSvc applicationsvc.ApplicationStageServicer) *http.Http {
 	handler := httphandler.NewHttpHandler(
-		httphandler.SetDomains(authSvc, configuratorSvc))
+		httphandler.SetDomains(authSvc, configuratorSvc, applicationStageSvc))
 
 	websocketHandler := websockethandler.NewWebsocketHandler(websockethandler.SetDomains(configuratorSvc))
 	router := httprouter.NewHttpRouter(
@@ -59,7 +64,13 @@ func main() {
 		configuratorsvc.SetExternalService(distributorExtSvc),
 		configuratorsvc.SetRepository(configuratorRepo.NewRepositoryReader(), configuratorRepo.NewRepositoryWriter()))
 
-	httpProtocol := initHttpProtocol(authSvc, configuratorSvc)
+	applicationStageRepo := applicationrepo.New(cloverDB)
+	applicationStageSvc := applicationsvc.NewApplicationStage(
+		applicationsvc.SetApplicationStageRepository(
+			applicationStageRepo.NewRepositoryApplicationStageReader(),
+			applicationStageRepo.NewRepositoryApplicationStageWriter()))
+
+	httpProtocol := initHttpProtocol(authSvc, configuratorSvc, applicationStageSvc)
 
 	// init http protocol
 	go httpProtocol.Listen()

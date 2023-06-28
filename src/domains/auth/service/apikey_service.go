@@ -10,6 +10,11 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+type ApiKeyServicer interface {
+	AuthServicer
+	CreateApplicationKey(ctx context.Context) error
+}
+
 type ApiKeyService struct {
 	repositoryReader repository.RepositoryReader
 	repositoryWriter repository.RepositoryWriter
@@ -24,7 +29,7 @@ func SetApiKeyRepository(repositoryReader repository.RepositoryReader, repositor
 	}
 }
 
-func NewApiKey(opts ...ApiKeyServiceOption) AuthServicer {
+func NewApiKey(opts ...ApiKeyServiceOption) ApiKeyServicer {
 	svc := &ApiKeyService{}
 
 	for _, opt := range opts {
@@ -55,4 +60,8 @@ func (s *ApiKeyService) ValidateToken(ctx context.Context, request dto.RequestAu
 	return dto.ResponseValidateKey{
 		Valid: true,
 	}, nil
+}
+
+func (s *ApiKeyService) CreateApplicationKey(ctx context.Context) error {
+	return nil
 }
