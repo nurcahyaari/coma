@@ -28,7 +28,7 @@ func initHttpProtocol(authSvc authsvc.Servicer, configuratorSvc configuratorsvc.
 	handler := httphandler.NewHttpHandler(
 		httphandler.SetDomains(authSvc, configuratorSvc))
 
-	websocketHandler := websockethandler.NewWebsocketHandler()
+	websocketHandler := websockethandler.NewWebsocketHandler(websockethandler.SetDomains(configuratorSvc))
 	router := httprouter.NewHttpRouter(
 		handler,
 		websocketHandler)

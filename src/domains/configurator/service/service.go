@@ -7,17 +7,19 @@ import (
 	"github.com/coma/coma/src/domains/configurator/dto"
 	"github.com/coma/coma/src/domains/configurator/model"
 	"github.com/coma/coma/src/domains/configurator/repository"
+	selfextdto "github.com/coma/coma/src/external/self/dto"
 	selfextsvc "github.com/coma/coma/src/external/self/service"
 	"github.com/rs/zerolog/log"
 )
 
 type Servicer interface {
 	GetConfigurationViewTypeJSON(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationViewTypeJSON, error)
-	GetConfigurationVIewTypeSchema(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationsViewTypeSchema, error)
+	GetConfigurationViewTypeSchema(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationsViewTypeSchema, error)
 	SetConfiguration(ctx context.Context, req dto.RequestSetConfiguration) error
 	UpdateConfiguration(ctx context.Context, req dto.RequestUpdateConfiguration) error
 	UpsertConfiguration(ctx context.Context, req dto.RequestSetConfiguration) error
 	DeleteConfiguration(ctx context.Context, req dto.RequestDeleteConfiguration) error
+	DistributeConfiguration(ctx context.Context, clientKey string) error
 }
 
 type Service struct {
@@ -74,7 +76,7 @@ func (s *Service) GetConfigurationViewTypeJSON(ctx context.Context, req dto.Requ
 	return response, nil
 }
 
-func (s *Service) GetConfigurationVIewTypeSchema(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationsViewTypeSchema, error) {
+func (s *Service) GetConfigurationViewTypeSchema(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationsViewTypeSchema, error) {
 	var (
 		response dto.ResponseGetConfigurationsViewTypeSchema
 		err      error
@@ -99,10 +101,13 @@ func (s *Service) SetConfiguration(ctx context.Context, req dto.RequestSetConfig
 		return err
 	}
 
-	filterConfiguration := model.FilterConfiguration{
-		ClientKey: req.XClientKey,
-		Field:     req.Field,
-	}
+	var (
+		configuration       = req.Configuration()
+		filterConfiguration = model.FilterConfiguration{
+			ClientKey: req.XClientKey,
+			Field:     req.Field,
+		}
+	)
 
 	clientConfigurations, err := s.readerRepo.FindClientConfiguration(ctx, filterConfiguration)
 	if err != nil {
@@ -120,11 +125,14 @@ func (s *Service) SetConfiguration(ctx context.Context, req dto.RequestSetConfig
 		return errors.New("err: duplicate field name")
 	}
 
-	_, err = s.writerRepo.SetConfiguration(ctx, req.Configuration())
+	_, err = s.writerRepo.SetConfiguration(ctx, configuration)
 	if err != nil {
 		log.Error().Err(err).Msg("[SetConfiguration] error SetConfiguration")
 		return err
 	}
+
+	// after success writing to the db distribute to the client
+	go s.DistributeConfiguration(ctx, req.XClientKey)
 
 	return nil
 }
@@ -168,6 +176,9 @@ func (s *Service) UpdateConfiguration(ctx context.Context, req dto.RequestUpdate
 			return err
 		}
 	}
+
+	// after success writing to the db distribute to the client
+	go s.DistributeConfiguration(ctx, req.XClientKey)
 
 	return nil
 }
@@ -225,5 +236,36 @@ func (s *Service) DeleteConfiguration(ctx context.Context, req dto.RequestDelete
 		return err
 	}
 
+	// after success writing to the db distribute to the client
+	go s.DistributeConfiguration(ctx, req.XClientKey)
+
+	return nil
+}
+
+func (s *Service) DistributeConfiguration(ctx context.Context, clientKey string) error {
+	clientConfiguration, err := s.GetConfigurationViewTypeJSON(ctx, dto.RequestGetConfiguration{
+		XClientKey: clientKey,
+	})
+	if err != nil {
+		log.Error().Err(err).
+			Msg("[distributeConfiguration.GetConfigurationViewTypeJSON] error when get the configuration")
+		return err
+	}
+
+	if clientConfiguration.Data == nil {
+		err = errors.New("err: data is empty")
+		log.Error().Err(err).
+			Msg("[distributeConfiguration.GetConfigurationViewTypeJSON] data is empty")
+		return err
+	}
+
+	err = s.selfExtSvc.Send(selfextdto.RequestSendMessage{
+		ClientKey: clientKey,
+		Data:      clientConfiguration.Data,
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("[distributeConfiguration.Send] error when distributing configuration to the client")
+		return err
+	}
 	return nil
 }

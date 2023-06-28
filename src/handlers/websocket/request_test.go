@@ -19,8 +19,8 @@ func TestRequestDistributeValidate(t *testing.T) {
 			expected: nil,
 			actual: func() []error {
 				return websocket.RequestDistribute{
-					ApiToken: "12345",
-					Data:     []byte(`"{\n  \"apiToken\": \"123456\",\n  \"data\": {\n    \"port\": \"1234\"\n  }\n}"`),
+					ClientKey: "12345",
+					Data:      []byte(`"{\n  \"apiToken\": \"123456\",\n  \"data\": {\n    \"port\": \"1234\"\n  }\n}"`),
 				}.Validate()
 			},
 		},
@@ -31,8 +31,8 @@ func TestRequestDistributeValidate(t *testing.T) {
 			},
 			actual: func() []error {
 				return websocket.RequestDistribute{
-					ApiToken: "",
-					Data:     []byte(`"{\n  \"apiToken\": \"123456\",\n  \"data\": {\n    \"port\": \"1234\"\n  }\n}"`),
+					ClientKey: "",
+					Data:      []byte(`"{\n  \"apiToken\": \"123456\",\n  \"data\": {\n    \"port\": \"1234\"\n  }\n}"`),
 				}.Validate()
 			},
 		},
@@ -44,8 +44,8 @@ func TestRequestDistributeValidate(t *testing.T) {
 			},
 			actual: func() []error {
 				return websocket.RequestDistribute{
-					ApiToken: "",
-					Data:     []byte(""),
+					ClientKey: "",
+					Data:      []byte(""),
 				}.Validate()
 			},
 		},

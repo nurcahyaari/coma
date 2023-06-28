@@ -6,15 +6,15 @@ import (
 )
 
 type RequestDistribute struct {
-	ApiToken string          `json:"apiToken"`
-	Data     json.RawMessage `json:"data"`
+	ClientKey string          `json:"clientKey"`
+	Data      json.RawMessage `json:"data"`
 }
 
 func (r RequestDistribute) Validate() []error {
 	var errs []error
 
-	if r.ApiToken == "" {
-		errs = append(errs, errors.New("api token cannot be nulled or empty"))
+	if r.ClientKey == "" {
+		errs = append(errs, errors.New("client key cannot be nulled or empty"))
 	}
 
 	if !json.Valid(r.Data) {

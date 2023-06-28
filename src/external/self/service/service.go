@@ -36,7 +36,14 @@ func (w *WSService) Connect() error {
 }
 
 func (w *WSService) Send(req dto.RequestSendMessage) error {
-	err := websocket.Message.Send(w.ws, req.Message)
+	message, err := req.Message()
+	if err != nil {
+		log.
+			Error().
+			Err(err).Msg("[Send.Message] error when marshaling dto")
+		return err
+	}
+	err = websocket.Message.Send(w.ws, message)
 	if err != nil {
 		log.
 			Error().

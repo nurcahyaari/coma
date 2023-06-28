@@ -14,6 +14,8 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/rs/zerolog/log"
 
+	"net/http/pprof"
+
 	_ "github.com/coma/coma/docs"
 	httpswagger "github.com/swaggo/http-swagger"
 )
@@ -56,11 +58,13 @@ func (h *Http) shutdownStateMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func (h *Http) incomingRequestLogger(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Info().Msgf("host: %s method: %s path: %s", r.Host, r.Method, r.URL.Path)
-		next.ServeHTTP(w, r)
-	})
+func (h *Http) setupPprof(r *chi.Mux) {
+	r.HandleFunc("/debug/pprof/", pprof.Index)
+	r.HandleFunc("/debug/pprof/heap", pprof.Index)
+	r.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	r.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	r.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	r.HandleFunc("/debug/pprof/trace", pprof.Trace)
 }
 
 func (p *Http) Listen() {
@@ -72,6 +76,7 @@ func (p *Http) Listen() {
 	app.Use(p.shutdownStateMiddleware)
 	p.setupRouter(app)
 	p.setupSwagger(app)
+	p.setupPprof(app)
 
 	serverPort := fmt.Sprintf(":%d", config.Get().Application.Port)
 	p.httpServer = &http.Server{

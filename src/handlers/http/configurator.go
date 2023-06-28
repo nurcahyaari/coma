@@ -38,7 +38,7 @@ func (h *HttpHandle) GetConfiguration(w http.ResponseWriter, r *http.Request) {
 			response.SetMessage[configuratordto.ResponseGetConfigurationViewTypeJSON]("success"))
 		return
 	default:
-		resp, err := h.configurationSvc.GetConfigurationVIewTypeSchema(r.Context(), request)
+		resp, err := h.configurationSvc.GetConfigurationViewTypeSchema(r.Context(), request)
 		if err != nil {
 			response.Err[string](w,
 				response.SetErr[string](err.Error()))

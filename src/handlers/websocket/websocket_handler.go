@@ -2,24 +2,47 @@ package websocket
 
 import (
 	"encoding/json"
+	"io"
+	"net/http"
 
+	configuratorsvc "github.com/coma/coma/src/domains/configurator/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/websocket"
 )
 
 type WebsocketHandler struct {
-	connection *WebsocketConnection
+	connection      *WebsocketConnection
+	configuratorSvc configuratorsvc.Servicer
 }
 
-func (w WebsocketHandler) Router(r *chi.Mux) {
-	r.Handle("/websocket", websocket.Handler(w.Websocket))
+func (h WebsocketHandler) Router(r *chi.Mux) {
+	r.HandleFunc("/websocket", func(w http.ResponseWriter, r *http.Request) {
+		s := websocket.Server{
+			Handler: websocket.Handler(h.Websocket),
+		}
+
+		s.ServeHTTP(w, r)
+	})
 }
 
-func NewWebsocketHandler() *WebsocketHandler {
-	websocketHandler := &WebsocketHandler{
-		connection: NewWebsocketConnection(),
+type WebsockethandlerOption func(h *WebsocketHandler)
+
+func SetDomains(configuratorSvc configuratorsvc.Servicer) WebsockethandlerOption {
+	return func(h *WebsocketHandler) {
+		h.configuratorSvc = configuratorSvc
 	}
+}
+
+func NewWebsocketHandler(opts ...WebsockethandlerOption) *WebsocketHandler {
+	websocketHandler := &WebsocketHandler{}
+
+	for _, opt := range opts {
+		opt(websocketHandler)
+	}
+
+	websocketHandler.connection = NewWebsocketConnection(
+		SetWebsocketConnectionDomains(websocketHandler.configuratorSvc))
 
 	go websocketHandler.connection.establishConn()
 
@@ -33,9 +56,10 @@ func (w *WebsocketHandler) Close() {
 
 func (w *WebsocketHandler) Websocket(c *websocket.Conn) {
 	// add client
+	clientKey := c.Request().URL.Query().Get("authorization")
 	w.connection.client <- Client{
 		Connection: c,
-		ApiToken:   c.Request().URL.Query().Get("authorization"),
+		ClientKey:  clientKey,
 	}
 
 	for {
@@ -46,6 +70,12 @@ func (w *WebsocketHandler) Websocket(c *websocket.Conn) {
 
 		err := websocket.Message.Receive(c, &msg)
 		if err != nil {
+			if err == io.EOF {
+				log.Error().
+					Err(err).
+					Msg("[Websocket] connection is closed")
+				break
+			}
 			log.Error().
 				Err(err).
 				Msg("[Websocket] err: marshaling from message")
@@ -80,7 +110,7 @@ func (w *WebsocketHandler) Websocket(c *websocket.Conn) {
 		}
 
 		clients, err := w.connection.broadcast(byt,
-			SetClientId(data.ApiToken))
+			SetClientKey(data.ClientKey))
 		if err != nil {
 			w.connection.clientsRemoved <- clients
 			log.Error().
