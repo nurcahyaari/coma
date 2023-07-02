@@ -116,6 +116,10 @@ func (f FilterConfiguration) Filter() *clover.Criteria {
 
 	filter := &clover.Criteria{}
 
+	if len(criterias) == 0 {
+		return nil
+	}
+
 	for idx, criteria := range criterias {
 		if idx == 0 {
 			filter = criteria

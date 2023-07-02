@@ -12,6 +12,7 @@ import (
 type ApplicationStageServicer interface {
 	FindStages(ctx context.Context, request dto.RequestFindStage) (dto.ResponseStages, error)
 	CreateStage(ctx context.Context, request dto.RequestCreateStage) (dto.ResponseStage, error)
+	DeleteStage(ctx context.Context, request dto.RequestFindStage) error
 }
 
 type ApplicationStageService struct {
@@ -48,7 +49,7 @@ func (s *ApplicationStageService) FindStages(ctx context.Context, request dto.Re
 	if err != nil {
 		log.Error().
 			Err(err).
-			Msg("[CreateEnvirontment] error creating new environment")
+			Msg("[FindStages] error find stages")
 		return response, err
 	}
 
@@ -73,4 +74,17 @@ func (s *ApplicationStageService) CreateStage(ctx context.Context, request dto.R
 	response = dto.NewResponseStage(applicationEnv)
 
 	return response, nil
+}
+
+func (s *ApplicationStageService) DeleteStage(ctx context.Context, request dto.RequestFindStage) error {
+	err := s.writer.DeleteStage(ctx, model.FilterApplicationStage{
+		Name: request.Name,
+	})
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("[DeleteStage] error deleting stage")
+		return err
+	}
+	return nil
 }

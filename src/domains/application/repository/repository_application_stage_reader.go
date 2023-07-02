@@ -17,6 +17,7 @@ type RepositoryApplicationStageRead struct {
 }
 
 func NewRepositoryApplicationStageReader(db *database.Clover, name string) RepositoryApplicationStageReader {
+	db.DB.CreateCollection(name)
 	return &RepositoryApplicationStageRead{
 		db:     db,
 		dbName: name,

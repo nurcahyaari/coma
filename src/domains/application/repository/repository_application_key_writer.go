@@ -11,6 +11,7 @@ type RepositoryApplicationKeyWrite struct {
 }
 
 func NewRepositoryApplicationKeyWriter(db *database.Clover, name string) RepositoryApplicationKeyWriter {
+	db.DB.CreateCollection(name)
 	return &RepositoryApplicationKeyWrite{
 		db:     db,
 		dbName: name,

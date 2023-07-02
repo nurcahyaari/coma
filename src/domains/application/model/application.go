@@ -6,14 +6,16 @@ import (
 	"github.com/ostafen/clover"
 )
 
-type ApplicationStage struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
+type Application struct {
+	Id      string `json:"id"`
+	StageId string `json:"stageId"`
+	Type    string `json:"type"`
+	Name    string `json:"name"`
 }
 
-func (r ApplicationStage) MapStringInterface() (map[string]interface{}, error) {
+func (a Application) MapStringInterface() (map[string]interface{}, error) {
 	mapStringIntf := make(map[string]interface{})
-	j, err := json.Marshal(r)
+	j, err := json.Marshal(a)
 	if err != nil {
 		return nil, err
 	}
@@ -25,17 +27,27 @@ func (r ApplicationStage) MapStringInterface() (map[string]interface{}, error) {
 	return mapStringIntf, nil
 }
 
-type ApplicationStages []ApplicationStage
+type Applications []Application
 
-type FilterApplicationStage struct {
-	Name string
+type FilterApplication struct {
+	Id      string
+	Name    string
+	StageId string
 }
 
-func (f FilterApplicationStage) Filter() *clover.Criteria {
+func (f FilterApplication) Filter() *clover.Criteria {
 	criterias := make([]*clover.Criteria, 0)
+
+	if f.Id != "" {
+		criterias = append(criterias, clover.Field("id").Eq(f.Id))
+	}
 
 	if f.Name != "" {
 		criterias = append(criterias, clover.Field("name").Eq(f.Name))
+	}
+
+	if f.StageId != "" {
+		criterias = append(criterias, clover.Field("stageId").Eq(f.StageId))
 	}
 
 	filter := &clover.Criteria{}

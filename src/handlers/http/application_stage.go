@@ -6,12 +6,13 @@ import (
 
 	"github.com/coma/coma/internal/protocols/http/response"
 	applicationdto "github.com/coma/coma/src/domains/application/dto"
+	"github.com/go-chi/chi/v5"
 )
 
 // FindApplicationStages get stages
 // @Summary get stages
 // @Description get stages
-// @Param stageName query string true "<Stage name>"
+// @Param stageName query string false "<Stage name>"
 // @Tags Stages
 // @Produce json
 // @Router /v1/stages [GET]
@@ -35,7 +36,7 @@ func (h *HttpHandle) FindApplicationStages(w http.ResponseWriter, r *http.Reques
 // CreateApplicationStages set new stages
 // @Summary set new stages
 // @Description Set new stages
-// @Param RequestCreateStage body applicationdto.RequestCreateStage true "create new environtment"
+// @Param RequestCreateStage body applicationdto.RequestCreateStage true "create new stages"
 // @Tags Stages
 // @Produce json
 // @Router /v1/stages [POST]
@@ -59,4 +60,27 @@ func (h *HttpHandle) CreateApplicationStages(w http.ResponseWriter, r *http.Requ
 	response.Json[applicationdto.ResponseStage](w,
 		response.SetMessage[applicationdto.ResponseStage]("success"),
 		response.SetData[applicationdto.ResponseStage](resp))
+}
+
+// DeleteApplicationStages delete stages
+// @Summary delete stages
+// @Description delete stages
+// @Param stageName path int true "StageName"
+// @Tags Stages
+// @Produce json
+// @Router /v1/stages/{stageName} [DELETE]
+func (h *HttpHandle) DeleteApplicationStages(w http.ResponseWriter, r *http.Request) {
+	request := applicationdto.RequestFindStage{
+		Name: chi.URLParam(r, "stageName"),
+	}
+
+	err := h.applicationStageSvc.DeleteStage(r.Context(), request)
+	if err != nil {
+		response.Err[string](w,
+			response.SetErr[string](err.Error()))
+		return
+	}
+
+	response.Json[string](w,
+		response.SetMessage[string]("success"))
 }

@@ -29,9 +29,14 @@ import (
 func initHttpProtocol(
 	authSvc authsvc.Servicer,
 	configuratorSvc configuratorsvc.Servicer,
-	applicationStageSvc applicationsvc.ApplicationStageServicer) *http.Http {
+	applicationStageSvc applicationsvc.ApplicationStageServicer,
+	applicationSvc applicationsvc.ApplicationServicer) *http.Http {
 	handler := httphandler.NewHttpHandler(
-		httphandler.SetDomains(authSvc, configuratorSvc, applicationStageSvc))
+		httphandler.SetDomains(
+			authSvc,
+			configuratorSvc,
+			applicationStageSvc,
+			applicationSvc))
 
 	websocketHandler := websockethandler.NewWebsocketHandler(websockethandler.SetDomains(configuratorSvc))
 	router := httprouter.NewHttpRouter(
@@ -64,13 +69,23 @@ func main() {
 		configuratorsvc.SetExternalService(distributorExtSvc),
 		configuratorsvc.SetRepository(configuratorRepo.NewRepositoryReader(), configuratorRepo.NewRepositoryWriter()))
 
-	applicationStageRepo := applicationrepo.New(cloverDB)
+	applicationRepo := applicationrepo.New(cloverDB)
+
 	applicationStageSvc := applicationsvc.NewApplicationStage(
 		applicationsvc.SetApplicationStageRepository(
-			applicationStageRepo.NewRepositoryApplicationStageReader(),
-			applicationStageRepo.NewRepositoryApplicationStageWriter()))
+			applicationRepo.NewRepositoryApplicationStageReader(),
+			applicationRepo.NewRepositoryApplicationStageWriter()))
 
-	httpProtocol := initHttpProtocol(authSvc, configuratorSvc, applicationStageSvc)
+	applicationSvc := applicationsvc.NewApplication(
+		applicationsvc.SetApplicationRepository(
+			applicationRepo.NewRepositoryApplicationReader(),
+			applicationRepo.NewRepositoryApplicationWriter()))
+
+	httpProtocol := initHttpProtocol(
+		authSvc,
+		configuratorSvc,
+		applicationStageSvc,
+		applicationSvc)
 
 	// init http protocol
 	go httpProtocol.Listen()

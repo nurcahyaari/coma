@@ -10,6 +10,7 @@ import (
 
 type RepositoryApplicationStageWriter interface {
 	CreateStage(ctx context.Context, data model.ApplicationStage) error
+	DeleteStage(ctx context.Context, filter model.FilterApplicationStage) error
 }
 
 type RepositoryApplicationStageWrite struct {
@@ -18,6 +19,7 @@ type RepositoryApplicationStageWrite struct {
 }
 
 func NewRepositoryApplicationStageWriter(db *database.Clover, name string) RepositoryApplicationStageWriter {
+	db.DB.CreateCollection(name)
 	return &RepositoryApplicationStageWrite{
 		db:     db,
 		dbName: name,
@@ -39,4 +41,11 @@ func (r *RepositoryApplicationStageWrite) CreateStage(ctx context.Context, data 
 	}
 
 	return nil
+}
+
+func (r *RepositoryApplicationStageWrite) DeleteStage(ctx context.Context, filter model.FilterApplicationStage) error {
+	return r.db.DB.
+		Query(r.dbName).
+		Where(filter.Filter()).
+		Delete()
 }

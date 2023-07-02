@@ -11,6 +11,7 @@ type RepositoryApplicationKeyRead struct {
 }
 
 func NewRepositoryApplicationKeyReader(db *database.Clover, name string) RepositoryApplicationKeyReader {
+	db.DB.CreateCollection(name)
 	return &RepositoryApplicationKeyRead{
 		db:     db,
 		dbName: name,
