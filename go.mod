@@ -18,6 +18,7 @@ require (
 	github.com/fatih/color v1.14.1 // indirect
 	github.com/frankban/quicktest v1.14.4 // indirect
 	github.com/gohugoio/hugo v0.111.3 // indirect
+	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.6.2 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect

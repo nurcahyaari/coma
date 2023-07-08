@@ -7,7 +7,7 @@ import (
 )
 
 type ApplicationStage struct {
-	Id   string `json:"id"`
+	Id   string `json:"_id"`
 	Name string `json:"name"`
 }
 
@@ -28,11 +28,16 @@ func (r ApplicationStage) MapStringInterface() (map[string]interface{}, error) {
 type ApplicationStages []ApplicationStage
 
 type FilterApplicationStage struct {
+	Id   string
 	Name string
 }
 
 func (f FilterApplicationStage) Filter() *clover.Criteria {
 	criterias := make([]*clover.Criteria, 0)
+
+	if f.Id != "" {
+		criterias = append(criterias, clover.Field("_id").Eq(f.Id))
+	}
 
 	if f.Name != "" {
 		criterias = append(criterias, clover.Field("name").Eq(f.Name))

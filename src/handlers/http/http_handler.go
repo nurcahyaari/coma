@@ -12,6 +12,7 @@ type HttpHandle struct {
 	configurationSvc    configuratorsvc.Servicer
 	applicationStageSvc applicationsvc.ApplicationStageServicer
 	applicationSvc      applicationsvc.ApplicationServicer
+	applicationKeySvc   applicationsvc.ApplicationKeyServicer
 }
 
 func (h HttpHandle) Router(r *chi.Mux) {
@@ -34,6 +35,11 @@ func (h HttpHandle) Router(r *chi.Mux) {
 			r.Delete("/{stageName}", h.DeleteApplicationStages)
 		})
 
+		r.Route("/keys", func(r chi.Router) {
+			r.Get("/", h.FindApplicationKey)
+			r.Post("/", h.CreateOrUpdateApplicationKey)
+		})
+
 		r.Route("/configurator", func(r chi.Router) {
 			r.Get("/", h.GetConfiguration)
 			r.Post("/", h.SetConfiguration)
@@ -50,12 +56,14 @@ func SetDomains(
 	authSvc authsvc.Servicer,
 	configuratorSvc configuratorsvc.Servicer,
 	applicationEnvSvc applicationsvc.ApplicationStageServicer,
-	applicationSvc applicationsvc.ApplicationServicer) HttpOption {
+	applicationSvc applicationsvc.ApplicationServicer,
+	applicationKeySvc applicationsvc.ApplicationKeyServicer) HttpOption {
 	return func(h *HttpHandle) {
 		h.authSvc = authSvc
 		h.configurationSvc = configuratorSvc
 		h.applicationStageSvc = applicationEnvSvc
 		h.applicationSvc = applicationSvc
+		h.applicationKeySvc = applicationKeySvc
 	}
 }
 

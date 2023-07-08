@@ -2,12 +2,14 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/coma/coma/infrastructure/database"
 	"github.com/coma/coma/src/domains/application/model"
 )
 
 type RepositoryApplicationStageReader interface {
+	FindStage(ctx context.Context, filter model.FilterApplicationStage) (model.ApplicationStage, error)
 	FindStages(ctx context.Context, filter model.FilterApplicationStage) (model.ApplicationStages, error)
 }
 
@@ -22,6 +24,18 @@ func NewRepositoryApplicationStageReader(db *database.Clover, name string) Repos
 		db:     db,
 		dbName: name,
 	}
+}
+
+func (r *RepositoryApplicationStageRead) FindStage(ctx context.Context, filter model.FilterApplicationStage) (model.ApplicationStage, error) {
+	stages, err := r.FindStages(ctx, filter)
+	if err != nil {
+		return model.ApplicationStage{}, err
+	}
+	if len(stages) == 0 {
+		return model.ApplicationStage{}, errors.New("err: data is not found")
+	}
+
+	return stages[0], nil
 }
 
 func (r *RepositoryApplicationStageRead) FindStages(ctx context.Context, filter model.FilterApplicationStage) (model.ApplicationStages, error) {

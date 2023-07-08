@@ -9,7 +9,7 @@ import (
 )
 
 type RepositoryApplicationStageWriter interface {
-	CreateStage(ctx context.Context, data model.ApplicationStage) error
+	CreateOrSaveStage(ctx context.Context, data model.ApplicationStage) error
 	DeleteStage(ctx context.Context, filter model.FilterApplicationStage) error
 }
 
@@ -26,7 +26,7 @@ func NewRepositoryApplicationStageWriter(db *database.Clover, name string) Repos
 	}
 }
 
-func (r *RepositoryApplicationStageWrite) CreateStage(ctx context.Context, data model.ApplicationStage) error {
+func (r *RepositoryApplicationStageWrite) CreateOrSaveStage(ctx context.Context, data model.ApplicationStage) error {
 	dataMap, err := data.MapStringInterface()
 	if err != nil {
 		return err

@@ -30,13 +30,15 @@ func initHttpProtocol(
 	authSvc authsvc.Servicer,
 	configuratorSvc configuratorsvc.Servicer,
 	applicationStageSvc applicationsvc.ApplicationStageServicer,
-	applicationSvc applicationsvc.ApplicationServicer) *http.Http {
+	applicationSvc applicationsvc.ApplicationServicer,
+	applicationKeySvc applicationsvc.ApplicationKeyServicer) *http.Http {
 	handler := httphandler.NewHttpHandler(
 		httphandler.SetDomains(
 			authSvc,
 			configuratorSvc,
 			applicationStageSvc,
-			applicationSvc))
+			applicationSvc,
+			applicationKeySvc))
 
 	websocketHandler := websockethandler.NewWebsocketHandler(websockethandler.SetDomains(configuratorSvc))
 	router := httprouter.NewHttpRouter(
@@ -81,11 +83,23 @@ func main() {
 			applicationRepo.NewRepositoryApplicationReader(),
 			applicationRepo.NewRepositoryApplicationWriter()))
 
+	applicationKeySvc := applicationsvc.NewApplicationKey(
+		applicationsvc.SetApplicationKeyRepository(
+			applicationRepo.NewRepositoryApplicationKeyReader(),
+			applicationRepo.NewRepositoryApplicationKeyWriter()),
+		applicationsvc.SetApplicationKeyApplicationRepository(
+			applicationRepo.NewRepositoryApplicationReader(),
+			applicationRepo.NewRepositoryApplicationWriter()),
+		applicationsvc.SetApplicationKeyStageRepository(
+			applicationRepo.NewRepositoryApplicationStageReader(),
+			applicationRepo.NewRepositoryApplicationStageWriter()))
+
 	httpProtocol := initHttpProtocol(
 		authSvc,
 		configuratorSvc,
 		applicationStageSvc,
-		applicationSvc)
+		applicationSvc,
+		applicationKeySvc)
 
 	// init http protocol
 	go httpProtocol.Listen()

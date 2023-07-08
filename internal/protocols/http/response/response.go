@@ -78,7 +78,7 @@ func Err[E any](w http.ResponseWriter, opts ...ResponseOption[E]) {
 
 	// if user didn't set httpcode properly
 	// it automatically settled as internal error
-	if respData.HttpCode == 0 || respData.HttpCode == http.StatusOK {
+	if respData.HttpCode <= http.StatusOK {
 		respData.HttpCode = http.StatusInternalServerError
 	}
 

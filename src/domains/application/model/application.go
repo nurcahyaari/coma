@@ -7,7 +7,7 @@ import (
 )
 
 type Application struct {
-	Id      string `json:"id"`
+	Id      string `json:"_id"`
 	StageId string `json:"stageId"`
 	Type    string `json:"type"`
 	Name    string `json:"name"`
@@ -39,7 +39,7 @@ func (f FilterApplication) Filter() *clover.Criteria {
 	criterias := make([]*clover.Criteria, 0)
 
 	if f.Id != "" {
-		criterias = append(criterias, clover.Field("id").Eq(f.Id))
+		criterias = append(criterias, clover.Field("_id").Eq(f.Id))
 	}
 
 	if f.Name != "" {

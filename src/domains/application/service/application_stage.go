@@ -63,7 +63,7 @@ func (s *ApplicationStageService) CreateStage(ctx context.Context, request dto.R
 		applicationEnv = request.NewApplicationStage()
 		response       = dto.ResponseStage{}
 	)
-	err := s.writer.CreateStage(ctx, applicationEnv)
+	err := s.writer.CreateOrSaveStage(ctx, applicationEnv)
 	if err != nil {
 		log.Error().
 			Err(err).
