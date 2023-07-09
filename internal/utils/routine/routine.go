@@ -76,37 +76,44 @@ func (r *Routine) run(name string, job Job) {
 	res, err := job(r.params[name]...)
 
 	r.mtx.Lock()
-
-	sourceResult := reflect.ValueOf(res)
-	if sourceResult.Kind() != reflect.Ptr {
-		r.err[name] = errors.New("result must pass a pointer")
-		return
+	// assign value to destination
+	if _, destExists := r.results[name]; destExists {
+		if err := r.assignResToDest(res, r.results[name]); err != nil {
+			r.err[name] = err
+		}
 	}
 
-	destResult := reflect.ValueOf(r.results[name])
+	if err != nil {
+		r.err[name] = err
+	}
+	r.mtx.Unlock()
+}
+
+func (r *Routine) assignResToDest(res any, dest any) error {
+	sourceResult := reflect.ValueOf(res)
+	if sourceResult.Kind() != reflect.Ptr {
+		return errors.New("result must pass a pointer")
+	}
+
+	destResult := reflect.ValueOf(dest)
 	if destResult.Kind() != reflect.Ptr {
-		r.err[name] = errors.New("destination must pass a pointer")
-		return
+		return errors.New("destination must pass a pointer")
 	}
 
 	// Check if the types are assignable
 	sourceType := sourceResult.Type()
 	destType := destResult.Type()
 	if !sourceType.AssignableTo(destType) {
-		r.err[name] = fmt.Errorf("err: destination is unassignable from the result. Source type: %s, Destination type: %s",
+		return fmt.Errorf("err: destination is unassignable from the result. Source type: %s, Destination type: %s",
 			sourceType.String(),
 			destType.String(),
 		)
-		return
 	}
 
 	// Set the value of the destination
 	destResult.Elem().Set(sourceResult.Elem())
 
-	if err != nil {
-		r.err[name] = err
-	}
-	r.mtx.Unlock()
+	return nil
 }
 
 // check error
