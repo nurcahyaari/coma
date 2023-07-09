@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	internalerrors "github.com/coma/coma/internal/utils/errors"
 	"github.com/coma/coma/src/domains/application/dto"
 	"github.com/coma/coma/src/domains/application/model"
 	"github.com/coma/coma/src/domains/application/repository"
@@ -50,7 +51,7 @@ func (s *ApplicationStageService) FindStages(ctx context.Context, request dto.Re
 		log.Error().
 			Err(err).
 			Msg("[FindStages] error find stages")
-		return response, err
+		return response, internalerrors.NewError(err)
 	}
 
 	response = dto.NewResponseStages(applicationStages)
@@ -68,7 +69,7 @@ func (s *ApplicationStageService) CreateStage(ctx context.Context, request dto.R
 		log.Error().
 			Err(err).
 			Msg("[CreateEnvirontment] error creating new environment")
-		return response, err
+		return response, internalerrors.NewError(err)
 	}
 
 	response = dto.NewResponseStage(applicationEnv)
@@ -84,7 +85,7 @@ func (s *ApplicationStageService) DeleteStage(ctx context.Context, request dto.R
 		log.Error().
 			Err(err).
 			Msg("[DeleteStage] error deleting stage")
-		return err
+		return internalerrors.NewError(err)
 	}
 	return nil
 }

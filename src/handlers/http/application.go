@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/coma/coma/internal/protocols/http/response"
+	internalerrors "github.com/coma/coma/internal/utils/errors"
 	applicationdto "github.com/coma/coma/src/domains/application/dto"
 	"github.com/go-chi/chi/v5"
 )
@@ -47,15 +48,16 @@ func (h *HttpHandle) CreateApplication(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		response.Err[string](w,
-			response.SetMessage[string](err.Error()))
+		response.Err[any](w,
+			response.SetMessage[any](err.Error()))
 		return
 	}
 
 	resp, err := h.applicationSvc.CreateApplication(r.Context(), request)
 	if err != nil {
-		response.Err[string](w,
-			response.SetErr[string](err.Error()))
+		errCustom := err.(*internalerrors.Error)
+		response.Err[any](w,
+			response.SetErr[any](errCustom.ErrorAsObject()))
 		return
 	}
 
@@ -78,8 +80,9 @@ func (h *HttpHandle) DeleteApplications(w http.ResponseWriter, r *http.Request) 
 
 	err := h.applicationSvc.DeleteApplication(r.Context(), request)
 	if err != nil {
-		response.Err[string](w,
-			response.SetErr[string](err.Error()))
+		errCustom := err.(*internalerrors.Error)
+		response.Err[any](w,
+			response.SetErr[any](errCustom.ErrorAsObject()))
 		return
 	}
 

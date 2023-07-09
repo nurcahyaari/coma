@@ -25,9 +25,9 @@ func TestErrorAsObject(t *testing.T) {
 			actual: func() any {
 				add := Address{}
 				err := add.Validate()
-				err = internalerror.NewError[map[string]string](err,
-					internalerror.SetErrorSource[map[string]string](internalerror.OZZO_VALIDATION_ERR))
-				errCustom := err.(*internalerror.Error[map[string]string])
+				err = internalerror.NewError(err,
+					internalerror.SetErrorSource(internalerror.OZZO_VALIDATION_ERR))
+				errCustom := err.(*internalerror.Error)
 				return errCustom.ErrorAsObject()
 			},
 		},
@@ -37,9 +37,9 @@ func TestErrorAsObject(t *testing.T) {
 				"": "Name cannot be blank",
 			},
 			actual: func() any {
-				err := internalerror.NewError[map[string]string](errors.New("Name cannot be blank"),
-					internalerror.SetErrorSource[map[string]string](internalerror.PLAIN_ERR))
-				errCustom := err.(*internalerror.Error[map[string]string])
+				err := internalerror.NewError(errors.New("Name cannot be blank"),
+					internalerror.SetErrorSource(internalerror.PLAIN_ERR_TEXT))
+				errCustom := err.(*internalerror.Error)
 				return errCustom.ErrorAsObject()
 			},
 		},
@@ -49,10 +49,10 @@ func TestErrorAsObject(t *testing.T) {
 				"Name": "cannot be blank",
 			},
 			actual: func() any {
-				err := internalerror.NewError[map[string]string](errors.New("Name cannot be blank"),
-					internalerror.SetErrorSource[map[string]string](internalerror.PLAIN_ERR),
-					internalerror.WithField[map[string]string](true))
-				errCustom := err.(*internalerror.Error[map[string]string])
+				err := internalerror.NewError(errors.New("Name cannot be blank"),
+					internalerror.SetErrorSource(internalerror.PLAIN_ERR_TEXT),
+					internalerror.WithField(true))
+				errCustom := err.(*internalerror.Error)
 				return errCustom.ErrorAsObject()
 			},
 		},
@@ -60,8 +60,8 @@ func TestErrorAsObject(t *testing.T) {
 			name:     "test4 - without source",
 			expected: errors.New("Name cannot be blank"),
 			actual: func() any {
-				err := internalerror.NewError[error](errors.New("Name cannot be blank"))
-				errCustom := err.(*internalerror.Error[error])
+				err := internalerror.NewError(errors.New("Name cannot be blank"))
+				errCustom := err.(*internalerror.Error)
 				return errCustom.ErrorAsObject()
 			},
 		},

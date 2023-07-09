@@ -11,6 +11,15 @@ type RequestCreateApplicationKey struct {
 	StageId       string `json:"stageId"`
 }
 
+func (r RequestCreateApplicationKey) Validate() error {
+	validationFieldRules := []*validation.FieldRules{}
+
+	validationFieldRules = append(validationFieldRules, validation.Field(&r.ApplicationId, validation.Required))
+	validationFieldRules = append(validationFieldRules, validation.Field(&r.StageId, validation.Required))
+
+	return validation.ValidateStruct(&r, validationFieldRules...)
+}
+
 func (r RequestCreateApplicationKey) ApplicationKey() model.ApplicationKey {
 	id := uuid.New()
 	return model.ApplicationKey{

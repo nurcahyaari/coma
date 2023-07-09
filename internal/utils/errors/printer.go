@@ -12,7 +12,7 @@ type Printer struct {
 	Failures map[string][]string
 }
 
-func New() Printer {
+func NewPrinter() Printer {
 	return Printer{
 		Err:      errors.New("error: validation"),
 		Failures: make(map[string][]string),

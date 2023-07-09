@@ -47,7 +47,7 @@ func TestValidationPrinterWithOzzo(t *testing.T) {
 				},
 			},
 			actual: func() internalerror.Printer {
-				v := internalerror.New()
+				v := internalerror.NewPrinter()
 				add := Address{}
 				err := add.Validate()
 				v.OzzoValidationErr(err)
@@ -62,7 +62,7 @@ func TestValidationPrinterWithOzzo(t *testing.T) {
 				},
 			},
 			actual: func() internalerror.Printer {
-				v := internalerror.New()
+				v := internalerror.NewPrinter()
 				v.PlainErr(errors.New("values cannot be null"), false)
 				v.PlainErr(errors.New("name cannot be null"), false)
 				return v
@@ -77,7 +77,7 @@ func TestValidationPrinterWithOzzo(t *testing.T) {
 				},
 			},
 			actual: func() internalerror.Printer {
-				v := internalerror.New()
+				v := internalerror.NewPrinter()
 				v.PlainErr(errors.New("values cannot be null"), true)
 				v.PlainErr(errors.New("name cannot be null"), true)
 				return v

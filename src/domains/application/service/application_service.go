@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	internalerrors "github.com/coma/coma/internal/utils/errors"
 	"github.com/coma/coma/src/domains/application/dto"
 	"github.com/coma/coma/src/domains/application/model"
 	"github.com/coma/coma/src/domains/application/repository"
@@ -66,12 +67,18 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, request dto.
 		response    = dto.ResponseApplication{}
 	)
 
+	if err := request.Validate(); err != nil {
+		return response, internalerrors.NewError(
+			err,
+			internalerrors.SetErrorSource(internalerrors.OZZO_VALIDATION_ERR))
+	}
+
 	err := s.writer.CreateApplication(ctx, application)
 	if err != nil {
 		log.Error().
 			Err(err).
 			Msg("[CreateEnvirontment] error creating new environment")
-		return response, err
+		return response, internalerrors.NewError(err)
 	}
 
 	response = dto.NewResponseApplication(application)
@@ -88,7 +95,7 @@ func (s *ApplicationService) DeleteApplication(ctx context.Context, request dto.
 		log.Error().
 			Err(err).
 			Msg("[DeleteApplication] error deleting application")
-		return err
+		return internalerrors.NewError(err)
 	}
 	return nil
 }

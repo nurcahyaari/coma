@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	internalerrors "github.com/coma/coma/internal/utils/errors"
 	"github.com/coma/coma/internal/utils/routine"
 	"github.com/coma/coma/src/domains/application/dto"
 	"github.com/coma/coma/src/domains/application/model"
@@ -66,6 +67,12 @@ func (s *ApplicationKeyService) FindApplicationKey(ctx context.Context, request 
 		applicationKey   model.ApplicationKey
 	)
 
+	if err := request.Validate(); err != nil {
+		return response, internalerrors.NewError(
+			err,
+			internalerrors.SetErrorSource(internalerrors.OZZO_VALIDATION_ERR))
+	}
+
 	rtn := routine.New()
 
 	rtn.Add("findApplication", &application, func(params ...any) (any, error) {
@@ -77,7 +84,7 @@ func (s *ApplicationKeyService) FindApplicationKey(ctx context.Context, request 
 			log.Error().
 				Err(err).
 				Msg("[GenerateOrUpdateApplicationKey.FindApplications] error find application")
-			return nil, err
+			return nil, internalerrors.NewError(err)
 		}
 		return &resp, nil
 	}, request.ApplicationId)
@@ -101,7 +108,7 @@ func (s *ApplicationKeyService) FindApplicationKey(ctx context.Context, request 
 			log.Error().
 				Err(err).
 				Msg("[FindApplicationKey.FindApplicationKey] error find application key")
-			return nil, nil
+			return nil, internalerrors.NewError(err)
 		}
 		return &resp, nil
 	})
@@ -111,7 +118,7 @@ func (s *ApplicationKeyService) FindApplicationKey(ctx context.Context, request 
 		log.Error().
 			Errs("routine error", rtn.Errors()).
 			Msg("[GenerateOrUpdateApplicationKey] eror on goroutine")
-		return response, rtn.Error()
+		return response, internalerrors.NewError(rtn.Error())
 	}
 
 	response = dto.NewResponseFindApplicationKey(applicationKey)
@@ -129,6 +136,12 @@ func (s *ApplicationKeyService) GenerateOrUpdateApplicationKey(ctx context.Conte
 		applicationStage model.ApplicationStage
 	)
 
+	if err := request.Validate(); err != nil {
+		return response, internalerrors.NewError(
+			err,
+			internalerrors.SetErrorSource(internalerrors.OZZO_VALIDATION_ERR))
+	}
+
 	// generate application key
 	applicationKey.GenerateSalt(12)
 	err := applicationKey.GenerateKey()
@@ -136,7 +149,7 @@ func (s *ApplicationKeyService) GenerateOrUpdateApplicationKey(ctx context.Conte
 		log.Error().
 			Err(err).
 			Msg("[GenerateOrUpdateApplicationKey.GenerateKey] error generating key")
-		return response, err
+		return response, internalerrors.NewError(err)
 	}
 
 	rtn := routine.New()
@@ -150,7 +163,7 @@ func (s *ApplicationKeyService) GenerateOrUpdateApplicationKey(ctx context.Conte
 			log.Error().
 				Err(err).
 				Msg("[GenerateOrUpdateApplicationKey.FindApplications] error find application")
-			return nil, err
+			return nil, internalerrors.NewError(err)
 		}
 		return &resp, nil
 	}, request.ApplicationId)
@@ -163,7 +176,7 @@ func (s *ApplicationKeyService) GenerateOrUpdateApplicationKey(ctx context.Conte
 			log.Error().
 				Err(err).
 				Msg("[GenerateOrUpdateApplicationKey.FindStages] error find stage")
-			return nil, err
+			return nil, internalerrors.NewError(err)
 		}
 		return &resp, nil
 	}, request.StageId)
@@ -173,7 +186,7 @@ func (s *ApplicationKeyService) GenerateOrUpdateApplicationKey(ctx context.Conte
 		log.Error().
 			Errs("routine error", rtn.Errors()).
 			Msg("[GenerateOrUpdateApplicationKey] eror on goroutine")
-		return response, rtn.Error()
+		return response, internalerrors.NewError(rtn.Error())
 	}
 
 	err = s.writer.CreateOrSaveApplicationKey(ctx, applicationKey)

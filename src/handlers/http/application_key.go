@@ -2,9 +2,11 @@ package http
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/coma/coma/internal/protocols/http/response"
+	internalerrors "github.com/coma/coma/internal/utils/errors"
 	applicationdto "github.com/coma/coma/src/domains/application/dto"
 )
 
@@ -22,16 +24,12 @@ func (h *HttpHandle) FindApplicationKey(w http.ResponseWriter, r *http.Request) 
 		StageId:       r.FormValue("stageId"),
 	}
 
-	if err := request.Validate(); err != nil {
-		response.Err[string](w,
-			response.SetErr[string](err.Error()))
-		return
-	}
-
 	resp, err := h.applicationKeySvc.FindApplicationKey(r.Context(), request)
 	if err != nil {
-		response.Err[string](w,
-			response.SetErr[string](err.Error()))
+		fmt.Println(err)
+		errCustom := err.(*internalerrors.Error)
+		response.Err[any](w,
+			response.SetErr[any](errCustom.ErrorAsObject()))
 		return
 	}
 
@@ -59,8 +57,9 @@ func (h *HttpHandle) CreateOrUpdateApplicationKey(w http.ResponseWriter, r *http
 
 	resp, err := h.applicationKeySvc.GenerateOrUpdateApplicationKey(r.Context(), request)
 	if err != nil {
-		response.Err[string](w,
-			response.SetErr[string](err.Error()))
+		errCustom := err.(*internalerrors.Error)
+		response.Err[any](w,
+			response.SetErr[any](errCustom.ErrorAsObject()))
 		return
 	}
 

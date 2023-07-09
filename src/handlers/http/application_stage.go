@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/coma/coma/internal/protocols/http/response"
+	internalerrors "github.com/coma/coma/internal/utils/errors"
 	applicationdto "github.com/coma/coma/src/domains/application/dto"
 	"github.com/go-chi/chi/v5"
 )
@@ -23,8 +24,9 @@ func (h *HttpHandle) FindApplicationStages(w http.ResponseWriter, r *http.Reques
 
 	resp, err := h.applicationStageSvc.FindStages(r.Context(), request)
 	if err != nil {
-		response.Err[string](w,
-			response.SetErr[string](err.Error()))
+		errCustom := err.(*internalerrors.Error)
+		response.Err[any](w,
+			response.SetErr[any](errCustom.ErrorAsObject))
 		return
 	}
 
@@ -52,8 +54,9 @@ func (h *HttpHandle) CreateApplicationStages(w http.ResponseWriter, r *http.Requ
 
 	resp, err := h.applicationStageSvc.CreateStage(r.Context(), request)
 	if err != nil {
-		response.Err[string](w,
-			response.SetErr[string](err.Error()))
+		errCustom := err.(*internalerrors.Error)
+		response.Err[any](w,
+			response.SetErr[any](errCustom.ErrorAsObject()))
 		return
 	}
 
@@ -76,8 +79,9 @@ func (h *HttpHandle) DeleteApplicationStages(w http.ResponseWriter, r *http.Requ
 
 	err := h.applicationStageSvc.DeleteStage(r.Context(), request)
 	if err != nil {
-		response.Err[string](w,
-			response.SetErr[string](err.Error()))
+		errCustom := err.(*internalerrors.Error)
+		response.Err[any](w,
+			response.SetErr[any](errCustom.ErrorAsObject()))
 		return
 	}
 

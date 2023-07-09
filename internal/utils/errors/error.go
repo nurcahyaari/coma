@@ -7,28 +7,28 @@ import (
 type ErrorSource string
 
 const (
-	PLAIN_ERR           ErrorSource = "PLAIN_ERR"
+	PLAIN_ERR_TEXT      ErrorSource = "PLAIN_ERR_TEXT"
 	OZZO_VALIDATION_ERR ErrorSource = "OZZO_VALIDATION_ERR"
 )
 
-type Error[T any] struct {
+type Error struct {
 	ErrorSource ErrorSource
 	WithField   bool
 	Err         error
 	printer     Printer
 }
 
-func (r *Error[T]) Error() string {
+func (r *Error) Error() string {
 	return r.Err.Error()
 }
 
-func (r *Error[T]) ErrorAsObject() any {
+func (r *Error) ErrorAsObject() any {
 	mapString := make(map[string]string)
 
 	switch r.ErrorSource {
 	case OZZO_VALIDATION_ERR:
 		r.printer.OzzoValidationErr(r.Err)
-	case PLAIN_ERR:
+	case PLAIN_ERR_TEXT:
 		r.printer.PlainErr(r.Err, r.WithField)
 	default:
 		return r.Err
@@ -41,25 +41,25 @@ func (r *Error[T]) ErrorAsObject() any {
 	return mapString
 }
 
-type ErrorOpt[T any] func(err *Error[T])
+type ErrorOpt func(err *Error)
 
-func WithField[T any](withField bool) ErrorOpt[T] {
-	return func(err *Error[T]) {
+func WithField(withField bool) ErrorOpt {
+	return func(err *Error) {
 		err.WithField = withField
 	}
 }
 
-func SetErrorSource[T any](errSource ErrorSource) ErrorOpt[T] {
-	return func(err *Error[T]) {
+func SetErrorSource(errSource ErrorSource) ErrorOpt {
+	return func(err *Error) {
 		err.ErrorSource = errSource
 	}
 }
 
-func NewError[T any](err error, opts ...ErrorOpt[T]) error {
-	resp := &Error[T]{
+func NewError(err error, opts ...ErrorOpt) error {
+	resp := &Error{
 		WithField: false,
 		Err:       err,
-		printer:   New(),
+		printer:   NewPrinter(),
 	}
 
 	for _, opt := range opts {
