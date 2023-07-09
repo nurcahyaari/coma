@@ -1,10 +1,11 @@
-package validation_test
+package errors_test
 
 import (
+	"errors"
 	"regexp"
 	"testing"
 
-	internalvalidation "github.com/coma/coma/internal/utils/validation"
+	internalerror "github.com/coma/coma/internal/utils/errors"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/stretchr/testify/assert"
 )
@@ -32,21 +33,21 @@ func (a Address) Validate() error {
 func TestValidationPrinterWithOzzo(t *testing.T) {
 	testCases := []struct {
 		name     string
-		expected internalvalidation.Printer
-		actual   func() internalvalidation.Printer
+		expected internalerror.Printer
+		actual   func() internalerror.Printer
 	}{
 		{
 			name: "from ozzo validation",
-			expected: internalvalidation.Printer{
-				Failures: []string{
-					"City: cannot be blank.",
-					"State: cannot be blank.",
-					"Zip: cannot be blank.",
-					"Street: cannot be blank.",
+			expected: internalerror.Printer{
+				Failures: map[string][]string{
+					"City":   {"cannot be blank"},
+					"State":  {"cannot be blank"},
+					"Zip":    {"cannot be blank"},
+					"Street": {"cannot be blank"},
 				},
 			},
-			actual: func() internalvalidation.Printer {
-				v := internalvalidation.New()
+			actual: func() internalerror.Printer {
+				v := internalerror.New()
 				add := Address{}
 				err := add.Validate()
 				v.OzzoValidationErr(err)
@@ -55,16 +56,30 @@ func TestValidationPrinterWithOzzo(t *testing.T) {
 		},
 		{
 			name: "from plain string",
-			expected: internalvalidation.Printer{
-				Failures: []string{
-					"values cannot be null.",
-					"name cannot be null.",
+			expected: internalerror.Printer{
+				Failures: map[string][]string{
+					"": {"values cannot be null", "name cannot be null"},
 				},
 			},
-			actual: func() internalvalidation.Printer {
-				v := internalvalidation.New()
-				v.AppendFailure("values cannot be null")
-				v.AppendFailure("name cannot be null")
+			actual: func() internalerror.Printer {
+				v := internalerror.New()
+				v.PlainErr(errors.New("values cannot be null"), false)
+				v.PlainErr(errors.New("name cannot be null"), false)
+				return v
+			},
+		},
+		{
+			name: "from plain string with field",
+			expected: internalerror.Printer{
+				Failures: map[string][]string{
+					"values": {"cannot be null"},
+					"name":   {"cannot be null"},
+				},
+			},
+			actual: func() internalerror.Printer {
+				v := internalerror.New()
+				v.PlainErr(errors.New("values cannot be null"), true)
+				v.PlainErr(errors.New("name cannot be null"), true)
 				return v
 			},
 		},
@@ -74,7 +89,7 @@ func TestValidationPrinterWithOzzo(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			actual := test.actual()
 			expected := test.expected
-			assert.ElementsMatch(t, actual.Failures, expected.Failures)
+			assert.Equal(t, actual.Failures, expected.Failures)
 		})
 	}
 }
