@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+
 	"github.com/coma/coma/config"
 	"github.com/coma/coma/src/external/self/dto"
 	"github.com/rs/zerolog/log"
@@ -23,7 +25,10 @@ func New() WSServicer {
 }
 
 func (w *WSService) Connect() error {
-	conn, err := websocket.Dial(config.Get().External.Coma.Websocket.Url, "", config.Get().External.Coma.Websocket.OriginUrl)
+	conn, err := websocket.Dial(
+		fmt.Sprintf("%s?self=true", config.Get().External.Coma.Websocket.Url),
+		"",
+		config.Get().External.Coma.Websocket.OriginUrl)
 	if err != nil {
 		log.Error().
 			Err(err).

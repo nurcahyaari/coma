@@ -32,7 +32,7 @@ func (r *RepositoryApplicationStageRead) FindStage(ctx context.Context, filter m
 		return model.ApplicationStage{}, err
 	}
 	if len(stages) == 0 {
-		return model.ApplicationStage{}, errors.New("err: data is not found")
+		return model.ApplicationStage{}, errors.New("err: stage is not found")
 	}
 
 	return stages[0], nil

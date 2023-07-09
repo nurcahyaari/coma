@@ -23,10 +23,10 @@ type ApplicationStageService struct {
 
 type ApplicationStageServiceOptions func(s *ApplicationStageService)
 
-func SetApplicationStageRepository(reader repository.RepositoryApplicationStageReader, writer repository.RepositoryApplicationStageWriter) ApplicationStageServiceOptions {
+func SetApplicationStageRepository(applicationRepo *repository.Repository) ApplicationStageServiceOptions {
 	return func(s *ApplicationStageService) {
-		s.writer = writer
-		s.reader = reader
+		s.writer = applicationRepo.NewRepositoryApplicationStageWriter()
+		s.reader = applicationRepo.NewRepositoryApplicationStageReader()
 	}
 }
 

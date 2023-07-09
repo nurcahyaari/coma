@@ -57,7 +57,8 @@ func (h *HttpHandle) CreateApplication(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		errCustom := err.(*internalerrors.Error)
 		response.Err[any](w,
-			response.SetErr[any](errCustom.ErrorAsObject()))
+			response.SetErr[any](errCustom.ErrorAsObject()),
+			response.SetHttpCode[any](errCustom.ErrCode))
 		return
 	}
 
@@ -82,7 +83,8 @@ func (h *HttpHandle) DeleteApplications(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		errCustom := err.(*internalerrors.Error)
 		response.Err[any](w,
-			response.SetErr[any](errCustom.ErrorAsObject()))
+			response.SetErr[any](errCustom.ErrorAsObject()),
+			response.SetHttpCode[any](errCustom.ErrCode))
 		return
 	}
 

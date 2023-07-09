@@ -31,7 +31,7 @@ func (r *RepositoryApplicationRead) FindApplication(ctx context.Context, filter 
 		return model.Application{}, err
 	}
 	if len(applications) == 0 {
-		return model.Application{}, errors.New("err: data is not found")
+		return model.Application{}, errors.New("err: application is not found")
 	}
 
 	return applications[0], nil

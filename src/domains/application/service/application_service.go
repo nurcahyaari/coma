@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"net/http"
 
 	internalerrors "github.com/coma/coma/internal/utils/errors"
 	"github.com/coma/coma/src/domains/application/dto"
@@ -17,16 +18,21 @@ type ApplicationServicer interface {
 }
 
 type ApplicationService struct {
-	reader repository.RepositoryApplicationReader
-	writer repository.RepositoryApplicationWriter
+	reader      repository.RepositoryApplicationReader
+	writer      repository.RepositoryApplicationWriter
+	stageReader repository.RepositoryApplicationStageReader
+	stageWriter repository.RepositoryApplicationStageWriter
 }
 
 type ApplicationServiceOptions func(s *ApplicationService)
 
-func SetApplicationRepository(reader repository.RepositoryApplicationReader, writer repository.RepositoryApplicationWriter) ApplicationServiceOptions {
+func SetApplicationRepository(
+	applicationRepo *repository.Repository) ApplicationServiceOptions {
 	return func(s *ApplicationService) {
-		s.writer = writer
-		s.reader = reader
+		s.writer = applicationRepo.NewRepositoryApplicationWriter()
+		s.reader = applicationRepo.NewRepositoryApplicationReader()
+		s.stageReader = applicationRepo.NewRepositoryApplicationStageReader()
+		s.stageWriter = applicationRepo.NewRepositoryApplicationStageWriter()
 	}
 }
 
@@ -73,7 +79,24 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, request dto.
 			internalerrors.SetErrorSource(internalerrors.OZZO_VALIDATION_ERR))
 	}
 
-	err := s.writer.CreateApplication(ctx, application)
+	stage, err := s.stageReader.FindStage(ctx, model.FilterApplicationStage{
+		Id: request.StageId,
+	})
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("[CreateEnvirontment.FindStage] error finding stage")
+		return response, internalerrors.NewError(err)
+	}
+	if stage.Id == "" {
+		log.Error().
+			Err(err).
+			Msg("[CreateEnvirontment.FindStage] error stage doesn't found")
+		return response, internalerrors.NewError(err,
+			internalerrors.SetErrorCode(http.StatusNotFound))
+	}
+
+	err = s.writer.CreateApplication(ctx, application)
 	if err != nil {
 		log.Error().
 			Err(err).

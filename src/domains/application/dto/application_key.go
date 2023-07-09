@@ -40,6 +40,15 @@ type RequestFindApplicationKey struct {
 	ApplicationName string `json:"applicationName"`
 	StageId         string `json:"stageId"`
 	StageName       string `json:"stageName"`
+	Key             string `json:"key"`
+}
+
+func (r RequestFindApplicationKey) ValidateKey() error {
+	validationFieldRules := []*validation.FieldRules{}
+
+	validationFieldRules = append(validationFieldRules, validation.Field(&r.Key, validation.Required))
+
+	return validation.ValidateStruct(&r, validationFieldRules...)
 }
 
 func (r RequestFindApplicationKey) Validate() error {
@@ -55,6 +64,7 @@ func (r RequestFindApplicationKey) FilterApplicationKey() model.FilterApplicatio
 	return model.FilterApplicationKey{
 		ApplicationId: r.ApplicationId,
 		StageId:       r.StageId,
+		Key:           r.Key,
 	}
 }
 

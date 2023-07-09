@@ -2,7 +2,6 @@ package http
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/coma/coma/internal/protocols/http/response"
@@ -26,10 +25,10 @@ func (h *HttpHandle) FindApplicationKey(w http.ResponseWriter, r *http.Request) 
 
 	resp, err := h.applicationKeySvc.FindApplicationKey(r.Context(), request)
 	if err != nil {
-		fmt.Println(err)
 		errCustom := err.(*internalerrors.Error)
 		response.Err[any](w,
-			response.SetErr[any](errCustom.ErrorAsObject()))
+			response.SetErr[any](errCustom.ErrorAsObject()),
+			response.SetHttpCode[any](errCustom.ErrCode))
 		return
 	}
 
@@ -59,7 +58,8 @@ func (h *HttpHandle) CreateOrUpdateApplicationKey(w http.ResponseWriter, r *http
 	if err != nil {
 		errCustom := err.(*internalerrors.Error)
 		response.Err[any](w,
-			response.SetErr[any](errCustom.ErrorAsObject()))
+			response.SetErr[any](errCustom.ErrorAsObject()),
+			response.SetHttpCode[any](errCustom.ErrCode))
 		return
 	}
 

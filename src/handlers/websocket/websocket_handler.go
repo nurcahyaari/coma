@@ -1,10 +1,14 @@
 package websocket
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
+	"strconv"
 
+	"github.com/coma/coma/src/domains/application/dto"
+	applicationsvc "github.com/coma/coma/src/domains/application/service"
 	configuratorsvc "github.com/coma/coma/src/domains/configurator/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"
@@ -12,8 +16,9 @@ import (
 )
 
 type WebsocketHandler struct {
-	connection      *WebsocketConnection
-	configuratorSvc configuratorsvc.Servicer
+	connection        *WebsocketConnection
+	configuratorSvc   configuratorsvc.Servicer
+	applicationKeySvc applicationsvc.ApplicationKeyServicer
 }
 
 func (h WebsocketHandler) Router(r *chi.Mux) {
@@ -28,9 +33,12 @@ func (h WebsocketHandler) Router(r *chi.Mux) {
 
 type WebsockethandlerOption func(h *WebsocketHandler)
 
-func SetDomains(configuratorSvc configuratorsvc.Servicer) WebsockethandlerOption {
+func SetDomains(
+	configuratorSvc configuratorsvc.Servicer,
+	applicationKeySvc applicationsvc.ApplicationKeyServicer) WebsockethandlerOption {
 	return func(h *WebsocketHandler) {
 		h.configuratorSvc = configuratorSvc
+		h.applicationKeySvc = applicationKeySvc
 	}
 }
 
@@ -56,7 +64,27 @@ func (w *WebsocketHandler) Close() {
 
 func (w *WebsocketHandler) Websocket(c *websocket.Conn) {
 	// add client
+	selfConnection := c.Request().URL.Query().Get("self")
+	isSelfConnection, _ := strconv.ParseBool(selfConnection)
 	clientKey := c.Request().URL.Query().Get("authorization")
+	if !isSelfConnection {
+		exists, err := w.applicationKeySvc.CheckApplicationKey(context.Background(), dto.RequestFindApplicationKey{
+			Key: clientKey,
+		})
+		if err != nil {
+			log.Error().
+				Err(err).
+				Msg("[Websocket.FindApplicationKey] err: search applicationKey")
+			return
+		}
+		if !exists {
+			log.Error().
+				Err(err).
+				Msg("[Websocket.FindApplicationKey] client key doesn't exists")
+			return
+		}
+	}
+
 	w.connection.client <- Client{
 		Connection: c,
 		ClientKey:  clientKey,

@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"net/http"
 	"strings"
 )
 
@@ -15,6 +16,7 @@ type Error struct {
 	ErrorSource ErrorSource
 	WithField   bool
 	Err         error
+	ErrCode     int
 	printer     Printer
 }
 
@@ -31,7 +33,7 @@ func (r *Error) ErrorAsObject() any {
 	case PLAIN_ERR_TEXT:
 		r.printer.PlainErr(r.Err, r.WithField)
 	default:
-		return r.Err
+		return r.Err.Error()
 	}
 
 	for field, failure := range r.printer.Failures {
@@ -55,10 +57,17 @@ func SetErrorSource(errSource ErrorSource) ErrorOpt {
 	}
 }
 
+func SetErrorCode(code int) ErrorOpt {
+	return func(err *Error) {
+		err.ErrCode = code
+	}
+}
+
 func NewError(err error, opts ...ErrorOpt) error {
 	resp := &Error{
 		WithField: false,
 		Err:       err,
+		ErrCode:   http.StatusInternalServerError,
 		printer:   NewPrinter(),
 	}
 

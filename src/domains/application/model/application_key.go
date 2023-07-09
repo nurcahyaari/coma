@@ -62,6 +62,7 @@ type ApplicationKeys []ApplicationKey
 type FilterApplicationKey struct {
 	ApplicationId string
 	StageId       string
+	Key           string
 }
 
 func (f FilterApplicationKey) IsApplicationIdAndStageIdExists() bool {
@@ -80,6 +81,10 @@ func (f FilterApplicationKey) Filter() *clover.Criteria {
 
 	if f.StageId != "" {
 		criterias = append(criterias, clover.Field("stageId").Eq(f.StageId))
+	}
+
+	if f.Key != "" {
+		criterias = append(criterias, clover.Field("key").Eq(f.Key))
 	}
 
 	filter := &clover.Criteria{}

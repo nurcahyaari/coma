@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	internalerrors "github.com/coma/coma/internal/utils/errors"
 	"github.com/coma/coma/internal/utils/routine"
@@ -12,6 +13,7 @@ import (
 )
 
 type ApplicationKeyServicer interface {
+	CheckApplicationKey(ctx context.Context, request dto.RequestFindApplicationKey) (bool, error)
 	FindApplicationKey(ctx context.Context, request dto.RequestFindApplicationKey) (dto.ResponseFindApplicationKey, error)
 	GenerateOrUpdateApplicationKey(ctx context.Context, request dto.RequestCreateApplicationKey) (dto.ResponseCreateApplicationKey, error)
 }
@@ -27,24 +29,14 @@ type ApplicationKeyService struct {
 
 type ApplicationKeyServiceOptions func(s *ApplicationKeyService)
 
-func SetApplicationKeyRepository(reader repository.RepositoryApplicationKeyReader, writer repository.RepositoryApplicationKeyWriter) ApplicationKeyServiceOptions {
+func SetApplicationKeyRepository(applicationRepo *repository.Repository) ApplicationKeyServiceOptions {
 	return func(s *ApplicationKeyService) {
-		s.writer = writer
-		s.reader = reader
-	}
-}
-
-func SetApplicationKeyApplicationRepository(reader repository.RepositoryApplicationReader, writer repository.RepositoryApplicationWriter) ApplicationKeyServiceOptions {
-	return func(s *ApplicationKeyService) {
-		s.applicationWriter = writer
-		s.applicationReader = reader
-	}
-}
-
-func SetApplicationKeyStageRepository(reader repository.RepositoryApplicationStageReader, writer repository.RepositoryApplicationStageWriter) ApplicationKeyServiceOptions {
-	return func(s *ApplicationKeyService) {
-		s.stageWriter = writer
-		s.stageReader = reader
+		s.writer = applicationRepo.NewRepositoryApplicationKeyWriter()
+		s.reader = applicationRepo.NewRepositoryApplicationKeyReader()
+		s.applicationWriter = applicationRepo.NewRepositoryApplicationWriter()
+		s.applicationReader = applicationRepo.NewRepositoryApplicationReader()
+		s.stageWriter = applicationRepo.NewRepositoryApplicationStageWriter()
+		s.stageReader = applicationRepo.NewRepositoryApplicationStageReader()
 	}
 }
 
@@ -56,6 +48,33 @@ func NewApplicationKey(opts ...ApplicationKeyServiceOptions) ApplicationKeyServi
 	}
 
 	return svc
+}
+
+func (s *ApplicationKeyService) CheckApplicationKey(ctx context.Context, request dto.RequestFindApplicationKey) (bool, error) {
+	var (
+		response       bool
+		filter         = request.FilterApplicationKey()
+		applicationKey model.ApplicationKey
+		err            error
+	)
+
+	applicationKey, err = s.reader.FindApplicationKey(ctx, filter)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("[FindApplicationKey.FindApplicationKey] error find application key")
+		return response, internalerrors.NewError(err)
+	}
+	if applicationKey.Id == "" {
+		log.Error().
+			Err(errors.New("appllication key doesn't found")).
+			Msg("[FindApplicationKey.FindApplicationKey] error application key doesn't found")
+		return response, internalerrors.NewError(err)
+	}
+
+	response = true
+
+	return response, nil
 }
 
 func (s *ApplicationKeyService) FindApplicationKey(ctx context.Context, request dto.RequestFindApplicationKey) (dto.ResponseFindApplicationKey, error) {

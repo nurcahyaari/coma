@@ -57,7 +57,6 @@ func (w *WebsocketConnection) establishConn() {
 		select {
 		case client := <-w.client:
 			w.createClient(client)
-
 		case <-w.close:
 			w.removeAllClient()
 		case clientsRemoved := <-w.clientsRemoved:

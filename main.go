@@ -40,7 +40,9 @@ func initHttpProtocol(
 			applicationSvc,
 			applicationKeySvc))
 
-	websocketHandler := websockethandler.NewWebsocketHandler(websockethandler.SetDomains(configuratorSvc))
+	websocketHandler := websockethandler.NewWebsocketHandler(websockethandler.SetDomains(
+		configuratorSvc,
+		applicationKeySvc))
 	router := httprouter.NewHttpRouter(
 		handler,
 		websocketHandler)
@@ -74,25 +76,13 @@ func main() {
 	applicationRepo := applicationrepo.New(cloverDB)
 
 	applicationStageSvc := applicationsvc.NewApplicationStage(
-		applicationsvc.SetApplicationStageRepository(
-			applicationRepo.NewRepositoryApplicationStageReader(),
-			applicationRepo.NewRepositoryApplicationStageWriter()))
+		applicationsvc.SetApplicationStageRepository(applicationRepo))
 
 	applicationSvc := applicationsvc.NewApplication(
-		applicationsvc.SetApplicationRepository(
-			applicationRepo.NewRepositoryApplicationReader(),
-			applicationRepo.NewRepositoryApplicationWriter()))
+		applicationsvc.SetApplicationRepository(applicationRepo))
 
 	applicationKeySvc := applicationsvc.NewApplicationKey(
-		applicationsvc.SetApplicationKeyRepository(
-			applicationRepo.NewRepositoryApplicationKeyReader(),
-			applicationRepo.NewRepositoryApplicationKeyWriter()),
-		applicationsvc.SetApplicationKeyApplicationRepository(
-			applicationRepo.NewRepositoryApplicationReader(),
-			applicationRepo.NewRepositoryApplicationWriter()),
-		applicationsvc.SetApplicationKeyStageRepository(
-			applicationRepo.NewRepositoryApplicationStageReader(),
-			applicationRepo.NewRepositoryApplicationStageWriter()))
+		applicationsvc.SetApplicationKeyRepository(applicationRepo))
 
 	httpProtocol := initHttpProtocol(
 		authSvc,

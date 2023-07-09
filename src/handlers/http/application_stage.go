@@ -26,7 +26,8 @@ func (h *HttpHandle) FindApplicationStages(w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		errCustom := err.(*internalerrors.Error)
 		response.Err[any](w,
-			response.SetErr[any](errCustom.ErrorAsObject))
+			response.SetErr[any](errCustom.ErrorAsObject()),
+			response.SetHttpCode[any](errCustom.ErrCode))
 		return
 	}
 
@@ -56,7 +57,8 @@ func (h *HttpHandle) CreateApplicationStages(w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		errCustom := err.(*internalerrors.Error)
 		response.Err[any](w,
-			response.SetErr[any](errCustom.ErrorAsObject()))
+			response.SetErr[any](errCustom.ErrorAsObject()),
+			response.SetHttpCode[any](errCustom.ErrCode))
 		return
 	}
 
@@ -81,7 +83,8 @@ func (h *HttpHandle) DeleteApplicationStages(w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		errCustom := err.(*internalerrors.Error)
 		response.Err[any](w,
-			response.SetErr[any](errCustom.ErrorAsObject()))
+			response.SetErr[any](errCustom.ErrorAsObject()),
+			response.SetHttpCode[any](errCustom.ErrCode))
 		return
 	}
 
