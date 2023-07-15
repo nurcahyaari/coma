@@ -12,18 +12,13 @@ type ResponseGetConfigurationViewTypeJSON struct {
 	Data      json.RawMessage `json:"data"`
 }
 
-type ResponseGetconfigurationViewType interface {
-	model.Configurations
-}
-
-func NewResponseGetConfigurationViewTypeJSON[T ResponseGetconfigurationViewType](data T) (ResponseGetConfigurationViewTypeJSON, error) {
+func (r *ResponseGetConfigurationViewTypeJSON) SetData(data model.Configurations) error {
 	var (
-		response      = ResponseGetConfigurationViewTypeJSON{}
 		mapFieldValue = make(map[string]interface{})
 	)
 
 	if len(data) == 0 {
-		return response, nil
+		return nil
 	}
 
 	for _, d := range data {
@@ -32,13 +27,17 @@ func NewResponseGetConfigurationViewTypeJSON[T ResponseGetconfigurationViewType]
 
 	byt, err := json.Marshal(mapFieldValue)
 	if err != nil {
-		return response, err
+		return err
 	}
 
-	response.ClientKey = data[0].ClientKey
-	response.Data = byt
+	r.Data = byt
+	return nil
+}
 
-	return response, nil
+func NewResponseGetConfigurationViewTypeJSON(clientKey string) ResponseGetConfigurationViewTypeJSON {
+	return ResponseGetConfigurationViewTypeJSON{
+		ClientKey: clientKey,
+	}
 }
 
 type ResponseGetConfigurationViewTypeSchema struct {

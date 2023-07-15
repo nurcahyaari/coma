@@ -79,7 +79,9 @@ func main() {
 
 	configurationSvc := applicationsvc.NewApplicationConfiguration(
 		applicationsvc.SetApplicationConfigurationExternalService(distributorExtSvc),
-		applicationsvc.SetApplicationConfigurationRepository(applicationRepo))
+		applicationsvc.SetApplicationConfigurationRepository(applicationRepo),
+		applicationsvc.SetApplicationConfigurationInternalService(applicationKeySvc),
+	)
 
 	httpProtocol := initHttpProtocol(
 		authSvc,

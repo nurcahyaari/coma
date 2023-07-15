@@ -70,8 +70,9 @@ func (s *ApplicationKeyService) IsExistsApplicationKey(ctx context.Context, requ
 	}
 
 	if applicationKey.Id == "" {
+		err = errors.New("err: application key doesn't exists")
 		log.Error().
-			Err(errors.New("appllication key doesn't found")).
+			Err(errors.New("application key doesn't found")).
 			Msg("[FindApplicationKey.FindApplicationKey] error application key doesn't found")
 		return response, internalerrors.NewError(err)
 	}

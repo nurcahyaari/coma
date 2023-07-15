@@ -21,6 +21,9 @@ type Error struct {
 }
 
 func (r *Error) Error() string {
+	if r.Err == nil {
+		return ""
+	}
 	return r.Err.Error()
 }
 

@@ -40,6 +40,7 @@ func (h HttpHandle) Router(r *chi.Mux) {
 		})
 
 		r.Route("/configuration", func(r chi.Router) {
+			r.Use(h.MiddlewareCheckIsClientKeyExists)
 			r.Get("/", h.GetConfiguration)
 			r.Post("/", h.SetConfiguration)
 			r.Put("/", h.UpdateConfiguration)

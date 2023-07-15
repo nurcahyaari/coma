@@ -23,9 +23,10 @@ type ApplicationConfigurationServicer interface {
 }
 
 type ApplicationConfigurationService struct {
-	selfExtSvc selfextsvc.WSServicer
-	readerRepo repository.RepositoryApplicationConfigurationReader
-	writerRepo repository.RepositoryApplicationConfigurationWriter
+	selfExtSvc        selfextsvc.WSServicer
+	applicationKeySvc ApplicationKeyServicer
+	readerRepo        repository.RepositoryApplicationConfigurationReader
+	writerRepo        repository.RepositoryApplicationConfigurationWriter
 }
 
 type ApplicationConfigurationServiceOption func(svc *ApplicationConfigurationService)
@@ -33,6 +34,12 @@ type ApplicationConfigurationServiceOption func(svc *ApplicationConfigurationSer
 func SetApplicationConfigurationExternalService(selfExtService selfextsvc.WSServicer) ApplicationConfigurationServiceOption {
 	return func(svc *ApplicationConfigurationService) {
 		svc.selfExtSvc = selfExtService
+	}
+}
+
+func SetApplicationConfigurationInternalService(applicationKeySvc ApplicationKeyServicer) ApplicationConfigurationServiceOption {
+	return func(svc *ApplicationConfigurationService) {
+		svc.applicationKeySvc = applicationKeySvc
 	}
 }
 
@@ -67,7 +74,8 @@ func (s *ApplicationConfigurationService) GetConfigurationViewTypeJSON(ctx conte
 		return response, err
 	}
 
-	response, err = dto.NewResponseGetConfigurationViewTypeJSON[model.Configurations](configurations)
+	response = dto.NewResponseGetConfigurationViewTypeJSON(req.XClientKey)
+	err = response.SetData(configurations)
 	if err != nil {
 		log.Error().Err(err).Msg("[GetConfiguration] error NewResponseGetConfiguration")
 		return response, err
