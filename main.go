@@ -18,8 +18,6 @@ import (
 	"github.com/coma/coma/src/domains/auth/dto"
 	authrepo "github.com/coma/coma/src/domains/auth/repository"
 	authsvc "github.com/coma/coma/src/domains/auth/service"
-	configuratorrepo "github.com/coma/coma/src/domains/configurator/repository"
-	configuratorsvc "github.com/coma/coma/src/domains/configurator/service"
 
 	selfextsvc "github.com/coma/coma/src/external/self/service"
 	httphandler "github.com/coma/coma/src/handlers/http"
@@ -28,7 +26,7 @@ import (
 
 func initHttpProtocol(
 	authSvc authsvc.Servicer,
-	configuratorSvc configuratorsvc.Servicer,
+	configuratorSvc applicationsvc.ApplicationConfigurationServicer,
 	applicationStageSvc applicationsvc.ApplicationStageServicer,
 	applicationSvc applicationsvc.ApplicationServicer,
 	applicationKeySvc applicationsvc.ApplicationKeyServicer) *http.Http {
@@ -68,11 +66,6 @@ func main() {
 			dto.Oauth:  authsvc.NewOauth(authsvc.SetOauthRepository(authRepo.NewRepositoryReader(), authRepo.NewRepositoryWriter())),
 		}))
 
-	configuratorRepo := configuratorrepo.New(cloverDB)
-	configuratorSvc := configuratorsvc.New(
-		configuratorsvc.SetExternalService(distributorExtSvc),
-		configuratorsvc.SetRepository(configuratorRepo.NewRepositoryReader(), configuratorRepo.NewRepositoryWriter()))
-
 	applicationRepo := applicationrepo.New(cloverDB)
 
 	applicationStageSvc := applicationsvc.NewApplicationStage(
@@ -83,6 +76,10 @@ func main() {
 
 	applicationKeySvc := applicationsvc.NewApplicationKey(
 		applicationsvc.SetApplicationKeyRepository(applicationRepo))
+
+	configuratorSvc := applicationsvc.NewApplicationConfiguration(
+		applicationsvc.SetApplicationConfigurationExternalService(distributorExtSvc),
+		applicationsvc.SetApplicationConfigurationRepository(applicationRepo))
 
 	httpProtocol := initHttpProtocol(
 		authSvc,

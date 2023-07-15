@@ -4,26 +4,27 @@ import (
 	"context"
 
 	"github.com/coma/coma/infrastructure/database"
-	"github.com/coma/coma/src/domains/configurator/model"
+	"github.com/coma/coma/src/domains/application/model"
 )
 
-type RepositoryReader interface {
+type RepositoryApplicationConfigurationReader interface {
 	FindClientConfiguration(ctx context.Context, filter model.FilterConfiguration) (model.Configurations, error)
 }
 
-type RepositoryRead struct {
+type RepositoryApplicationConfigurationRead struct {
 	dbName string
 	db     *database.Clover
 }
 
-func NewRepositoryReader(db *database.Clover, name string) RepositoryReader {
-	return &RepositoryRead{
+func NewApplicationConfigurationRepositoryReader(db *database.Clover, name string) RepositoryApplicationConfigurationReader {
+	db.DB.CreateCollection(name)
+	return &RepositoryApplicationConfigurationRead{
 		db:     db,
 		dbName: name,
 	}
 }
 
-func (r *RepositoryRead) FindClientConfiguration(ctx context.Context, filter model.FilterConfiguration) (model.Configurations, error) {
+func (r *RepositoryApplicationConfigurationRead) FindClientConfiguration(ctx context.Context, filter model.FilterConfiguration) (model.Configurations, error) {
 	var configurations model.Configurations
 
 	docs, err := r.db.DB.

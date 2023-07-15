@@ -3,8 +3,8 @@ package dto_test
 import (
 	"testing"
 
-	"github.com/coma/coma/src/domains/configurator/dto"
-	"github.com/coma/coma/src/domains/configurator/model"
+	"github.com/coma/coma/src/domains/application/dto"
+	"github.com/coma/coma/src/domains/application/model"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/guregu/null.v4"
 )

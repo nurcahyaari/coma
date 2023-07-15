@@ -3,13 +3,12 @@ package http
 import (
 	applicationsvc "github.com/coma/coma/src/domains/application/service"
 	authsvc "github.com/coma/coma/src/domains/auth/service"
-	configuratorsvc "github.com/coma/coma/src/domains/configurator/service"
 	"github.com/go-chi/chi/v5"
 )
 
 type HttpHandle struct {
 	authSvc             authsvc.Servicer
-	configurationSvc    configuratorsvc.Servicer
+	configurationSvc    applicationsvc.ApplicationConfigurationServicer
 	applicationStageSvc applicationsvc.ApplicationStageServicer
 	applicationSvc      applicationsvc.ApplicationServicer
 	applicationKeySvc   applicationsvc.ApplicationKeyServicer
@@ -54,7 +53,7 @@ type HttpOption func(h *HttpHandle)
 
 func SetDomains(
 	authSvc authsvc.Servicer,
-	configuratorSvc configuratorsvc.Servicer,
+	configuratorSvc applicationsvc.ApplicationConfigurationServicer,
 	applicationEnvSvc applicationsvc.ApplicationStageServicer,
 	applicationSvc applicationsvc.ApplicationServicer,
 	applicationKeySvc applicationsvc.ApplicationKeyServicer) HttpOption {

@@ -4,30 +4,31 @@ import (
 	"context"
 
 	"github.com/coma/coma/infrastructure/database"
-	"github.com/coma/coma/src/domains/configurator/model"
+	"github.com/coma/coma/src/domains/application/model"
 	"github.com/ostafen/clover"
 	"github.com/rs/zerolog/log"
 )
 
-type RepositoryWriter interface {
+type RepositoryApplicationConfigurationWriter interface {
 	SetConfiguration(ctx context.Context, data model.Configuration) (string, error)
 	DeleteConfiguration(ctx context.Context, filter model.FilterConfiguration) error
 	UpdateConfiguration(ctx context.Context, data model.Configuration) error
 }
 
-type RepositoryWrite struct {
+type RepositoryApplicationConfigurationWrite struct {
 	dbName string
 	db     *database.Clover
 }
 
-func NewRepositoryWriter(db *database.Clover, name string) RepositoryWriter {
-	return &RepositoryWrite{
+func NewApplicationConfigurationRepositoryWriter(db *database.Clover, name string) RepositoryApplicationConfigurationWriter {
+	db.DB.CreateCollection(name)
+	return &RepositoryApplicationConfigurationWrite{
 		db:     db,
 		dbName: name,
 	}
 }
 
-func (r *RepositoryWrite) SetConfiguration(ctx context.Context, data model.Configuration) (string, error) {
+func (r *RepositoryApplicationConfigurationWrite) SetConfiguration(ctx context.Context, data model.Configuration) (string, error) {
 	dataMap, err := data.MapStringInterface()
 	if err != nil {
 		return "", err
@@ -43,7 +44,7 @@ func (r *RepositoryWrite) SetConfiguration(ctx context.Context, data model.Confi
 	return lastId, nil
 }
 
-func (r *RepositoryWrite) DeleteConfiguration(ctx context.Context, filter model.FilterConfiguration) error {
+func (r *RepositoryApplicationConfigurationWrite) DeleteConfiguration(ctx context.Context, filter model.FilterConfiguration) error {
 	err := r.db.DB.
 		Query(r.dbName).
 		Where(filter.Filter()).
@@ -52,7 +53,7 @@ func (r *RepositoryWrite) DeleteConfiguration(ctx context.Context, filter model.
 	return err
 }
 
-func (r *RepositoryWrite) UpdateConfiguration(ctx context.Context, data model.Configuration) error {
+func (r *RepositoryApplicationConfigurationWrite) UpdateConfiguration(ctx context.Context, data model.Configuration) error {
 	dataMap, err := data.MapStringInterface()
 	if err != nil {
 		log.Error().Err(err).

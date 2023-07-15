@@ -3,7 +3,7 @@ package dto
 import (
 	"encoding/json"
 
-	"github.com/coma/coma/src/domains/configurator/model"
+	"github.com/coma/coma/src/domains/application/model"
 	"gopkg.in/guregu/null.v4"
 )
 

@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/coma/coma/src/domains/configurator/model"
+import "github.com/coma/coma/src/domains/application/model"
 
 type RequestDeleteConfiguration struct {
 	XClientKey string

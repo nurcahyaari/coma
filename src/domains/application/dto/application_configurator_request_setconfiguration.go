@@ -3,7 +3,7 @@ package dto
 import (
 	"regexp"
 
-	"github.com/coma/coma/src/domains/configurator/model"
+	"github.com/coma/coma/src/domains/application/model"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/google/uuid"
 )

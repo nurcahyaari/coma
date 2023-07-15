@@ -4,15 +4,15 @@ import (
 	"context"
 	"errors"
 
-	"github.com/coma/coma/src/domains/configurator/dto"
-	"github.com/coma/coma/src/domains/configurator/model"
-	"github.com/coma/coma/src/domains/configurator/repository"
+	"github.com/coma/coma/src/domains/application/dto"
+	"github.com/coma/coma/src/domains/application/model"
+	"github.com/coma/coma/src/domains/application/repository"
 	selfextdto "github.com/coma/coma/src/external/self/dto"
 	selfextsvc "github.com/coma/coma/src/external/self/service"
 	"github.com/rs/zerolog/log"
 )
 
-type Servicer interface {
+type ApplicationConfigurationServicer interface {
 	GetConfigurationViewTypeJSON(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationViewTypeJSON, error)
 	GetConfigurationViewTypeSchema(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationsViewTypeSchema, error)
 	SetConfiguration(ctx context.Context, req dto.RequestSetConfiguration) error
@@ -22,29 +22,29 @@ type Servicer interface {
 	DistributeConfiguration(ctx context.Context, clientKey string) error
 }
 
-type Service struct {
+type ApplicationConfigurationService struct {
 	selfExtSvc selfextsvc.WSServicer
-	readerRepo repository.RepositoryReader
-	writerRepo repository.RepositoryWriter
+	readerRepo repository.RepositoryApplicationConfigurationReader
+	writerRepo repository.RepositoryApplicationConfigurationWriter
 }
 
-type ServiceOption func(svc *Service)
+type ApplicationConfigurationServiceOption func(svc *ApplicationConfigurationService)
 
-func SetExternalService(selfExtService selfextsvc.WSServicer) ServiceOption {
-	return func(svc *Service) {
+func SetApplicationConfigurationExternalService(selfExtService selfextsvc.WSServicer) ApplicationConfigurationServiceOption {
+	return func(svc *ApplicationConfigurationService) {
 		svc.selfExtSvc = selfExtService
 	}
 }
 
-func SetRepository(reader repository.RepositoryReader, writer repository.RepositoryWriter) ServiceOption {
-	return func(svc *Service) {
-		svc.readerRepo = reader
-		svc.writerRepo = writer
+func SetApplicationConfigurationRepository(applicationRepo *repository.Repository) ApplicationConfigurationServiceOption {
+	return func(svc *ApplicationConfigurationService) {
+		svc.readerRepo = applicationRepo.NewRepositoryApplicationConfiguratorReader()
+		svc.writerRepo = applicationRepo.NewRepositoryApplicationConfiguratorWriter()
 	}
 }
 
-func New(opts ...ServiceOption) Servicer {
-	svc := &Service{}
+func NewApplicationConfiguration(opts ...ApplicationConfigurationServiceOption) ApplicationConfigurationServicer {
+	svc := &ApplicationConfigurationService{}
 
 	for _, opt := range opts {
 		opt(svc)
@@ -53,7 +53,7 @@ func New(opts ...ServiceOption) Servicer {
 	return svc
 }
 
-func (s *Service) GetConfigurationViewTypeJSON(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationViewTypeJSON, error) {
+func (s *ApplicationConfigurationService) GetConfigurationViewTypeJSON(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationViewTypeJSON, error) {
 	var (
 		response dto.ResponseGetConfigurationViewTypeJSON
 		err      error
@@ -76,7 +76,7 @@ func (s *Service) GetConfigurationViewTypeJSON(ctx context.Context, req dto.Requ
 	return response, nil
 }
 
-func (s *Service) GetConfigurationViewTypeSchema(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationsViewTypeSchema, error) {
+func (s *ApplicationConfigurationService) GetConfigurationViewTypeSchema(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationsViewTypeSchema, error) {
 	var (
 		response dto.ResponseGetConfigurationsViewTypeSchema
 		err      error
@@ -95,7 +95,7 @@ func (s *Service) GetConfigurationViewTypeSchema(ctx context.Context, req dto.Re
 	return response, nil
 }
 
-func (s *Service) SetConfiguration(ctx context.Context, req dto.RequestSetConfiguration) error {
+func (s *ApplicationConfigurationService) SetConfiguration(ctx context.Context, req dto.RequestSetConfiguration) error {
 	if err := req.Validate(); err != nil {
 		log.Error().Err(err).Msg("[SetConfiguration] error validate dto")
 		return err
@@ -137,7 +137,7 @@ func (s *Service) SetConfiguration(ctx context.Context, req dto.RequestSetConfig
 	return nil
 }
 
-func (s *Service) UpdateConfiguration(ctx context.Context, req dto.RequestUpdateConfiguration) error {
+func (s *ApplicationConfigurationService) UpdateConfiguration(ctx context.Context, req dto.RequestUpdateConfiguration) error {
 	clientConfigurations, err := s.readerRepo.FindClientConfiguration(ctx, model.FilterConfiguration{
 		ClientKey: req.XClientKey,
 		Id:        req.Id,
@@ -183,7 +183,7 @@ func (s *Service) UpdateConfiguration(ctx context.Context, req dto.RequestUpdate
 	return nil
 }
 
-func (s *Service) UpsertConfiguration(ctx context.Context, req dto.RequestSetConfiguration) error {
+func (s *ApplicationConfigurationService) UpsertConfiguration(ctx context.Context, req dto.RequestSetConfiguration) error {
 	clientConfigurations, err := s.readerRepo.FindClientConfiguration(ctx, model.FilterConfiguration{
 		ClientKey: req.XClientKey,
 		Field:     req.Field,
@@ -229,7 +229,7 @@ func (s *Service) UpsertConfiguration(ctx context.Context, req dto.RequestSetCon
 	return nil
 }
 
-func (s *Service) DeleteConfiguration(ctx context.Context, req dto.RequestDeleteConfiguration) error {
+func (s *ApplicationConfigurationService) DeleteConfiguration(ctx context.Context, req dto.RequestDeleteConfiguration) error {
 	err := s.writerRepo.DeleteConfiguration(ctx, req.FilterConfiguration())
 	if err != nil {
 		log.Error().Err(err).Msg("[DeleteConfiguration] error when deleting configuration")
@@ -242,7 +242,7 @@ func (s *Service) DeleteConfiguration(ctx context.Context, req dto.RequestDelete
 	return nil
 }
 
-func (s *Service) DistributeConfiguration(ctx context.Context, clientKey string) error {
+func (s *ApplicationConfigurationService) DistributeConfiguration(ctx context.Context, clientKey string) error {
 	clientConfiguration, err := s.GetConfigurationViewTypeJSON(ctx, dto.RequestGetConfiguration{
 		XClientKey: clientKey,
 	})

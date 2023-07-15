@@ -3,7 +3,7 @@ package websocket
 import (
 	"context"
 
-	configuratorsvc "github.com/coma/coma/src/domains/configurator/service"
+	applicationsvc "github.com/coma/coma/src/domains/application/service"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/websocket"
@@ -26,12 +26,12 @@ type WebsocketConnection struct {
 	client          chan Client
 	clientsRemoved  chan []string
 	close           chan bool
-	configuratorSvc configuratorsvc.Servicer
+	configuratorSvc applicationsvc.ApplicationConfigurationServicer
 }
 
 type WebsocketConnectionOption func(h *WebsocketConnection)
 
-func SetWebsocketConnectionDomains(configuratorSvc configuratorsvc.Servicer) WebsocketConnectionOption {
+func SetWebsocketConnectionDomains(configuratorSvc applicationsvc.ApplicationConfigurationServicer) WebsocketConnectionOption {
 	return func(h *WebsocketConnection) {
 		h.configuratorSvc = configuratorSvc
 	}

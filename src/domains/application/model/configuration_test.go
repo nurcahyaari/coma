@@ -3,7 +3,7 @@ package model_test
 import (
 	"testing"
 
-	"github.com/coma/coma/src/domains/configurator/model"
+	"github.com/coma/coma/src/domains/application/model"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/guregu/null.v4"
 )

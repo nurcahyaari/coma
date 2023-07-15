@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/coma/coma/src/domains/configurator/model"
+	"github.com/coma/coma/src/domains/application/model"
 )
 
 type RequestUpdateConfiguration struct {

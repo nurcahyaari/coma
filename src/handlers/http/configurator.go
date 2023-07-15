@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/coma/coma/internal/protocols/http/response"
-	configuratordto "github.com/coma/coma/src/domains/configurator/dto"
+	configuratordto "github.com/coma/coma/src/domains/application/dto"
 	"github.com/go-chi/chi/v5"
 )
 
