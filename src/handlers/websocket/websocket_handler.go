@@ -17,7 +17,7 @@ import (
 
 type WebsocketHandler struct {
 	connection        *WebsocketConnection
-	configuratorSvc   applicationsvc.ApplicationConfigurationServicer
+	configurationSvc  applicationsvc.ApplicationConfigurationServicer
 	applicationKeySvc applicationsvc.ApplicationKeyServicer
 }
 
@@ -34,10 +34,10 @@ func (h WebsocketHandler) Router(r *chi.Mux) {
 type WebsockethandlerOption func(h *WebsocketHandler)
 
 func SetDomains(
-	configuratorSvc applicationsvc.ApplicationConfigurationServicer,
+	configurationSvc applicationsvc.ApplicationConfigurationServicer,
 	applicationKeySvc applicationsvc.ApplicationKeyServicer) WebsockethandlerOption {
 	return func(h *WebsocketHandler) {
-		h.configuratorSvc = configuratorSvc
+		h.configurationSvc = configurationSvc
 		h.applicationKeySvc = applicationKeySvc
 	}
 }
@@ -50,7 +50,7 @@ func NewWebsocketHandler(opts ...WebsockethandlerOption) *WebsocketHandler {
 	}
 
 	websocketHandler.connection = NewWebsocketConnection(
-		SetWebsocketConnectionDomains(websocketHandler.configuratorSvc))
+		SetWebsocketConnectionDomains(websocketHandler.configurationSvc))
 
 	go websocketHandler.connection.establishConn()
 

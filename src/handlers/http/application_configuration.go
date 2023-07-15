@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/coma/coma/internal/protocols/http/response"
-	configuratordto "github.com/coma/coma/src/domains/application/dto"
+	applicationdto "github.com/coma/coma/src/domains/application/dto"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -16,16 +16,16 @@ import (
 // @Param viewType query string true "<View Type>" Enums(JSON, schema)
 // @Tags Config
 // @Produce json
-// @Router /v1/configurator [GET]
+// @Router /v1/configuration [GET]
 func (h *HttpHandle) GetConfiguration(w http.ResponseWriter, r *http.Request) {
-	request := configuratordto.RequestGetConfiguration{
+	request := applicationdto.RequestGetConfiguration{
 		XClientKey: r.Header.Get("x-clientkey"),
 	}
 
 	viewType := r.FormValue("viewType")
 
 	switch viewType {
-	case configuratordto.ViewTypeJSON:
+	case applicationdto.ViewTypeJSON:
 		resp, err := h.configurationSvc.GetConfigurationViewTypeJSON(r.Context(), request)
 		if err != nil {
 			response.Err[string](w,
@@ -33,9 +33,9 @@ func (h *HttpHandle) GetConfiguration(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		response.Json[configuratordto.ResponseGetConfigurationViewTypeJSON](w,
-			response.SetData[configuratordto.ResponseGetConfigurationViewTypeJSON](resp),
-			response.SetMessage[configuratordto.ResponseGetConfigurationViewTypeJSON]("success"))
+		response.Json[applicationdto.ResponseGetConfigurationViewTypeJSON](w,
+			response.SetData[applicationdto.ResponseGetConfigurationViewTypeJSON](resp),
+			response.SetMessage[applicationdto.ResponseGetConfigurationViewTypeJSON]("success"))
 		return
 	default:
 		resp, err := h.configurationSvc.GetConfigurationViewTypeSchema(r.Context(), request)
@@ -45,9 +45,9 @@ func (h *HttpHandle) GetConfiguration(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		response.Json[configuratordto.ResponseGetConfigurationsViewTypeSchema](w,
-			response.SetData[configuratordto.ResponseGetConfigurationsViewTypeSchema](resp),
-			response.SetMessage[configuratordto.ResponseGetConfigurationsViewTypeSchema]("success"))
+		response.Json[applicationdto.ResponseGetConfigurationsViewTypeSchema](w,
+			response.SetData[applicationdto.ResponseGetConfigurationsViewTypeSchema](resp),
+			response.SetMessage[applicationdto.ResponseGetConfigurationsViewTypeSchema]("success"))
 		return
 	}
 }
@@ -56,12 +56,12 @@ func (h *HttpHandle) GetConfiguration(w http.ResponseWriter, r *http.Request) {
 // @Summary set new config
 // @Description Set new config
 // @Param x-clientkey header string true "<Client Key>"
-// @Param RequestSetConfiguration body configuratordto.RequestSetConfiguration true "create new field of config"
+// @Param RequestSetConfiguration body applicationdto.RequestSetConfiguration true "create new field of config"
 // @Tags Config
 // @Produce json
-// @Router /v1/configurator [POST]
+// @Router /v1/configuration [POST]
 func (h *HttpHandle) SetConfiguration(w http.ResponseWriter, r *http.Request) {
-	request := configuratordto.RequestSetConfiguration{
+	request := applicationdto.RequestSetConfiguration{
 		XClientKey: r.Header.Get("x-clientkey"),
 	}
 
@@ -88,11 +88,11 @@ func (h *HttpHandle) SetConfiguration(w http.ResponseWriter, r *http.Request) {
 // @Description update new config
 // @Tags Config
 // @Param x-clientkey header string true "<Client Key>"
-// @Param RequestUpdateConfiguration body configuratordto.RequestUpdateConfiguration true "update data of config"
+// @Param RequestUpdateConfiguration body applicationdto.RequestUpdateConfiguration true "update data of config"
 // @Produce json
-// @Router /v1/configurator [PUT]
+// @Router /v1/configuration [PUT]
 func (h *HttpHandle) UpdateConfiguration(w http.ResponseWriter, r *http.Request) {
-	request := configuratordto.RequestUpdateConfiguration{
+	request := applicationdto.RequestUpdateConfiguration{
 		XClientKey: r.Header.Get("x-clientkey"),
 	}
 
@@ -118,12 +118,12 @@ func (h *HttpHandle) UpdateConfiguration(w http.ResponseWriter, r *http.Request)
 // @Summary update or set configuration
 // @Description update or set configuration
 // @Param x-clientkey header string true "<Client Key>"
-// @Param RequestSetConfiguration body configuratordto.RequestSetConfiguration true "create new field of config"
+// @Param RequestSetConfiguration body applicationdto.RequestSetConfiguration true "create new field of config"
 // @Tags Config
 // @Produce json
-// @Router /v1/configurator/upsert [POST]
+// @Router /v1/configuration/upsert [POST]
 func (h *HttpHandle) UpsertConfiguration(w http.ResponseWriter, r *http.Request) {
-	request := configuratordto.RequestSetConfiguration{
+	request := applicationdto.RequestSetConfiguration{
 		XClientKey: r.Header.Get("x-clientkey"),
 	}
 
@@ -152,9 +152,9 @@ func (h *HttpHandle) UpsertConfiguration(w http.ResponseWriter, r *http.Request)
 // @Param id path string true "The config field identifier it's a UUID."
 // @Tags Config
 // @Produce json
-// @Router /v1/configurator/{id} [DELETE]
+// @Router /v1/configuration/{id} [DELETE]
 func (h *HttpHandle) DeleteConfiguration(w http.ResponseWriter, r *http.Request) {
-	request := configuratordto.RequestDeleteConfiguration{
+	request := applicationdto.RequestDeleteConfiguration{
 		XClientKey: r.Header.Get("x-clientkey"),
 		Id:         chi.URLParam(r, "id"),
 	}

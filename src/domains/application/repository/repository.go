@@ -44,10 +44,10 @@ func (r Repository) NewRepositoryApplicationKeyWriter() RepositoryApplicationKey
 	return NewRepositoryApplicationKeyWriter(r.db, fmt.Sprintf("%s_key", r.dbName))
 }
 
-func (r Repository) NewRepositoryApplicationConfiguratorReader() RepositoryApplicationConfigurationReader {
+func (r Repository) NewRepositoryApplicationConfigurationReader() RepositoryApplicationConfigurationReader {
 	return NewApplicationConfigurationRepositoryReader(r.db, fmt.Sprintf("%s_configuration", r.dbName))
 }
 
-func (r Repository) NewRepositoryApplicationConfiguratorWriter() RepositoryApplicationConfigurationWriter {
+func (r Repository) NewRepositoryApplicationConfigurationWriter() RepositoryApplicationConfigurationWriter {
 	return NewApplicationConfigurationRepositoryWriter(r.db, fmt.Sprintf("%s_configuration", r.dbName))
 }

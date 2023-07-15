@@ -22,18 +22,18 @@ var (
 )
 
 type WebsocketConnection struct {
-	clients         map[string]Client
-	client          chan Client
-	clientsRemoved  chan []string
-	close           chan bool
-	configuratorSvc applicationsvc.ApplicationConfigurationServicer
+	clients          map[string]Client
+	client           chan Client
+	clientsRemoved   chan []string
+	close            chan bool
+	configurationSvc applicationsvc.ApplicationConfigurationServicer
 }
 
 type WebsocketConnectionOption func(h *WebsocketConnection)
 
-func SetWebsocketConnectionDomains(configuratorSvc applicationsvc.ApplicationConfigurationServicer) WebsocketConnectionOption {
+func SetWebsocketConnectionDomains(configurationSvc applicationsvc.ApplicationConfigurationServicer) WebsocketConnectionOption {
 	return func(h *WebsocketConnection) {
-		h.configuratorSvc = configuratorSvc
+		h.configurationSvc = configurationSvc
 	}
 }
 
@@ -79,7 +79,7 @@ func (w *WebsocketConnection) createClient(c Client) {
 }
 
 func (w *WebsocketConnection) sendInitialData(clientKey string) {
-	if err := w.configuratorSvc.DistributeConfiguration(context.Background(), clientKey); err != nil {
+	if err := w.configurationSvc.DistributeConfiguration(context.Background(), clientKey); err != nil {
 		log.Warn().Msg("sendInitialData failed due to its data is empty")
 	}
 }

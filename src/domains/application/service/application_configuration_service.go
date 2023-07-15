@@ -38,8 +38,8 @@ func SetApplicationConfigurationExternalService(selfExtService selfextsvc.WSServ
 
 func SetApplicationConfigurationRepository(applicationRepo *repository.Repository) ApplicationConfigurationServiceOption {
 	return func(svc *ApplicationConfigurationService) {
-		svc.readerRepo = applicationRepo.NewRepositoryApplicationConfiguratorReader()
-		svc.writerRepo = applicationRepo.NewRepositoryApplicationConfiguratorWriter()
+		svc.readerRepo = applicationRepo.NewRepositoryApplicationConfigurationReader()
+		svc.writerRepo = applicationRepo.NewRepositoryApplicationConfigurationWriter()
 	}
 }
 

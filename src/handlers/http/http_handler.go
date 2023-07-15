@@ -39,7 +39,7 @@ func (h HttpHandle) Router(r *chi.Mux) {
 			r.Post("/", h.CreateOrUpdateApplicationKey)
 		})
 
-		r.Route("/configurator", func(r chi.Router) {
+		r.Route("/configuration", func(r chi.Router) {
 			r.Get("/", h.GetConfiguration)
 			r.Post("/", h.SetConfiguration)
 			r.Put("/", h.UpdateConfiguration)
@@ -53,13 +53,13 @@ type HttpOption func(h *HttpHandle)
 
 func SetDomains(
 	authSvc authsvc.Servicer,
-	configuratorSvc applicationsvc.ApplicationConfigurationServicer,
+	configurationSvc applicationsvc.ApplicationConfigurationServicer,
 	applicationEnvSvc applicationsvc.ApplicationStageServicer,
 	applicationSvc applicationsvc.ApplicationServicer,
 	applicationKeySvc applicationsvc.ApplicationKeyServicer) HttpOption {
 	return func(h *HttpHandle) {
 		h.authSvc = authSvc
-		h.configurationSvc = configuratorSvc
+		h.configurationSvc = configurationSvc
 		h.applicationStageSvc = applicationEnvSvc
 		h.applicationSvc = applicationSvc
 		h.applicationKeySvc = applicationKeySvc

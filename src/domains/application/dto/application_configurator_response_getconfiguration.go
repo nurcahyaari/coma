@@ -12,11 +12,11 @@ type ResponseGetConfigurationViewTypeJSON struct {
 	Data      json.RawMessage `json:"data"`
 }
 
-type ResponseGetConfiguratorViewType interface {
+type ResponseGetconfigurationViewType interface {
 	model.Configurations
 }
 
-func NewResponseGetConfigurationViewTypeJSON[T ResponseGetConfiguratorViewType](data T) (ResponseGetConfigurationViewTypeJSON, error) {
+func NewResponseGetConfigurationViewTypeJSON[T ResponseGetconfigurationViewType](data T) (ResponseGetConfigurationViewTypeJSON, error) {
 	var (
 		response      = ResponseGetConfigurationViewTypeJSON{}
 		mapFieldValue = make(map[string]interface{})
