@@ -60,17 +60,21 @@ func (r ApplicationKey) MapStringInterface() (map[string]interface{}, error) {
 type ApplicationKeys []ApplicationKey
 
 type FilterApplicationKey struct {
-	ApplicationId string
-	StageId       string
-	Key           string
+	SkipValidation bool
+	ApplicationId  string
+	StageId        string
+	Key            string
 }
 
-func (f FilterApplicationKey) IsApplicationIdAndStageIdExists() bool {
+func (f FilterApplicationKey) Validation() bool {
+	if f.SkipValidation {
+		return true
+	}
 	return f.ApplicationId != "" && f.StageId != ""
 }
 
 func (f FilterApplicationKey) Filter() *clover.Criteria {
-	if !f.IsApplicationIdAndStageIdExists() {
+	if !f.Validation() {
 		return nil
 	}
 	criterias := make([]*clover.Criteria, 0)

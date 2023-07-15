@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
+	internalerrors "github.com/coma/coma/internal/utils/errors"
 	"github.com/coma/coma/src/domains/application/dto"
 	applicationsvc "github.com/coma/coma/src/domains/application/service"
 	configuratorsvc "github.com/coma/coma/src/domains/configurator/service"
@@ -68,18 +69,20 @@ func (w *WebsocketHandler) Websocket(c *websocket.Conn) {
 	isSelfConnection, _ := strconv.ParseBool(selfConnection)
 	clientKey := c.Request().URL.Query().Get("authorization")
 	if !isSelfConnection {
-		exists, err := w.applicationKeySvc.CheckApplicationKey(context.Background(), dto.RequestFindApplicationKey{
+		exists, err := w.applicationKeySvc.IsExistsApplicationKey(context.Background(), dto.RequestFindApplicationKey{
 			Key: clientKey,
 		})
 		if err != nil {
+			errCustom := err.(*internalerrors.Error)
 			log.Error().
-				Err(err).
+				Err(errCustom.Err).
 				Msg("[Websocket.FindApplicationKey] err: search applicationKey")
 			return
 		}
 		if !exists {
+			errCustom := err.(*internalerrors.Error)
 			log.Error().
-				Err(err).
+				Err(errCustom.Err).
 				Msg("[Websocket.FindApplicationKey] client key doesn't exists")
 			return
 		}

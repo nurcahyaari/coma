@@ -13,7 +13,7 @@ import (
 )
 
 type ApplicationKeyServicer interface {
-	CheckApplicationKey(ctx context.Context, request dto.RequestFindApplicationKey) (bool, error)
+	IsExistsApplicationKey(ctx context.Context, request dto.RequestFindApplicationKey) (bool, error)
 	FindApplicationKey(ctx context.Context, request dto.RequestFindApplicationKey) (dto.ResponseFindApplicationKey, error)
 	GenerateOrUpdateApplicationKey(ctx context.Context, request dto.RequestCreateApplicationKey) (dto.ResponseCreateApplicationKey, error)
 }
@@ -50,13 +50,16 @@ func NewApplicationKey(opts ...ApplicationKeyServiceOptions) ApplicationKeyServi
 	return svc
 }
 
-func (s *ApplicationKeyService) CheckApplicationKey(ctx context.Context, request dto.RequestFindApplicationKey) (bool, error) {
+func (s *ApplicationKeyService) IsExistsApplicationKey(ctx context.Context, request dto.RequestFindApplicationKey) (bool, error) {
 	var (
 		response       bool
 		filter         = request.FilterApplicationKey()
 		applicationKey model.ApplicationKey
 		err            error
 	)
+
+	// skip validation
+	filter.SkipValidation = true
 
 	applicationKey, err = s.reader.FindApplicationKey(ctx, filter)
 	if err != nil {
@@ -65,6 +68,7 @@ func (s *ApplicationKeyService) CheckApplicationKey(ctx context.Context, request
 			Msg("[FindApplicationKey.FindApplicationKey] error find application key")
 		return response, internalerrors.NewError(err)
 	}
+
 	if applicationKey.Id == "" {
 		log.Error().
 			Err(errors.New("appllication key doesn't found")).
