@@ -15,7 +15,7 @@ import (
 type ApplicationConfigurationServicer interface {
 	GetConfigurationViewTypeJSON(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationViewTypeJSON, error)
 	GetConfigurationViewTypeSchema(ctx context.Context, req dto.RequestGetConfiguration) (dto.ResponseGetConfigurationsViewTypeSchema, error)
-	SetConfiguration(ctx context.Context, req dto.RequestSetConfiguration) error
+	SetConfiguration(ctx context.Context, req dto.RequestSetConfiguration) (dto.ResponseSetConfiguration, error)
 	UpdateConfiguration(ctx context.Context, req dto.RequestUpdateConfiguration) error
 	UpsertConfiguration(ctx context.Context, req dto.RequestSetConfiguration) error
 	DeleteConfiguration(ctx context.Context, req dto.RequestDeleteConfiguration) error
@@ -103,10 +103,10 @@ func (s *ApplicationConfigurationService) GetConfigurationViewTypeSchema(ctx con
 	return response, nil
 }
 
-func (s *ApplicationConfigurationService) SetConfiguration(ctx context.Context, req dto.RequestSetConfiguration) error {
+func (s *ApplicationConfigurationService) SetConfiguration(ctx context.Context, req dto.RequestSetConfiguration) (dto.ResponseSetConfiguration, error) {
 	if err := req.Validate(); err != nil {
 		log.Error().Err(err).Msg("[SetConfiguration] error validate dto")
-		return err
+		return dto.ResponseSetConfiguration{}, err
 	}
 
 	var (
@@ -123,26 +123,28 @@ func (s *ApplicationConfigurationService) SetConfiguration(ctx context.Context, 
 			Err(err).
 			Str("field", req.Field).
 			Msg("[SetConfiguration] error on search configuration")
-		return err
+		return dto.ResponseSetConfiguration{}, err
 	}
 	if clientConfigurations.Exists() {
 		log.Error().
 			Err(err).
 			Str("field", req.Field).
 			Msg("[SetConfiguration] error duplicate field name")
-		return errors.New("err: duplicate field name")
+		return dto.ResponseSetConfiguration{}, errors.New("err: duplicate field name")
 	}
 
-	_, err = s.writerRepo.SetConfiguration(ctx, configuration)
+	insertedId, err := s.writerRepo.SetConfiguration(ctx, configuration)
 	if err != nil {
 		log.Error().Err(err).Msg("[SetConfiguration] error SetConfiguration")
-		return err
+		return dto.ResponseSetConfiguration{}, err
 	}
 
 	// after success writing to the db distribute to the client
 	go s.DistributeConfiguration(ctx, req.XClientKey)
 
-	return nil
+	return dto.ResponseSetConfiguration{
+		Id: insertedId,
+	}, nil
 }
 
 func (s *ApplicationConfigurationService) UpdateConfiguration(ctx context.Context, req dto.RequestUpdateConfiguration) error {
@@ -223,7 +225,7 @@ func (s *ApplicationConfigurationService) UpsertConfiguration(ctx context.Contex
 		}
 
 	default:
-		err = s.SetConfiguration(ctx, req)
+		_, err = s.SetConfiguration(ctx, req)
 		if err != nil {
 			log.Error().
 				Err(err).

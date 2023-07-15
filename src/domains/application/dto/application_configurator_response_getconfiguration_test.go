@@ -51,7 +51,9 @@ func TestNewResponseGetClientConfiguration(t *testing.T) {
 					},
 				}
 
-				return dto.NewResponseGetConfigurationViewTypeJSON(configuration)
+				response := dto.NewResponseGetConfigurationViewTypeJSON("1")
+				err := response.SetData(configuration)
+				return response, err
 			},
 		},
 		{
@@ -89,7 +91,9 @@ func TestNewResponseGetClientConfiguration(t *testing.T) {
 					},
 				}
 
-				return dto.NewResponseGetConfigurationViewTypeJSON(configuration)
+				response := dto.NewResponseGetConfigurationViewTypeJSON("1")
+				err := response.SetData(configuration)
+				return response, err
 			},
 		},
 		{
@@ -126,7 +130,9 @@ func TestNewResponseGetClientConfiguration(t *testing.T) {
 					},
 				}
 
-				return dto.NewResponseGetConfigurationViewTypeJSON(configuration)
+				response := dto.NewResponseGetConfigurationViewTypeJSON("1")
+				err := response.SetData(configuration)
+				return response, err
 			},
 		},
 	}
@@ -158,9 +164,8 @@ func TestNewResponseGetConfiguration(t *testing.T) {
 				Data: []byte(nil),
 			},
 			actual: func() (dto.ResponseGetConfigurationViewTypeJSON, error) {
-				return dto.NewResponseGetConfigurationViewTypeJSON[model.Configurations](
-					model.Configurations{},
-				)
+				response := dto.NewResponseGetConfigurationViewTypeJSON("")
+				return response, nil
 			},
 		},
 		{
@@ -171,22 +176,22 @@ func TestNewResponseGetConfiguration(t *testing.T) {
 				Data:      []byte(`{"age":"1","name":"test"}`),
 			},
 			actual: func() (dto.ResponseGetConfigurationViewTypeJSON, error) {
-				return dto.NewResponseGetConfigurationViewTypeJSON[model.Configurations](
-					model.Configurations{
-						{
-							Id:        "1",
-							ClientKey: "1",
-							Field:     "name",
-							Value:     null.StringFrom("test"),
-						},
-						{
-							Id:        "2",
-							ClientKey: "1",
-							Field:     "age",
-							Value:     null.StringFrom("1"),
-						},
+				response := dto.NewResponseGetConfigurationViewTypeJSON("")
+				response.SetData(model.Configurations{
+					{
+						Id:        "1",
+						ClientKey: "1",
+						Field:     "name",
+						Value:     null.StringFrom("test"),
 					},
-				)
+					{
+						Id:        "2",
+						ClientKey: "1",
+						Field:     "age",
+						Value:     null.StringFrom("1"),
+					},
+				})
+				return response, nil
 			},
 		},
 	}

@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"encoding/json"
 	"regexp"
 
 	"github.com/coma/coma/src/domains/application/model"
@@ -32,4 +33,9 @@ func (r RequestSetConfiguration) Configuration() model.Configuration {
 	}
 
 	return configuration
+}
+
+type ResponseSetConfiguration struct {
+	Id   string          `json:"id"`
+	Data json.RawMessage `json:"data"`
 }

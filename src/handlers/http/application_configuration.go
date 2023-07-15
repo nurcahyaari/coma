@@ -72,15 +72,16 @@ func (h *HttpHandle) SetConfiguration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.configurationSvc.SetConfiguration(r.Context(), request)
+	res, err := h.configurationSvc.SetConfiguration(r.Context(), request)
 	if err != nil {
 		response.Err[string](w,
 			response.SetErr[string](err.Error()))
 		return
 	}
 
-	response.Json[string](w,
-		response.SetMessage[string]("success"))
+	response.Json[applicationdto.ResponseSetConfiguration](w,
+		response.SetMessage[applicationdto.ResponseSetConfiguration]("success"),
+		response.SetData[applicationdto.ResponseSetConfiguration](res))
 }
 
 // UpdateConfiguration update new config
