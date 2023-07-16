@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/coma/coma/internal/utils/pubsub"
 	"github.com/coma/coma/src/domains/application/dto"
 	"github.com/coma/coma/src/domains/application/model"
 	"github.com/coma/coma/src/domains/application/repository"
@@ -23,6 +24,7 @@ type ApplicationConfigurationServicer interface {
 }
 
 type ApplicationConfigurationService struct {
+	pubSub            *pubsub.Pubsub
 	selfExtSvc        selfextsvc.WSServicer
 	applicationKeySvc ApplicationKeyServicer
 	readerRepo        repository.RepositoryApplicationConfigurationReader
@@ -47,6 +49,12 @@ func SetApplicationConfigurationRepository(applicationRepo *repository.Repositor
 	return func(svc *ApplicationConfigurationService) {
 		svc.readerRepo = applicationRepo.NewRepositoryApplicationConfigurationReader()
 		svc.writerRepo = applicationRepo.NewRepositoryApplicationConfigurationWriter()
+	}
+}
+
+func SetApplicationConfigurationEvent(pubSub *pubsub.Pubsub) ApplicationConfigurationServiceOption {
+	return func(svc *ApplicationConfigurationService) {
+		svc.pubSub = pubSub
 	}
 }
 

@@ -13,6 +13,7 @@ import (
 	"github.com/coma/coma/internal/logger"
 	"github.com/coma/coma/internal/protocols/http"
 	httprouter "github.com/coma/coma/internal/protocols/http/router"
+	"github.com/coma/coma/internal/utils/pubsub"
 	applicationrepo "github.com/coma/coma/src/domains/application/repository"
 	applicationsvc "github.com/coma/coma/src/domains/application/service"
 	"github.com/coma/coma/src/domains/auth/dto"
@@ -57,6 +58,8 @@ func main() {
 		Name: config.Get().DB.Clover.Name,
 	})
 
+	pubSub := pubsub.NewPubsub()
+
 	distributorExtSvc := selfextsvc.New()
 
 	authRepo := authrepo.New(cloverDB)
@@ -81,6 +84,7 @@ func main() {
 		applicationsvc.SetApplicationConfigurationExternalService(distributorExtSvc),
 		applicationsvc.SetApplicationConfigurationRepository(applicationRepo),
 		applicationsvc.SetApplicationConfigurationInternalService(applicationKeySvc),
+		applicationsvc.SetApplicationConfigurationEvent(pubSub),
 	)
 
 	httpProtocol := initHttpProtocol(
@@ -89,6 +93,9 @@ func main() {
 		applicationStageSvc,
 		applicationSvc,
 		applicationKeySvc)
+
+	// listen local pubsub
+	go pubSub.Listen()
 
 	// init http protocol
 	go httpProtocol.Listen()
@@ -104,7 +111,8 @@ func main() {
 			ShutdownPeriod: config.Get().Application.Graceful.ShutdownPeriod,
 			Operations: map[string]graceful.Operation{
 				// place your service that need to graceful shutdown here
-				"http": httpProtocol.Shutdown,
+				"http":        httpProtocol.Shutdown,
+				"localPubsub": pubSub.Shutdown,
 			},
 		},
 	)
