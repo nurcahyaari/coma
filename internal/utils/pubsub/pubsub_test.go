@@ -17,7 +17,6 @@ func TestPubsub(t *testing.T) {
 		ps.TopicRegister(
 			"test-topic-1",
 			pubsub.PubsubSetMaxBufferCapacity(5),
-			pubsub.PubsubSetMaxWorker(5),
 		)
 
 		ps.ConsumerRegister("test-topic-1", func(id string, r io.Reader) {
@@ -25,7 +24,7 @@ func TestPubsub(t *testing.T) {
 			io.Copy(buf, r)
 			actual <- buf.String()
 			close(actual)
-		})
+		}, pubsub.PubsubSetMaxWorker(5))
 
 		go ps.Listen()
 
@@ -40,7 +39,6 @@ func TestPubsub(t *testing.T) {
 		ps.TopicRegister(
 			"test-topic-1",
 			pubsub.PubsubSetMaxBufferCapacity(5),
-			pubsub.PubsubSetMaxWorker(5),
 		)
 
 		ps.ConsumerRegister("test-topic-1", func(id string, r io.Reader) {
@@ -48,7 +46,7 @@ func TestPubsub(t *testing.T) {
 			io.Copy(buf, r)
 			actual <- buf.String()
 			close(actual)
-		})
+		}, pubsub.PubsubSetMaxWorker(5))
 
 		go ps.Listen()
 
@@ -66,7 +64,6 @@ func TestPubsub(t *testing.T) {
 		ps.TopicRegister(
 			"test-topic-1",
 			pubsub.PubsubSetMaxBufferCapacity(5),
-			pubsub.PubsubSetMaxWorker(5),
 		)
 
 		ps.ConsumerRegister("test-topic-1", func(id string, r io.Reader) {
@@ -74,7 +71,7 @@ func TestPubsub(t *testing.T) {
 			json.NewDecoder(r).Decode(&resp)
 			actual <- resp
 			close(actual)
-		})
+		}, pubsub.PubsubSetMaxWorker(5))
 
 		go ps.Listen()
 
@@ -92,7 +89,6 @@ func TestPubsub(t *testing.T) {
 		ps.TopicRegister(
 			"test-topic-1",
 			pubsub.PubsubSetMaxBufferCapacity(5),
-			pubsub.PubsubSetMaxWorker(5),
 		)
 
 		assert.Equal(t, 5, ps.Capacity("test-topic-1"))
@@ -103,7 +99,6 @@ func TestPubsub(t *testing.T) {
 		ps.TopicRegister(
 			"test-topic-1",
 			pubsub.PubsubSetMaxBufferCapacity(5),
-			pubsub.PubsubSetMaxWorker(5),
 		)
 
 		assert.Equal(t, 0, ps.Len("test-topic-1"))

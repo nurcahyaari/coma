@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/coma/coma/config"
 	internalerrors "github.com/coma/coma/internal/utils/errors"
 	"github.com/coma/coma/internal/utils/routine"
 	"github.com/coma/coma/src/domains/application/dto"
@@ -19,6 +20,7 @@ type ApplicationKeyServicer interface {
 }
 
 type ApplicationKeyService struct {
+	config            *config.Config
 	reader            repository.RepositoryApplicationKeyReader
 	writer            repository.RepositoryApplicationKeyWriter
 	applicationReader repository.RepositoryApplicationReader
@@ -40,8 +42,12 @@ func SetApplicationKeyRepository(applicationRepo *repository.Repository) Applica
 	}
 }
 
-func NewApplicationKey(opts ...ApplicationKeyServiceOptions) ApplicationKeyServicer {
-	svc := &ApplicationKeyService{}
+func NewApplicationKey(
+	config *config.Config,
+	opts ...ApplicationKeyServiceOptions) ApplicationKeyServicer {
+	svc := &ApplicationKeyService{
+		config: config,
+	}
 
 	for _, opt := range opts {
 		opt(svc)

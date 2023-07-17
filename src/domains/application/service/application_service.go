@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/coma/coma/config"
 	internalerrors "github.com/coma/coma/internal/utils/errors"
 	"github.com/coma/coma/src/domains/application/dto"
 	"github.com/coma/coma/src/domains/application/model"
@@ -18,6 +19,7 @@ type ApplicationServicer interface {
 }
 
 type ApplicationService struct {
+	config      *config.Config
 	reader      repository.RepositoryApplicationReader
 	writer      repository.RepositoryApplicationWriter
 	stageReader repository.RepositoryApplicationStageReader
@@ -36,8 +38,10 @@ func SetApplicationRepository(
 	}
 }
 
-func NewApplication(opts ...ApplicationServiceOptions) ApplicationServicer {
-	svc := &ApplicationService{}
+func NewApplication(config *config.Config, opts ...ApplicationServiceOptions) ApplicationServicer {
+	svc := &ApplicationService{
+		config: config,
+	}
 
 	for _, opt := range opts {
 		opt(svc)

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"github.com/coma/coma/config"
 	internalerrors "github.com/coma/coma/internal/utils/errors"
 	"github.com/coma/coma/src/domains/application/dto"
 	"github.com/coma/coma/src/domains/application/model"
@@ -17,6 +18,7 @@ type ApplicationStageServicer interface {
 }
 
 type ApplicationStageService struct {
+	config *config.Config
 	reader repository.RepositoryApplicationStageReader
 	writer repository.RepositoryApplicationStageWriter
 }
@@ -30,8 +32,10 @@ func SetApplicationStageRepository(applicationRepo *repository.Repository) Appli
 	}
 }
 
-func NewApplicationStage(opts ...ApplicationStageServiceOptions) ApplicationStageServicer {
-	svc := &ApplicationStageService{}
+func NewApplicationStage(config *config.Config, opts ...ApplicationStageServiceOptions) ApplicationStageServicer {
+	svc := &ApplicationStageService{
+		config: config,
+	}
 
 	for _, opt := range opts {
 		opt(svc)

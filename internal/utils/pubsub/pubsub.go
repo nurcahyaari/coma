@@ -3,7 +3,6 @@ package pubsub
 import (
 	"context"
 	"errors"
-	"time"
 )
 
 var (
@@ -29,39 +28,11 @@ type PubsubRegisterOpt func(ps *PubsubRegisterOptions)
 
 type PubsubRegisterOptions struct {
 	maxBufferCapacity int
-	async             bool
-	maxWorker         int
-	maxElapsedTime    time.Duration
-	retryWaitTime     time.Duration
 }
 
 func PubsubSetMaxBufferCapacity(max int) PubsubRegisterOpt {
 	return func(ps *PubsubRegisterOptions) {
 		ps.maxBufferCapacity = max
-	}
-}
-
-func PubsubSetMaxWorker(max int) PubsubRegisterOpt {
-	return func(ps *PubsubRegisterOptions) {
-		ps.maxWorker = max
-	}
-}
-
-func PubsubSetAsyncProcess(ok bool) PubsubRegisterOpt {
-	return func(ps *PubsubRegisterOptions) {
-		ps.async = ok
-	}
-}
-
-func PubsubSetMaxElapsedTime(duration time.Duration) PubsubRegisterOpt {
-	return func(ps *PubsubRegisterOptions) {
-		ps.maxElapsedTime = duration
-	}
-}
-
-func PubsubSetMRetryWaitTime(duration time.Duration) PubsubRegisterOpt {
-	return func(ps *PubsubRegisterOptions) {
-		ps.retryWaitTime = duration
 	}
 }
 
@@ -77,21 +48,15 @@ func (ps Pubsub) TopicRegister(topic string, opts ...PubsubRegisterOpt) {
 		bufferCapacity: pubsubRegisterOption.maxBufferCapacity,
 	})
 
-	ps.subscriber[topic] = newSubscriber(subscriberOption{
-		async:          pubsubRegisterOption.async,
-		maxWorker:      pubsubRegisterOption.maxWorker,
-		maxElapsedTime: pubsubRegisterOption.maxElapsedTime,
-		retryWaitTime:  pubsubRegisterOption.retryWaitTime,
-	})
+	ps.subscriber[topic] = newSubscriber()
 }
 
-func (ps Pubsub) ConsumerRegister(topic string, handler SubscriberHandler) error {
+func (ps Pubsub) ConsumerRegister(topic string, handler SubscriberHandler, opts ...SubscriberOption) error {
 	_, exists := ps.subscriber[topic]
 	if !exists {
 		return ErrTopicIsNotExists
 	}
-
-	ps.subscriber[topic].registerSubscriberHandler(handler)
+	ps.subscriber[topic].registerSubscriberHandler(handler, opts...)
 	return nil
 }
 

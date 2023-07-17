@@ -46,26 +46,52 @@ type subscriber struct {
 	message        chan io.Reader
 }
 
-type subscriberOption struct {
-	async          bool
-	maxWorker      int
-	maxElapsedTime time.Duration
-	retryWaitTime  time.Duration
-}
-
-func newSubscriber(options subscriberOption) *subscriber {
+func newSubscriber() *subscriber {
 	sub := &subscriber{
-		async:          options.async,
-		maxWorker:      options.maxWorker,
-		maxElapsedTime: options.maxElapsedTime,
-		retryWaitTime:  options.retryWaitTime,
+		async:          false,
+		maxWorker:      1,
+		maxElapsedTime: 1 * time.Second,
+		retryWaitTime:  3 * time.Second,
 		message:        make(chan io.Reader),
+	}
+
+	if sub.maxWorker == 0 {
+		sub.maxWorker = 1
 	}
 
 	return sub
 }
 
-func (s *subscriber) registerSubscriberHandler(handler SubscriberHandler) {
+type SubscriberOption func(s *subscriber)
+
+func PubsubSetMaxWorker(max int) SubscriberOption {
+	return func(ps *subscriber) {
+		ps.maxWorker = max
+	}
+}
+
+func PubsubSetAsyncProcess(ok bool) SubscriberOption {
+	return func(ps *subscriber) {
+		ps.async = ok
+	}
+}
+
+func PubsubSetMaxElapsedTime(duration time.Duration) SubscriberOption {
+	return func(ps *subscriber) {
+		ps.maxElapsedTime = duration
+	}
+}
+
+func PubsubSetRetryWaitTime(duration time.Duration) SubscriberOption {
+	return func(ps *subscriber) {
+		ps.retryWaitTime = duration
+	}
+}
+
+func (s *subscriber) registerSubscriberHandler(handler SubscriberHandler, opts ...SubscriberOption) {
+	for _, opt := range opts {
+		opt(s)
+	}
 	s.handler = handler
 }
 

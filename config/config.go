@@ -50,6 +50,25 @@ type Config struct {
 			} `mapstructure:"WEBSOCKET"`
 		} `mapstructure:"COMA"`
 	} `mapstructure:"EXTERNAL"`
+
+	Pubsub struct {
+		Local struct {
+			Publisher struct {
+				ConfigDistributor struct {
+					Topic             string `mapstructure:"TOPIC"`
+					MaxBufferCapacity int    `mapstructure:"MAX_BUFFER_CAPACITY"`
+				} `mapstructure:"CONFIG_DISTRIBUTOR"`
+			} `mapstructure:"PUBLISHER"`
+			Consumer struct {
+				ConfigDistributor struct {
+					Topic          string        `mapstructure:"TOPIC"`
+					MaxElapsedTime time.Duration `mapstructure:"MAX_ELAPSED_TIME"`
+					RetryWaitTime  time.Duration `mapstructure:"RETRY_WAIT_TIME"`
+					MaxWorker      int           `mapstructure:"MAX_WORKER"`
+				} `mapstructure:"CONFIG_DISTRIBUTOR"`
+			} `mapstructure:"CONSUMER"`
+		} `mapstructure:"LOCAL"`
+	} `mapstructure:"PUBSUB"`
 }
 
 var cfg Config

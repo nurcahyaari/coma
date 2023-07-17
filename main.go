@@ -22,6 +22,7 @@ import (
 
 	selfextsvc "github.com/coma/coma/src/external/self/service"
 	httphandler "github.com/coma/coma/src/handlers/http"
+	"github.com/coma/coma/src/handlers/localpubsub"
 	websockethandler "github.com/coma/coma/src/handlers/websocket"
 )
 
@@ -51,11 +52,13 @@ func initHttpProtocol(
 func main() {
 	logger.InitLogger()
 
+	cfg := config.Get()
+
 	// init database
 	wd, _ := os.Getwd()
 	cloverDB := database.NewClover(database.Config{
-		Path: fmt.Sprintf("%s/%s", wd, config.Get().DB.Clover.Path),
-		Name: config.Get().DB.Clover.Name,
+		Path: fmt.Sprintf("%s/%s", wd, cfg.DB.Clover.Path),
+		Name: cfg.DB.Clover.Name,
 	})
 
 	pubSub := pubsub.NewPubsub()
@@ -72,15 +75,19 @@ func main() {
 	applicationRepo := applicationrepo.New(cloverDB)
 
 	applicationStageSvc := applicationsvc.NewApplicationStage(
+		&cfg,
 		applicationsvc.SetApplicationStageRepository(applicationRepo))
 
 	applicationSvc := applicationsvc.NewApplication(
+		&cfg,
 		applicationsvc.SetApplicationRepository(applicationRepo))
 
 	applicationKeySvc := applicationsvc.NewApplicationKey(
+		&cfg,
 		applicationsvc.SetApplicationKeyRepository(applicationRepo))
 
 	configurationSvc := applicationsvc.NewApplicationConfiguration(
+		&cfg,
 		applicationsvc.SetApplicationConfigurationExternalService(distributorExtSvc),
 		applicationsvc.SetApplicationConfigurationRepository(applicationRepo),
 		applicationsvc.SetApplicationConfigurationInternalService(applicationKeySvc),
@@ -94,8 +101,11 @@ func main() {
 		applicationSvc,
 		applicationKeySvc)
 
+	localPubsubHandler := localpubsub.NewLocalPubsub(&cfg, pubSub, localpubsub.SetDomains(configurationSvc))
+	localPubsubHandler.TopicRegistry()
+
 	// listen local pubsub
-	go pubSub.Listen()
+	go localPubsubHandler.Listen()
 
 	// init http protocol
 	go httpProtocol.Listen()

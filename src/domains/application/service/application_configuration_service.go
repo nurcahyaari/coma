@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/coma/coma/config"
 	"github.com/coma/coma/internal/utils/pubsub"
 	"github.com/coma/coma/src/domains/application/dto"
 	"github.com/coma/coma/src/domains/application/model"
@@ -24,6 +25,7 @@ type ApplicationConfigurationServicer interface {
 }
 
 type ApplicationConfigurationService struct {
+	config            *config.Config
 	pubSub            *pubsub.Pubsub
 	selfExtSvc        selfextsvc.WSServicer
 	applicationKeySvc ApplicationKeyServicer
@@ -58,8 +60,12 @@ func SetApplicationConfigurationEvent(pubSub *pubsub.Pubsub) ApplicationConfigur
 	}
 }
 
-func NewApplicationConfiguration(opts ...ApplicationConfigurationServiceOption) ApplicationConfigurationServicer {
-	svc := &ApplicationConfigurationService{}
+func NewApplicationConfiguration(
+	cfg *config.Config,
+	opts ...ApplicationConfigurationServiceOption) ApplicationConfigurationServicer {
+	svc := &ApplicationConfigurationService{
+		config: cfg,
+	}
 
 	for _, opt := range opts {
 		opt(svc)
@@ -148,7 +154,8 @@ func (s *ApplicationConfigurationService) SetConfiguration(ctx context.Context, 
 	}
 
 	// after success writing to the db distribute to the client
-	go s.DistributeConfiguration(ctx, req.XClientKey)
+	s.pubSub.Publish(s.config.Pubsub.Local.Publisher.ConfigDistributor.Topic,
+		pubsub.SendString(req.XClientKey))
 
 	return dto.ResponseSetConfiguration{
 		Id: insertedId,
@@ -196,7 +203,8 @@ func (s *ApplicationConfigurationService) UpdateConfiguration(ctx context.Contex
 	}
 
 	// after success writing to the db distribute to the client
-	go s.DistributeConfiguration(ctx, req.XClientKey)
+	s.pubSub.Publish(s.config.Pubsub.Local.Publisher.ConfigDistributor.Topic,
+		pubsub.SendString(req.XClientKey))
 
 	return nil
 }
@@ -255,7 +263,8 @@ func (s *ApplicationConfigurationService) DeleteConfiguration(ctx context.Contex
 	}
 
 	// after success writing to the db distribute to the client
-	go s.DistributeConfiguration(ctx, req.XClientKey)
+	s.pubSub.Publish(s.config.Pubsub.Local.Publisher.ConfigDistributor.Topic,
+		pubsub.SendString(req.XClientKey))
 
 	return nil
 }
