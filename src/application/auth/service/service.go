@@ -10,10 +10,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type Servicer interface {
-	ValidateToken(context.Context, dto.RequestValidateToken) (dto.ResponseValidateKey, error)
-}
-
 type Service struct {
 	repositoryReader repository.RepositoryAuthReader
 	repositoryWriter repository.RepositoryAuthWriter
@@ -35,7 +31,7 @@ func SetAuthSvc(authSvcs map[dto.Method]service.AuthServicer) ServiceOption {
 	}
 }
 
-func New(opts ...ServiceOption) Servicer {
+func New(opts ...ServiceOption) service.AuthServicer {
 	svc := &Service{}
 
 	for _, opt := range opts {
@@ -55,7 +51,7 @@ func (s *Service) ValidateToken(ctx context.Context, req dto.RequestValidateToke
 		return dto.ResponseValidateKey{}, err
 	}
 
-	res, err := s.authSvcs[req.Method].ValidateToken(ctx, dto.RequestAuthValidate{
+	res, err := s.authSvcs[req.Method].ValidateToken(ctx, dto.RequestValidateToken{
 		Token: req.Token,
 	})
 	if err != nil {

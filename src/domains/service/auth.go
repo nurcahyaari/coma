@@ -7,5 +7,5 @@ import (
 )
 
 type AuthServicer interface {
-	ValidateToken(context.Context, dto.RequestAuthValidate) (dto.ResponseValidateKey, error)
+	ValidateToken(context.Context, dto.RequestValidateToken) (dto.ResponseValidateKey, error)
 }

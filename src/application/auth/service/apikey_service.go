@@ -35,7 +35,7 @@ func NewApiKey(opts ...ApiKeyServiceOption) service.ApiKeyServicer {
 	return svc
 }
 
-func (s *ApiKeyService) ValidateToken(ctx context.Context, request dto.RequestAuthValidate) (dto.ResponseValidateKey, error) {
+func (s *ApiKeyService) ValidateToken(ctx context.Context, request dto.RequestValidateToken) (dto.ResponseValidateKey, error) {
 	var (
 		resp   = dto.ResponseValidateKey{}
 		apikey entity.Apikey

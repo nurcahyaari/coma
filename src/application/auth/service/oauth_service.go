@@ -33,6 +33,6 @@ func NewOauth(opts ...OauthServiceOption) service.AuthServicer {
 	return svc
 }
 
-func (s *OauthService) ValidateToken(ctx context.Context, request dto.RequestAuthValidate) (dto.ResponseValidateKey, error) {
+func (s *OauthService) ValidateToken(ctx context.Context, request dto.RequestValidateToken) (dto.ResponseValidateKey, error) {
 	return dto.ResponseValidateKey{}, fmt.Errorf("err: method is not implemented yet")
 }

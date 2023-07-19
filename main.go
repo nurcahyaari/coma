@@ -28,7 +28,7 @@ import (
 )
 
 func initHttpProtocol(
-	authSvc authsvc.Servicer,
+	authSvc service.AuthServicer,
 	configurationSvc service.ApplicationConfigurationServicer,
 	applicationStageSvc service.ApplicationStageServicer,
 	applicationSvc service.ApplicationServicer,
@@ -68,7 +68,7 @@ func main() {
 
 	authRepo := authrepo.New(cloverDB)
 	authSvc := authsvc.New(authsvc.SetRepository(authRepo.NewRepositoryReader(), authRepo.NewRepositoryWriter()),
-		authsvc.SetAuthSvc(map[dto.Method]authsvc.AuthServicer{
+		authsvc.SetAuthSvc(map[dto.Method]service.AuthServicer{
 			dto.Apikey: authsvc.NewApiKey(authsvc.SetApiKeyRepository(authRepo.NewRepositoryReader(), authRepo.NewRepositoryWriter())),
 			dto.Oauth:  authsvc.NewOauth(authsvc.SetOauthRepository(authRepo.NewRepositoryReader(), authRepo.NewRepositoryWriter())),
 		}))
