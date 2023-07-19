@@ -7,9 +7,9 @@ import (
 	"github.com/coma/coma/config"
 	"github.com/coma/coma/container"
 	"github.com/coma/coma/src/application/auth/dto"
-	"github.com/coma/coma/src/domains/entity"
-	"github.com/coma/coma/src/domains/repository"
-	"github.com/coma/coma/src/domains/service"
+	"github.com/coma/coma/src/domain/entity"
+	"github.com/coma/coma/src/domain/repository"
+	"github.com/coma/coma/src/domain/service"
 	"github.com/rs/zerolog/log"
 )
 

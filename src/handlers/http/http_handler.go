@@ -2,7 +2,7 @@ package http
 
 import (
 	"github.com/coma/coma/container"
-	service "github.com/coma/coma/src/domains/service"
+	service "github.com/coma/coma/src/domain/service"
 	"github.com/go-chi/chi/v5"
 )
 

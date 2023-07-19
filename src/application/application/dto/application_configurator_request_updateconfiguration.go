@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/coma/coma/src/domains/entity"
+import "github.com/coma/coma/src/domain/entity"
 
 type RequestUpdateConfiguration struct {
 	XClientKey string `json:"-"`

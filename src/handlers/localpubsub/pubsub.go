@@ -4,7 +4,7 @@ import (
 	"github.com/coma/coma/config"
 	"github.com/coma/coma/container"
 	"github.com/coma/coma/internal/utils/pubsub"
-	"github.com/coma/coma/src/domains/service"
+	"github.com/coma/coma/src/domain/service"
 )
 
 type LocalPubsub struct {

@@ -9,8 +9,8 @@ import (
 	"github.com/coma/coma/container"
 	"github.com/coma/coma/src/application/auth/dto"
 	"github.com/coma/coma/src/application/auth/service"
-	"github.com/coma/coma/src/domains/entity"
-	"github.com/coma/coma/src/domains/repository/repositoryfakes"
+	"github.com/coma/coma/src/domain/entity"
+	"github.com/coma/coma/src/domain/repository/repositoryfakes"
 
 	"github.com/stretchr/testify/assert"
 )

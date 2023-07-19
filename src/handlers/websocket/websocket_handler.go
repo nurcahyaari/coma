@@ -10,7 +10,7 @@ import (
 	"github.com/coma/coma/container"
 	internalerrors "github.com/coma/coma/internal/utils/errors"
 	"github.com/coma/coma/src/application/application/dto"
-	"github.com/coma/coma/src/domains/service"
+	"github.com/coma/coma/src/domain/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/websocket"

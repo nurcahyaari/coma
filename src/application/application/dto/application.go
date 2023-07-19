@@ -3,7 +3,7 @@ package dto
 import (
 	"errors"
 
-	"github.com/coma/coma/src/domains/entity"
+	"github.com/coma/coma/src/domain/entity"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/google/uuid"
 )

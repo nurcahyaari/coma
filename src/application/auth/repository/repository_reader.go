@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/coma/coma/infrastructure/database"
-	"github.com/coma/coma/src/domains/entity"
-	"github.com/coma/coma/src/domains/repository"
+	"github.com/coma/coma/src/domain/entity"
+	"github.com/coma/coma/src/domain/repository"
 	"github.com/ostafen/clover"
 )
 

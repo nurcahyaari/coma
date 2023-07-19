@@ -8,7 +8,7 @@ import (
 	"github.com/coma/coma/internal/utils/pubsub"
 	applicationsvc "github.com/coma/coma/src/application/application/service"
 	authsvc "github.com/coma/coma/src/application/auth/service"
-	"github.com/coma/coma/src/domains/repository/repositoryfakes"
+	"github.com/coma/coma/src/domain/repository/repositoryfakes"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/coma/coma/container"
-	"github.com/coma/coma/src/domains/service"
+	"github.com/coma/coma/src/domain/service"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/websocket"

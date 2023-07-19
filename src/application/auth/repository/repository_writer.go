@@ -2,7 +2,7 @@ package repository
 
 import (
 	"github.com/coma/coma/infrastructure/database"
-	"github.com/coma/coma/src/domains/repository"
+	"github.com/coma/coma/src/domain/repository"
 )
 
 //counterfeiter:generate . RepositoryWrite

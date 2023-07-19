@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/coma/coma/src/application/application/dto"
-	"github.com/coma/coma/src/domains/entity"
+	"github.com/coma/coma/src/domain/entity"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/guregu/null.v4"
 )

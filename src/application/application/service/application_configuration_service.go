@@ -9,9 +9,9 @@ import (
 	"github.com/coma/coma/infrastructure/integration/coma"
 	"github.com/coma/coma/internal/utils/pubsub"
 	"github.com/coma/coma/src/application/application/dto"
-	"github.com/coma/coma/src/domains/entity"
-	domainrepository "github.com/coma/coma/src/domains/repository"
-	"github.com/coma/coma/src/domains/service"
+	"github.com/coma/coma/src/domain/entity"
+	domainrepository "github.com/coma/coma/src/domain/repository"
+	"github.com/coma/coma/src/domain/service"
 	"github.com/rs/zerolog/log"
 )
 
