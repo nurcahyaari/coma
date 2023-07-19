@@ -20,6 +20,7 @@ import (
 	applicationsvc "github.com/coma/coma/src/application/application/service"
 	authrepo "github.com/coma/coma/src/application/auth/repository"
 	authsvc "github.com/coma/coma/src/application/auth/service"
+	"github.com/rs/zerolog/log"
 
 	httphandler "github.com/coma/coma/src/handlers/http"
 	"github.com/coma/coma/src/handlers/localpubsub"
@@ -72,6 +73,9 @@ func main() {
 		RepositoryApplicationConfigurationWriter: applicationRepo.NewRepositoryApplicationConfigurationWriter(),
 		RepositoryApplicationConfigurationReader: applicationRepo.NewRepositoryApplicationConfigurationReader(),
 	}
+	if err := containerRepo.Validate(); err != nil {
+		log.Fatal().Errs("error", err).Msg("container repository")
+	}
 
 	containerIntegration := container.Integration{
 		WebsocketClient: distributorExtSvc,
@@ -98,6 +102,10 @@ func main() {
 	c.Service.ApplicationConfigurationServicer = configurationSvc
 	c.Service.ApplicationKeyServicer = applicationKeySvc
 	c.Service.ApplicationServicer = applicationSvc
+
+	if err := c.Service.Validate(); err != nil {
+		log.Fatal().Errs("error", err).Msg("container service")
+	}
 
 	httpProtocol := initHttpProtocol(c.Service)
 
