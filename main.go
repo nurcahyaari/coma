@@ -9,18 +9,19 @@ import (
 
 	"github.com/coma/coma/config"
 	"github.com/coma/coma/infrastructure/database"
+	"github.com/coma/coma/infrastructure/integration/coma"
 	"github.com/coma/coma/internal/graceful"
 	"github.com/coma/coma/internal/logger"
 	"github.com/coma/coma/internal/protocols/http"
 	httprouter "github.com/coma/coma/internal/protocols/http/router"
 	"github.com/coma/coma/internal/utils/pubsub"
-	applicationrepo "github.com/coma/coma/src/domains/application/repository"
-	applicationsvc "github.com/coma/coma/src/domains/application/service"
-	"github.com/coma/coma/src/domains/auth/dto"
-	authrepo "github.com/coma/coma/src/domains/auth/repository"
-	authsvc "github.com/coma/coma/src/domains/auth/service"
+	applicationrepo "github.com/coma/coma/src/application/application/repository"
+	applicationsvc "github.com/coma/coma/src/application/application/service"
+	"github.com/coma/coma/src/application/auth/dto"
+	authrepo "github.com/coma/coma/src/application/auth/repository"
+	authsvc "github.com/coma/coma/src/application/auth/service"
+	"github.com/coma/coma/src/domains/service"
 
-	selfextsvc "github.com/coma/coma/src/external/self/service"
 	httphandler "github.com/coma/coma/src/handlers/http"
 	"github.com/coma/coma/src/handlers/localpubsub"
 	websockethandler "github.com/coma/coma/src/handlers/websocket"
@@ -28,10 +29,10 @@ import (
 
 func initHttpProtocol(
 	authSvc authsvc.Servicer,
-	configurationSvc applicationsvc.ApplicationConfigurationServicer,
-	applicationStageSvc applicationsvc.ApplicationStageServicer,
-	applicationSvc applicationsvc.ApplicationServicer,
-	applicationKeySvc applicationsvc.ApplicationKeyServicer) *http.Http {
+	configurationSvc service.ApplicationConfigurationServicer,
+	applicationStageSvc service.ApplicationStageServicer,
+	applicationSvc service.ApplicationServicer,
+	applicationKeySvc service.ApplicationKeyServicer) *http.Http {
 	handler := httphandler.NewHttpHandler(
 		httphandler.SetDomains(
 			authSvc,
@@ -63,7 +64,7 @@ func main() {
 
 	pubSub := pubsub.NewPubsub()
 
-	distributorExtSvc := selfextsvc.New()
+	distributorExtSvc := coma.New()
 
 	authRepo := authrepo.New(cloverDB)
 	authSvc := authsvc.New(authsvc.SetRepository(authRepo.NewRepositoryReader(), authRepo.NewRepositoryWriter()),

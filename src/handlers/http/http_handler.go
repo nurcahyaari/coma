@@ -1,17 +1,17 @@
 package http
 
 import (
-	applicationsvc "github.com/coma/coma/src/domains/application/service"
-	authsvc "github.com/coma/coma/src/domains/auth/service"
+	authsvc "github.com/coma/coma/src/application/auth/service"
+	service "github.com/coma/coma/src/domains/service"
 	"github.com/go-chi/chi/v5"
 )
 
 type HttpHandle struct {
 	authSvc             authsvc.Servicer
-	configurationSvc    applicationsvc.ApplicationConfigurationServicer
-	applicationStageSvc applicationsvc.ApplicationStageServicer
-	applicationSvc      applicationsvc.ApplicationServicer
-	applicationKeySvc   applicationsvc.ApplicationKeyServicer
+	configurationSvc    service.ApplicationConfigurationServicer
+	applicationStageSvc service.ApplicationStageServicer
+	applicationSvc      service.ApplicationServicer
+	applicationKeySvc   service.ApplicationKeyServicer
 }
 
 func (h HttpHandle) Router(r *chi.Mux) {
@@ -54,15 +54,15 @@ type HttpOption func(h *HttpHandle)
 
 func SetDomains(
 	authSvc authsvc.Servicer,
-	configurationSvc applicationsvc.ApplicationConfigurationServicer,
-	applicationEnvSvc applicationsvc.ApplicationStageServicer,
-	applicationSvc applicationsvc.ApplicationServicer,
-	applicationKeySvc applicationsvc.ApplicationKeyServicer) HttpOption {
+	configurationSvc service.ApplicationConfigurationServicer,
+	applicationEnvSvc service.ApplicationStageServicer,
+	service service.ApplicationServicer,
+	applicationKeySvc service.ApplicationKeyServicer) HttpOption {
 	return func(h *HttpHandle) {
 		h.authSvc = authSvc
 		h.configurationSvc = configurationSvc
 		h.applicationStageSvc = applicationEnvSvc
-		h.applicationSvc = applicationSvc
+		h.applicationSvc = service
 		h.applicationKeySvc = applicationKeySvc
 	}
 }

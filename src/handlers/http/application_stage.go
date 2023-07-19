@@ -6,7 +6,7 @@ import (
 
 	"github.com/coma/coma/internal/protocols/http/response"
 	internalerrors "github.com/coma/coma/internal/utils/errors"
-	applicationdto "github.com/coma/coma/src/domains/application/dto"
+	applicationdto "github.com/coma/coma/src/application/application/dto"
 	"github.com/go-chi/chi/v5"
 )
 

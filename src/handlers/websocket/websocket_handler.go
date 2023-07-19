@@ -8,8 +8,8 @@ import (
 	"strconv"
 
 	internalerrors "github.com/coma/coma/internal/utils/errors"
-	"github.com/coma/coma/src/domains/application/dto"
-	applicationsvc "github.com/coma/coma/src/domains/application/service"
+	"github.com/coma/coma/src/application/application/dto"
+	"github.com/coma/coma/src/domains/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/websocket"
@@ -17,8 +17,8 @@ import (
 
 type WebsocketHandler struct {
 	connection        *WebsocketConnection
-	configurationSvc  applicationsvc.ApplicationConfigurationServicer
-	applicationKeySvc applicationsvc.ApplicationKeyServicer
+	configurationSvc  service.ApplicationConfigurationServicer
+	applicationKeySvc service.ApplicationKeyServicer
 }
 
 func (h WebsocketHandler) Router(r *chi.Mux) {
@@ -34,8 +34,8 @@ func (h WebsocketHandler) Router(r *chi.Mux) {
 type WebsockethandlerOption func(h *WebsocketHandler)
 
 func SetDomains(
-	configurationSvc applicationsvc.ApplicationConfigurationServicer,
-	applicationKeySvc applicationsvc.ApplicationKeyServicer) WebsockethandlerOption {
+	configurationSvc service.ApplicationConfigurationServicer,
+	applicationKeySvc service.ApplicationKeyServicer) WebsockethandlerOption {
 	return func(h *WebsocketHandler) {
 		h.configurationSvc = configurationSvc
 		h.applicationKeySvc = applicationKeySvc

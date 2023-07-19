@@ -3,19 +3,19 @@ package localpubsub
 import (
 	"github.com/coma/coma/config"
 	"github.com/coma/coma/internal/utils/pubsub"
-	applicationsvc "github.com/coma/coma/src/domains/application/service"
+	"github.com/coma/coma/src/domains/service"
 )
 
 type LocalPubsub struct {
 	config           *config.Config
 	pubSub           *pubsub.Pubsub
-	configurationSvc applicationsvc.ApplicationConfigurationServicer
+	configurationSvc service.ApplicationConfigurationServicer
 }
 
 type LocalPubsubOption func(h *LocalPubsub)
 
 func SetDomains(
-	configurationSvc applicationsvc.ApplicationConfigurationServicer) LocalPubsubOption {
+	configurationSvc service.ApplicationConfigurationServicer) LocalPubsubOption {
 	return func(h *LocalPubsub) {
 		h.configurationSvc = configurationSvc
 	}
