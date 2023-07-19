@@ -25,10 +25,10 @@ type ApplicationConfigurationService struct {
 }
 
 func NewApplicationConfiguration(
-	cfg *config.Config, pubSub *pubsub.Pubsub, c container.Container) service.ApplicationConfigurationServicer {
+	cfg *config.Config, c container.Container) service.ApplicationConfigurationServicer {
 	svc := &ApplicationConfigurationService{
 		config:            cfg,
-		pubSub:            pubSub,
+		pubSub:            c.LocalPubsub,
 		comaClient:        c.Integration.WebsocketClient,
 		readerRepo:        c.Repository.RepositoryApplicationConfigurationReader,
 		writerRepo:        c.Repository.RepositoryApplicationConfigurationWriter,

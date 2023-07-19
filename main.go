@@ -40,6 +40,8 @@ func initHttpProtocol(c container.Service) *http.Http {
 func main() {
 	logger.InitLogger()
 
+	c := container.Container{}
+
 	cfg := config.Get()
 
 	// init database
@@ -49,7 +51,9 @@ func main() {
 		Name: cfg.DB.Clover.Name,
 	})
 
-	pubSub := pubsub.NewPubsub()
+	pubsub := pubsub.NewPubsub()
+
+	c.Event.LocalPubsub = pubsub
 
 	distributorExtSvc := coma.New(
 		coma.Config{
@@ -81,7 +85,6 @@ func main() {
 		WebsocketClient: distributorExtSvc,
 	}
 
-	c := container.Container{}
 	c.Repository = containerRepo
 	c.Integration = containerIntegration
 
@@ -95,7 +98,7 @@ func main() {
 	applicationStageSvc := applicationsvc.NewApplicationStage(&cfg, c)
 	applicationSvc := applicationsvc.NewApplication(&cfg, c)
 	applicationKeySvc := applicationsvc.NewApplicationKey(&cfg, c)
-	configurationSvc := applicationsvc.NewApplicationConfiguration(&cfg, pubSub, c)
+	configurationSvc := applicationsvc.NewApplicationConfiguration(&cfg, c)
 
 	c.Service.AuthServicer = authSvc
 	c.Service.ApplicationStageServicer = applicationStageSvc
@@ -109,7 +112,7 @@ func main() {
 
 	httpProtocol := initHttpProtocol(c.Service)
 
-	localPubsubHandler := localpubsub.NewLocalPubsub(&cfg, pubSub, localpubsub.SetDomains(configurationSvc))
+	localPubsubHandler := localpubsub.NewLocalPubsub(&cfg, c)
 	localPubsubHandler.TopicRegistry()
 
 	// listen local pubsub
@@ -130,7 +133,7 @@ func main() {
 			Operations: map[string]graceful.Operation{
 				// place your service that need to graceful shutdown here
 				"http":        httpProtocol.Shutdown,
-				"localPubsub": pubSub.Shutdown,
+				"localPubsub": pubsub.Shutdown,
 			},
 		},
 	)

@@ -2,6 +2,7 @@ package localpubsub
 
 import (
 	"github.com/coma/coma/config"
+	"github.com/coma/coma/container"
 	"github.com/coma/coma/internal/utils/pubsub"
 	"github.com/coma/coma/src/domains/service"
 )
@@ -12,25 +13,12 @@ type LocalPubsub struct {
 	configurationSvc service.ApplicationConfigurationServicer
 }
 
-type LocalPubsubOption func(h *LocalPubsub)
-
-func SetDomains(
-	configurationSvc service.ApplicationConfigurationServicer) LocalPubsubOption {
-	return func(h *LocalPubsub) {
-		h.configurationSvc = configurationSvc
-	}
-}
-
-func NewLocalPubsub(config *config.Config, pubSub *pubsub.Pubsub, opts ...LocalPubsubOption) *LocalPubsub {
+func NewLocalPubsub(config *config.Config, c container.Container) *LocalPubsub {
 	localPubsub := &LocalPubsub{
-		config: config,
-		pubSub: pubSub,
+		config:           config,
+		pubSub:           c.LocalPubsub,
+		configurationSvc: c.ApplicationConfigurationServicer,
 	}
-
-	for _, opt := range opts {
-		opt(localPubsub)
-	}
-
 	return localPubsub
 }
 

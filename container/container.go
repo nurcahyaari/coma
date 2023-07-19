@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/coma/coma/infrastructure/integration/coma"
+	"github.com/coma/coma/internal/utils/pubsub"
 	"github.com/coma/coma/src/domains/repository"
 	"github.com/coma/coma/src/domains/service"
 )
@@ -85,6 +86,7 @@ func (c Integration) Validate() []error {
 }
 
 type Event struct {
+	LocalPubsub *pubsub.Pubsub
 }
 
 func (c Event) Validate() []error {
