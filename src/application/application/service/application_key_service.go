@@ -174,8 +174,9 @@ func (s *ApplicationKeyService) GenerateOrUpdateApplicationKey(ctx context.Conte
 	}, request.ApplicationId)
 
 	rtn.Add("findStage", &applicationStage, func(params ...any) (any, error) {
+		stageId := params[0].(string)
 		resp, err := s.stageReader.FindStage(ctx, entity.FilterApplicationStage{
-			Id: request.StageId,
+			Id: stageId,
 		})
 		if err != nil {
 			log.Error().
