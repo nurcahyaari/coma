@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/coma/coma/container"
 	internalerrors "github.com/coma/coma/internal/utils/errors"
 	"github.com/coma/coma/src/application/application/dto"
 	"github.com/coma/coma/src/domains/service"
@@ -31,26 +32,12 @@ func (h WebsocketHandler) Router(r *chi.Mux) {
 	})
 }
 
-type WebsockethandlerOption func(h *WebsocketHandler)
-
-func SetDomains(
-	configurationSvc service.ApplicationConfigurationServicer,
-	applicationKeySvc service.ApplicationKeyServicer) WebsockethandlerOption {
-	return func(h *WebsocketHandler) {
-		h.configurationSvc = configurationSvc
-		h.applicationKeySvc = applicationKeySvc
+func NewWebsocketHandler(c container.Service) *WebsocketHandler {
+	websocketHandler := &WebsocketHandler{
+		connection:        NewWebsocketConnection(c),
+		configurationSvc:  c.ApplicationConfigurationServicer,
+		applicationKeySvc: c.ApplicationKeyServicer,
 	}
-}
-
-func NewWebsocketHandler(opts ...WebsockethandlerOption) *WebsocketHandler {
-	websocketHandler := &WebsocketHandler{}
-
-	for _, opt := range opts {
-		opt(websocketHandler)
-	}
-
-	websocketHandler.connection = NewWebsocketConnection(
-		SetWebsocketConnectionDomains(websocketHandler.configurationSvc))
 
 	go websocketHandler.connection.establishConn()
 

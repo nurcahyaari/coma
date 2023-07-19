@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/coma/coma/config"
+	"github.com/coma/coma/container"
 	"github.com/coma/coma/src/application/auth/dto"
 	"github.com/coma/coma/src/application/auth/service"
 	"github.com/coma/coma/src/domains/entity"
 	"github.com/coma/coma/src/domains/repository/repositoryfakes"
-	domainservice "github.com/coma/coma/src/domains/service"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -81,18 +82,30 @@ func TestValidateToken(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
+			cfg := config.Config{}
 			repoReader := repositoryfakes.FakeRepositoryAuthReader{}
 			repoWriter := repositoryfakes.FakeRepositoryAuthWriter{}
+
+			c := container.Container{
+				Repository: container.Repository{
+					RepositoryAuthReader: &repoReader,
+					RepositoryAuthWriter: &repoWriter,
+				},
+			}
+
+			apiKeySvc := service.NewApiKey(&cfg, c)
+			oauthSvc := service.NewOauth(&cfg, c)
+
+			c.Service = container.Service{
+				ApiKeyServicer: apiKeySvc,
+				AuthServicer:   oauthSvc,
+			}
 
 			test.fakes(fakes{
 				repoReaderFake: &repoReader,
 			})
 
-			svc := service.New(service.SetAuthSvc(map[dto.Method]domainservice.AuthServicer{
-				dto.Apikey: service.NewApiKey(service.SetApiKeyRepository(&repoReader, repoWriter)),
-				dto.Oauth:  service.NewOauth(service.SetOauthRepository(&repoReader, repoWriter)),
-			}), service.SetRepository(&repoReader, repoWriter))
-
+			svc := service.New(&cfg, c)
 			res, err := svc.ValidateToken(context.Background(), test.data)
 
 			resExp := test.expected()

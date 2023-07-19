@@ -4,32 +4,25 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/coma/coma/config"
+	"github.com/coma/coma/container"
 	"github.com/coma/coma/src/application/auth/dto"
 	"github.com/coma/coma/src/domains/repository"
 	"github.com/coma/coma/src/domains/service"
 )
 
 type OauthService struct {
+	config           *config.Config
 	repositoryReader repository.RepositoryAuthReader
 	repositoryWriter repository.RepositoryAuthWriter
 }
 
-type OauthServiceOption func(s *OauthService)
-
-func SetOauthRepository(repositoryReader repository.RepositoryAuthReader, repositoryWriter repository.RepositoryAuthWriter) OauthServiceOption {
-	return func(s *OauthService) {
-		s.repositoryWriter = repositoryWriter
-		s.repositoryReader = repositoryReader
+func NewOauth(config *config.Config, c container.Container) service.AuthServicer {
+	svc := &OauthService{
+		config:           config,
+		repositoryReader: c.Repository.RepositoryAuthReader,
+		repositoryWriter: c.Repository.RepositoryAuthWriter,
 	}
-}
-
-func NewOauth(opts ...OauthServiceOption) service.AuthServicer {
-	svc := &OauthService{}
-
-	for _, opt := range opts {
-		opt(svc)
-	}
-
 	return svc
 }
 

@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/coma/coma/config"
+	"github.com/coma/coma/container"
 	internalerrors "github.com/coma/coma/internal/utils/errors"
 	"github.com/coma/coma/src/application/application/dto"
-	"github.com/coma/coma/src/application/application/repository"
 	"github.com/coma/coma/src/domains/entity"
 	domainrepository "github.com/coma/coma/src/domains/repository"
 	"github.com/coma/coma/src/domains/service"
@@ -19,24 +19,12 @@ type ApplicationStageService struct {
 	writer domainrepository.RepositoryApplicationStageWriter
 }
 
-type ApplicationStageServiceOptions func(s *ApplicationStageService)
-
-func SetApplicationStageRepository(applicationRepo *repository.Repository) ApplicationStageServiceOptions {
-	return func(s *ApplicationStageService) {
-		s.writer = applicationRepo.NewRepositoryApplicationStageWriter()
-		s.reader = applicationRepo.NewRepositoryApplicationStageReader()
-	}
-}
-
-func NewApplicationStage(config *config.Config, opts ...ApplicationStageServiceOptions) service.ApplicationStageServicer {
+func NewApplicationStage(config *config.Config, c container.Container) service.ApplicationStageServicer {
 	svc := &ApplicationStageService{
 		config: config,
+		reader: c.Repository.RepositoryApplicationStageReader,
+		writer: c.Repository.RepositoryApplicationStageWriter,
 	}
-
-	for _, opt := range opts {
-		opt(svc)
-	}
-
 	return svc
 }
 

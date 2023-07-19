@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/coma/coma/config"
+	"github.com/coma/coma/container"
 	"github.com/coma/coma/src/application/auth/dto"
 	"github.com/coma/coma/src/domains/entity"
 	"github.com/coma/coma/src/domains/repository"
@@ -12,26 +14,17 @@ import (
 )
 
 type ApiKeyService struct {
+	config           *config.Config
 	repositoryReader repository.RepositoryAuthReader
 	repositoryWriter repository.RepositoryAuthWriter
 }
 
-type ApiKeyServiceOption func(s *ApiKeyService)
-
-func SetApiKeyRepository(repositoryReader repository.RepositoryAuthReader, repositoryWriter repository.RepositoryAuthWriter) ApiKeyServiceOption {
-	return func(s *ApiKeyService) {
-		s.repositoryWriter = repositoryWriter
-		s.repositoryReader = repositoryReader
+func NewApiKey(config *config.Config, c container.Container) service.ApiKeyServicer {
+	svc := &ApiKeyService{
+		config:           config,
+		repositoryReader: c.Repository.RepositoryAuthReader,
+		repositoryWriter: c.Repository.RepositoryAuthWriter,
 	}
-}
-
-func NewApiKey(opts ...ApiKeyServiceOption) service.ApiKeyServicer {
-	svc := &ApiKeyService{}
-
-	for _, opt := range opts {
-		opt(svc)
-	}
-
 	return svc
 }
 

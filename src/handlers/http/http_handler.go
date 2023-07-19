@@ -1,6 +1,7 @@
 package http
 
 import (
+	"github.com/coma/coma/container"
 	service "github.com/coma/coma/src/domains/service"
 	"github.com/go-chi/chi/v5"
 )
@@ -49,29 +50,13 @@ func (h HttpHandle) Router(r *chi.Mux) {
 	})
 }
 
-type HttpOption func(h *HttpHandle)
-
-func SetDomains(
-	authSvc service.AuthServicer,
-	configurationSvc service.ApplicationConfigurationServicer,
-	applicationEnvSvc service.ApplicationStageServicer,
-	service service.ApplicationServicer,
-	applicationKeySvc service.ApplicationKeyServicer) HttpOption {
-	return func(h *HttpHandle) {
-		h.authSvc = authSvc
-		h.configurationSvc = configurationSvc
-		h.applicationStageSvc = applicationEnvSvc
-		h.applicationSvc = service
-		h.applicationKeySvc = applicationKeySvc
+func NewHttpHandler(c container.Service) *HttpHandle {
+	httpHandle := &HttpHandle{
+		authSvc:             c.AuthServicer,
+		configurationSvc:    c.ApplicationConfigurationServicer,
+		applicationStageSvc: c.ApplicationStageServicer,
+		applicationSvc:      c.ApplicationServicer,
+		applicationKeySvc:   c.ApplicationKeyServicer,
 	}
-}
-
-func NewHttpHandler(opts ...HttpOption) *HttpHandle {
-	httpHandle := &HttpHandle{}
-
-	for _, opt := range opts {
-		opt(httpHandle)
-	}
-
 	return httpHandle
 }

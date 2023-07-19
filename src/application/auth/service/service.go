@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 
+	"github.com/coma/coma/config"
+	"github.com/coma/coma/container"
 	"github.com/coma/coma/src/application/auth/dto"
 	"github.com/coma/coma/src/domains/repository"
 	"github.com/coma/coma/src/domains/service"
@@ -11,33 +13,22 @@ import (
 )
 
 type Service struct {
+	config           *config.Config
 	repositoryReader repository.RepositoryAuthReader
 	repositoryWriter repository.RepositoryAuthWriter
 	authSvcs         map[dto.Method]service.AuthServicer
 }
 
-type ServiceOption func(s *Service)
-
-func SetRepository(repositoryReader repository.RepositoryAuthReader, repositoryWriter repository.RepositoryAuthWriter) ServiceOption {
-	return func(s *Service) {
-		s.repositoryReader = repositoryReader
-		s.repositoryWriter = repositoryWriter
+func New(config *config.Config, c container.Container) service.AuthServicer {
+	svc := &Service{
+		config:           config,
+		repositoryReader: c.Repository.RepositoryAuthReader,
+		repositoryWriter: c.Repository.RepositoryAuthWriter,
+		authSvcs: map[dto.Method]service.AuthServicer{
+			dto.Apikey: c.ApiKeyServicer,
+			dto.Oauth:  c.AuthServicer,
+		},
 	}
-}
-
-func SetAuthSvc(authSvcs map[dto.Method]service.AuthServicer) ServiceOption {
-	return func(s *Service) {
-		s.authSvcs = authSvcs
-	}
-}
-
-func New(opts ...ServiceOption) service.AuthServicer {
-	svc := &Service{}
-
-	for _, opt := range opts {
-		opt(svc)
-	}
-
 	return svc
 }
 

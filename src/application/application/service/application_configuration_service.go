@@ -5,10 +5,10 @@ import (
 	"errors"
 
 	"github.com/coma/coma/config"
+	"github.com/coma/coma/container"
 	"github.com/coma/coma/infrastructure/integration/coma"
 	"github.com/coma/coma/internal/utils/pubsub"
 	"github.com/coma/coma/src/application/application/dto"
-	"github.com/coma/coma/src/application/application/repository"
 	"github.com/coma/coma/src/domains/entity"
 	domainrepository "github.com/coma/coma/src/domains/repository"
 	"github.com/coma/coma/src/domains/service"
@@ -24,44 +24,16 @@ type ApplicationConfigurationService struct {
 	writerRepo        domainrepository.RepositoryApplicationConfigurationWriter
 }
 
-type ApplicationConfigurationServiceOption func(svc *ApplicationConfigurationService)
-
-func SetApplicationConfigurationExternalService(comaClient *coma.WebsocketClient) ApplicationConfigurationServiceOption {
-	return func(svc *ApplicationConfigurationService) {
-		svc.comaClient = comaClient
-	}
-}
-
-func SetApplicationConfigurationInternalService(applicationKeySvc service.ApplicationKeyServicer) ApplicationConfigurationServiceOption {
-	return func(svc *ApplicationConfigurationService) {
-		svc.applicationKeySvc = applicationKeySvc
-	}
-}
-
-func SetApplicationConfigurationRepository(applicationRepo *repository.Repository) ApplicationConfigurationServiceOption {
-	return func(svc *ApplicationConfigurationService) {
-		svc.readerRepo = applicationRepo.NewRepositoryApplicationConfigurationReader()
-		svc.writerRepo = applicationRepo.NewRepositoryApplicationConfigurationWriter()
-	}
-}
-
-func SetApplicationConfigurationEvent(pubSub *pubsub.Pubsub) ApplicationConfigurationServiceOption {
-	return func(svc *ApplicationConfigurationService) {
-		svc.pubSub = pubSub
-	}
-}
-
 func NewApplicationConfiguration(
-	cfg *config.Config,
-	opts ...ApplicationConfigurationServiceOption) service.ApplicationConfigurationServicer {
+	cfg *config.Config, pubSub *pubsub.Pubsub, c container.Container) service.ApplicationConfigurationServicer {
 	svc := &ApplicationConfigurationService{
-		config: cfg,
+		config:            cfg,
+		pubSub:            pubSub,
+		comaClient:        c.Integration.WebsocketClient,
+		readerRepo:        c.Repository.RepositoryApplicationConfigurationReader,
+		writerRepo:        c.Repository.RepositoryApplicationConfigurationWriter,
+		applicationKeySvc: c.Service.ApplicationKeyServicer,
 	}
-
-	for _, opt := range opts {
-		opt(svc)
-	}
-
 	return svc
 }
 

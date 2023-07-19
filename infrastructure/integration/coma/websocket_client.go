@@ -9,16 +9,19 @@ import (
 )
 
 type WebsocketClient struct {
-	ws *websocket.Conn
+	url string
+	ws  *websocket.Conn
 }
 
-func New() *WebsocketClient {
-	return &WebsocketClient{}
+func New(config Config) *WebsocketClient {
+	return &WebsocketClient{
+		url: config.URL,
+	}
 }
 
 func (w *WebsocketClient) Connect() error {
 	conn, err := websocket.Dial(
-		fmt.Sprintf("%s?self=true", config.Get().External.Coma.Websocket.Url),
+		fmt.Sprintf("%s?self=true", w.url),
 		"",
 		config.Get().External.Coma.Websocket.OriginUrl)
 	if err != nil {

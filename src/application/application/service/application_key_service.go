@@ -5,10 +5,10 @@ import (
 	"errors"
 
 	"github.com/coma/coma/config"
+	"github.com/coma/coma/container"
 	internalerrors "github.com/coma/coma/internal/utils/errors"
 	"github.com/coma/coma/internal/utils/routine"
 	"github.com/coma/coma/src/application/application/dto"
-	"github.com/coma/coma/src/application/application/repository"
 	"github.com/coma/coma/src/domains/entity"
 	domainrepository "github.com/coma/coma/src/domains/repository"
 	"github.com/coma/coma/src/domains/service"
@@ -25,30 +25,16 @@ type ApplicationKeyService struct {
 	stageWriter       domainrepository.RepositoryApplicationStageWriter
 }
 
-type ApplicationKeyServiceOptions func(s *ApplicationKeyService)
-
-func SetApplicationKeyRepository(applicationRepo *repository.Repository) ApplicationKeyServiceOptions {
-	return func(s *ApplicationKeyService) {
-		s.writer = applicationRepo.NewRepositoryApplicationKeyWriter()
-		s.reader = applicationRepo.NewRepositoryApplicationKeyReader()
-		s.applicationWriter = applicationRepo.NewRepositoryApplicationWriter()
-		s.applicationReader = applicationRepo.NewRepositoryApplicationReader()
-		s.stageWriter = applicationRepo.NewRepositoryApplicationStageWriter()
-		s.stageReader = applicationRepo.NewRepositoryApplicationStageReader()
-	}
-}
-
-func NewApplicationKey(
-	config *config.Config,
-	opts ...ApplicationKeyServiceOptions) service.ApplicationKeyServicer {
+func NewApplicationKey(config *config.Config, c container.Container) service.ApplicationKeyServicer {
 	svc := &ApplicationKeyService{
-		config: config,
+		config:            config,
+		reader:            c.Repository.RepositoryApplicationKeyReader,
+		writer:            c.Repository.RepositoryApplicationKeyWriter,
+		applicationReader: c.Repository.RepositoryApplicationReader,
+		applicationWriter: c.Repository.RepositoryApplicationWriter,
+		stageReader:       c.Repository.RepositoryApplicationStageReader,
+		stageWriter:       c.Repository.RepositoryApplicationStageWriter,
 	}
-
-	for _, opt := range opts {
-		opt(svc)
-	}
-
 	return svc
 }
 

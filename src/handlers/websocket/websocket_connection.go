@@ -3,6 +3,7 @@ package websocket
 import (
 	"context"
 
+	"github.com/coma/coma/container"
 	"github.com/coma/coma/src/domains/service"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
@@ -31,24 +32,14 @@ type WebsocketConnection struct {
 
 type WebsocketConnectionOption func(h *WebsocketConnection)
 
-func SetWebsocketConnectionDomains(configurationSvc service.ApplicationConfigurationServicer) WebsocketConnectionOption {
-	return func(h *WebsocketConnection) {
-		h.configurationSvc = configurationSvc
-	}
-}
-
-func NewWebsocketConnection(opts ...WebsocketConnectionOption) *WebsocketConnection {
+func NewWebsocketConnection(c container.Service) *WebsocketConnection {
 	websocketConnection := &WebsocketConnection{
-		clients:        make(map[string]Client),
-		client:         make(chan Client),
-		close:          make(chan bool),
-		clientsRemoved: make(chan []string),
+		clients:          make(map[string]Client),
+		client:           make(chan Client),
+		close:            make(chan bool),
+		clientsRemoved:   make(chan []string),
+		configurationSvc: c.ApplicationConfigurationServicer,
 	}
-
-	for _, opt := range opts {
-		opt(websocketConnection)
-	}
-
 	return websocketConnection
 }
 

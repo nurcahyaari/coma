@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/coma/coma/config"
+	"github.com/coma/coma/container"
 	internalerrors "github.com/coma/coma/internal/utils/errors"
 	"github.com/coma/coma/src/application/application/dto"
-	"github.com/coma/coma/src/application/application/repository"
 	"github.com/coma/coma/src/domains/entity"
 	domainrepository "github.com/coma/coma/src/domains/repository"
 	"github.com/coma/coma/src/domains/service"
@@ -22,27 +22,14 @@ type ApplicationService struct {
 	stageWriter domainrepository.RepositoryApplicationStageWriter
 }
 
-type ApplicationServiceOptions func(s *ApplicationService)
-
-func SetApplicationRepository(
-	applicationRepo *repository.Repository) ApplicationServiceOptions {
-	return func(s *ApplicationService) {
-		s.writer = applicationRepo.NewRepositoryApplicationWriter()
-		s.reader = applicationRepo.NewRepositoryApplicationReader()
-		s.stageReader = applicationRepo.NewRepositoryApplicationStageReader()
-		s.stageWriter = applicationRepo.NewRepositoryApplicationStageWriter()
-	}
-}
-
-func NewApplication(config *config.Config, opts ...ApplicationServiceOptions) service.ApplicationServicer {
+func NewApplication(config *config.Config, c container.Container) service.ApplicationServicer {
 	svc := &ApplicationService{
-		config: config,
+		config:      config,
+		reader:      c.Repository.RepositoryApplicationReader,
+		writer:      c.Repository.RepositoryApplicationWriter,
+		stageReader: c.Repository.RepositoryApplicationStageReader,
+		stageWriter: c.Repository.RepositoryApplicationStageWriter,
 	}
-
-	for _, opt := range opts {
-		opt(svc)
-	}
-
 	return svc
 }
 

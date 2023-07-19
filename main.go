@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/coma/coma/config"
+	"github.com/coma/coma/container"
 	"github.com/coma/coma/infrastructure/database"
 	"github.com/coma/coma/infrastructure/integration/coma"
 	"github.com/coma/coma/internal/graceful"
@@ -17,33 +18,18 @@ import (
 	"github.com/coma/coma/internal/utils/pubsub"
 	applicationrepo "github.com/coma/coma/src/application/application/repository"
 	applicationsvc "github.com/coma/coma/src/application/application/service"
-	"github.com/coma/coma/src/application/auth/dto"
 	authrepo "github.com/coma/coma/src/application/auth/repository"
 	authsvc "github.com/coma/coma/src/application/auth/service"
-	"github.com/coma/coma/src/domains/service"
 
 	httphandler "github.com/coma/coma/src/handlers/http"
 	"github.com/coma/coma/src/handlers/localpubsub"
 	websockethandler "github.com/coma/coma/src/handlers/websocket"
 )
 
-func initHttpProtocol(
-	authSvc service.AuthServicer,
-	configurationSvc service.ApplicationConfigurationServicer,
-	applicationStageSvc service.ApplicationStageServicer,
-	applicationSvc service.ApplicationServicer,
-	applicationKeySvc service.ApplicationKeyServicer) *http.Http {
-	handler := httphandler.NewHttpHandler(
-		httphandler.SetDomains(
-			authSvc,
-			configurationSvc,
-			applicationStageSvc,
-			applicationSvc,
-			applicationKeySvc))
+func initHttpProtocol(c container.Service) *http.Http {
+	handler := httphandler.NewHttpHandler(c)
 
-	websocketHandler := websockethandler.NewWebsocketHandler(websockethandler.SetDomains(
-		configurationSvc,
-		applicationKeySvc))
+	websocketHandler := websockethandler.NewWebsocketHandler(c)
 	router := httprouter.NewHttpRouter(
 		handler,
 		websocketHandler)
@@ -64,43 +50,56 @@ func main() {
 
 	pubSub := pubsub.NewPubsub()
 
-	distributorExtSvc := coma.New()
-
-	authRepo := authrepo.New(cloverDB)
-	authSvc := authsvc.New(authsvc.SetRepository(authRepo.NewRepositoryReader(), authRepo.NewRepositoryWriter()),
-		authsvc.SetAuthSvc(map[dto.Method]service.AuthServicer{
-			dto.Apikey: authsvc.NewApiKey(authsvc.SetApiKeyRepository(authRepo.NewRepositoryReader(), authRepo.NewRepositoryWriter())),
-			dto.Oauth:  authsvc.NewOauth(authsvc.SetOauthRepository(authRepo.NewRepositoryReader(), authRepo.NewRepositoryWriter())),
-		}))
-
-	applicationRepo := applicationrepo.New(cloverDB)
-
-	applicationStageSvc := applicationsvc.NewApplicationStage(
-		&cfg,
-		applicationsvc.SetApplicationStageRepository(applicationRepo))
-
-	applicationSvc := applicationsvc.NewApplication(
-		&cfg,
-		applicationsvc.SetApplicationRepository(applicationRepo))
-
-	applicationKeySvc := applicationsvc.NewApplicationKey(
-		&cfg,
-		applicationsvc.SetApplicationKeyRepository(applicationRepo))
-
-	configurationSvc := applicationsvc.NewApplicationConfiguration(
-		&cfg,
-		applicationsvc.SetApplicationConfigurationExternalService(distributorExtSvc),
-		applicationsvc.SetApplicationConfigurationRepository(applicationRepo),
-		applicationsvc.SetApplicationConfigurationInternalService(applicationKeySvc),
-		applicationsvc.SetApplicationConfigurationEvent(pubSub),
+	distributorExtSvc := coma.New(
+		coma.Config{
+			URL: config.Get().External.Coma.Websocket.Url,
+		},
 	)
 
-	httpProtocol := initHttpProtocol(
-		authSvc,
-		configurationSvc,
-		applicationStageSvc,
-		applicationSvc,
-		applicationKeySvc)
+	authRepo := authrepo.New(cloverDB)
+	applicationRepo := applicationrepo.New(cloverDB)
+
+	containerRepo := container.Repository{
+		RepositoryAuthReader:                     authRepo.NewRepositoryReader(),
+		RepositoryAuthWriter:                     authRepo.NewRepositoryWriter(),
+		AuthRepositorier:                         authRepo,
+		RepositoryApplicationWriter:              applicationRepo.NewRepositoryApplicationWriter(),
+		RepositoryApplicationReader:              applicationRepo.NewRepositoryApplicationReader(),
+		RepositoryApplicationStageReader:         applicationRepo.NewRepositoryApplicationStageReader(),
+		RepositoryApplicationStageWriter:         applicationRepo.NewRepositoryApplicationStageWriter(),
+		RepositoryApplicationKeyWriter:           applicationRepo.NewRepositoryApplicationKeyWriter(),
+		RepositoryApplicationKeyReader:           applicationRepo.NewRepositoryApplicationKeyReader(),
+		RepositoryApplicationConfigurationWriter: applicationRepo.NewRepositoryApplicationConfigurationWriter(),
+		RepositoryApplicationConfigurationReader: applicationRepo.NewRepositoryApplicationConfigurationReader(),
+	}
+
+	containerIntegration := container.Integration{
+		WebsocketClient: distributorExtSvc,
+	}
+
+	c := container.Container{}
+	c.Repository = containerRepo
+	c.Integration = containerIntegration
+
+	apiKeySvc := authsvc.NewApiKey(&cfg, c)
+	oauthSvc := authsvc.NewOauth(&cfg, c)
+
+	c.Service.ApiKeyServicer = apiKeySvc
+	c.Service.AuthServicer = oauthSvc
+
+	authSvc := authsvc.New(&cfg, c)
+	applicationStageSvc := applicationsvc.NewApplicationStage(&cfg, c)
+	applicationSvc := applicationsvc.NewApplication(&cfg, c)
+	applicationKeySvc := applicationsvc.NewApplicationKey(&cfg, c)
+	configurationSvc := applicationsvc.NewApplicationConfiguration(&cfg, pubSub, c)
+
+	c.Service.AuthServicer = authSvc
+	c.Service.ApplicationStageServicer = applicationStageSvc
+	c.Service.ApplicationConfigurationServicer = configurationSvc
+	c.Service.ApplicationKeyServicer = applicationKeySvc
+	c.Service.ApplicationServicer = applicationSvc
+
+	httpProtocol := initHttpProtocol(c.Service)
 
 	localPubsubHandler := localpubsub.NewLocalPubsub(&cfg, pubSub, localpubsub.SetDomains(configurationSvc))
 	localPubsubHandler.TopicRegistry()
