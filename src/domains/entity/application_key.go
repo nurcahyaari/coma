@@ -5,7 +5,6 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/ostafen/clover"
 )
 
@@ -16,31 +15,16 @@ type ApplicationKey struct {
 	ApplicationId string `json:"applicationId"`
 	StageId       string `json:"stageId"`
 	Key           string `json:"key"`
-	Salt          string `json:"salt"`
 }
 
-func (r *ApplicationKey) GenerateSalt(length int) {
+func (r *ApplicationKey) GenerateKey(length int) {
 	var seededRand *rand.Rand = rand.New(
 		rand.NewSource(time.Now().UnixNano()))
 	b := make([]byte, length)
 	for i := range b {
 		b[i] = charset[seededRand.Intn(len(charset))]
 	}
-	r.Salt = string(b)
-}
-
-func (r *ApplicationKey) GenerateKey() error {
-	token := jwt.New(jwt.SigningMethodHS256)
-	claims := token.Claims.(jwt.MapClaims)
-	claims["exp"] = nil
-	claims["stageId"] = r.StageId
-	claims["applicationId"] = r.ApplicationId
-	tokenStr, err := token.SignedString([]byte(r.Salt))
-	if err != nil {
-		return err
-	}
-	r.Key = tokenStr
-	return nil
+	r.Key = string(b)
 }
 
 func (r ApplicationKey) MapStringInterface() (map[string]interface{}, error) {

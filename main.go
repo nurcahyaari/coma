@@ -40,7 +40,12 @@ func initHttpProtocol(c container.Service) *http.Http {
 func main() {
 	logger.InitLogger()
 
-	c := container.Container{}
+	c := container.Container{
+		Repository:  &container.Repository{},
+		Service:     &container.Service{},
+		Integration: &container.Integration{},
+		Event:       &container.Event{},
+	}
 
 	cfg := config.Get()
 
@@ -53,7 +58,10 @@ func main() {
 
 	pubsub := pubsub.NewPubsub()
 
-	c.Event.LocalPubsub = pubsub
+	containerEvent := container.Event{
+		LocalPubsub: pubsub,
+	}
+	c.Event = &containerEvent
 
 	distributorExtSvc := coma.New(
 		coma.Config{
@@ -85,32 +93,35 @@ func main() {
 		WebsocketClient: distributorExtSvc,
 	}
 
-	c.Repository = containerRepo
-	c.Integration = containerIntegration
+	c.Repository = &containerRepo
+	c.Integration = &containerIntegration
 
 	apiKeySvc := authsvc.NewApiKey(&cfg, c)
-	oauthSvc := authsvc.NewOauth(&cfg, c)
-
 	c.Service.ApiKeyServicer = apiKeySvc
+
+	oauthSvc := authsvc.NewOauth(&cfg, c)
 	c.Service.AuthServicer = oauthSvc
 
 	authSvc := authsvc.New(&cfg, c)
-	applicationStageSvc := applicationsvc.NewApplicationStage(&cfg, c)
-	applicationSvc := applicationsvc.NewApplication(&cfg, c)
-	applicationKeySvc := applicationsvc.NewApplicationKey(&cfg, c)
-	configurationSvc := applicationsvc.NewApplicationConfiguration(&cfg, c)
-
 	c.Service.AuthServicer = authSvc
+
+	applicationStageSvc := applicationsvc.NewApplicationStage(&cfg, c)
 	c.Service.ApplicationStageServicer = applicationStageSvc
-	c.Service.ApplicationConfigurationServicer = configurationSvc
-	c.Service.ApplicationKeyServicer = applicationKeySvc
+
+	applicationSvc := applicationsvc.NewApplication(&cfg, c)
 	c.Service.ApplicationServicer = applicationSvc
+
+	applicationKeySvc := applicationsvc.NewApplicationKey(&cfg, c)
+	c.Service.ApplicationKeyServicer = applicationKeySvc
+
+	configurationSvc := applicationsvc.NewApplicationConfiguration(&cfg, c)
+	c.Service.ApplicationConfigurationServicer = configurationSvc
 
 	if err := c.Service.Validate(); err != nil {
 		log.Fatal().Errs("error", err).Msg("container service")
 	}
 
-	httpProtocol := initHttpProtocol(c.Service)
+	httpProtocol := initHttpProtocol(*c.Service)
 
 	localPubsubHandler := localpubsub.NewLocalPubsub(&cfg, c)
 	localPubsubHandler.TopicRegistry()

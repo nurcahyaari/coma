@@ -155,14 +155,7 @@ func (s *ApplicationKeyService) GenerateOrUpdateApplicationKey(ctx context.Conte
 	}
 
 	// generate application key
-	applicationKey.GenerateSalt(12)
-	err := applicationKey.GenerateKey()
-	if err != nil {
-		log.Error().
-			Err(err).
-			Msg("[GenerateOrUpdateApplicationKey.GenerateKey] error generating key")
-		return response, internalerrors.NewError(err)
-	}
+	applicationKey.GenerateKey(36)
 
 	rtn := routine.New()
 
@@ -201,7 +194,7 @@ func (s *ApplicationKeyService) GenerateOrUpdateApplicationKey(ctx context.Conte
 		return response, internalerrors.NewError(rtn.Error())
 	}
 
-	err = s.writer.CreateOrSaveApplicationKey(ctx, applicationKey)
+	err := s.writer.CreateOrSaveApplicationKey(ctx, applicationKey)
 	if err != nil {
 		log.Error().
 			Err(err).

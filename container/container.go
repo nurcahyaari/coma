@@ -106,8 +106,40 @@ func (c Event) Validate() []error {
 }
 
 type Container struct {
-	Repository
-	Service
-	Integration
-	Event
+	*Repository
+	*Service
+	*Integration
+	*Event
+}
+
+func (c Container) Validate() []error {
+	errs := []error{}
+	value := reflect.ValueOf(c)
+	types := value.Type()
+	for i := 0; i < types.NumField(); i++ {
+		if value.Field(i).IsNil() {
+			errs = append(errs, fmt.Errorf("%s: must not be empty", types.Field(i).Name))
+		}
+	}
+	if len(errs) > 0 {
+		return errs
+	}
+
+	if errs := c.Repository.Validate(); len(errs) > 0 {
+		return errs
+	}
+
+	if errs := c.Service.Validate(); len(errs) > 0 {
+		return errs
+	}
+
+	if errs := c.Integration.Validate(); len(errs) > 0 {
+		return errs
+	}
+
+	if errs := c.Event.Validate(); len(errs) > 0 {
+		return errs
+	}
+
+	return nil
 }

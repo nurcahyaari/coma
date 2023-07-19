@@ -87,7 +87,7 @@ func TestValidateToken(t *testing.T) {
 			repoWriter := repositoryfakes.FakeRepositoryAuthWriter{}
 
 			c := container.Container{
-				Repository: container.Repository{
+				Repository: &container.Repository{
 					RepositoryAuthReader: &repoReader,
 					RepositoryAuthWriter: &repoWriter,
 				},
@@ -96,7 +96,7 @@ func TestValidateToken(t *testing.T) {
 			apiKeySvc := service.NewApiKey(&cfg, c)
 			oauthSvc := service.NewOauth(&cfg, c)
 
-			c.Service = container.Service{
+			c.Service = &container.Service{
 				ApiKeyServicer: apiKeySvc,
 				AuthServicer:   oauthSvc,
 			}
