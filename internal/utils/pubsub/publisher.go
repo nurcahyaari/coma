@@ -1,7 +1,6 @@
 package pubsub
 
 import (
-	"fmt"
 	"io"
 	"strings"
 )
@@ -36,10 +35,8 @@ func (p *publisher) publish(message MessageHandler) error {
 
 func (p *publisher) shutdownAndRetrieveMessages() ([]string, error) {
 	messages := []string{}
-	fmt.Println("test")
 	close(p.message)
 	for message := range p.message {
-		fmt.Println(message)
 		buf := new(strings.Builder)
 		_, err := io.Copy(buf, message)
 		if err != nil {

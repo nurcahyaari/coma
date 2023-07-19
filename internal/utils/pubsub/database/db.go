@@ -3,7 +3,7 @@ package database
 import "github.com/ostafen/clover"
 
 type Databaser interface {
-	Retrieve() (Backups, error)
+	RetrieveAndDelete(topic string) (Backups, error)
 	Store(data Backup) error
 }
 

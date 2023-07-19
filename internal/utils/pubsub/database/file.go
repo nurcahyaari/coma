@@ -10,10 +10,12 @@ func NewFileDatabase(path string) Databaser {
 	}
 }
 
-func (f *FileDatabase) Retrieve() (Backups, error) {
+func (f *FileDatabase) RetrieveAndDelete(topic string) (Backups, error) {
+	// todo: implement golang file access
 	return nil, nil
 }
 
 func (f *FileDatabase) Store(data Backup) error {
+	// todo: implement golang file access
 	return nil
 }

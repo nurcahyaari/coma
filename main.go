@@ -85,7 +85,7 @@ func main() {
 		Name: cfg.DB.Clover.Name,
 	})
 
-	pubsub := pubsub.NewPubsub()
+	pubsub := pubsub.NewPubsub(pubsub.SetCloverForBackup(cloverDB.DB))
 
 	containerEvent := container.Event{
 		LocalPubsub: pubsub,

@@ -37,10 +37,15 @@ func (db *CloverDatabase) getLastSequenceId() (int64, error) {
 	return backup.SequenceId, nil
 }
 
-func (db *CloverDatabase) Retrieve() (Backups, error) {
+func (db *CloverDatabase) delete(topic string) error {
+	return db.db.Query(db.name).Where(clover.Field("topic").Eq(topic)).Delete()
+}
+
+func (db *CloverDatabase) RetrieveAndDelete(topic string) (Backups, error) {
 	var backups Backups
 
 	docs, err := db.db.Query(db.name).
+		Where(clover.Field("topic").Eq(topic)).
 		FindAll()
 	if err != nil {
 		return nil, err
@@ -54,6 +59,8 @@ func (db *CloverDatabase) Retrieve() (Backups, error) {
 		}
 		backups = append(backups, backup)
 	}
+
+	db.delete(topic)
 
 	return backups, nil
 }

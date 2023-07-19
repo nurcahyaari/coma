@@ -15,10 +15,13 @@ func (h LocalPubsub) ConfigDistributor(id string, r io.Reader) {
 
 	var clientKey string
 	buf := new(strings.Builder)
-	io.Copy(buf, r)
+	_, err := io.Copy(buf, r)
+	if err != nil {
+		return
+	}
 	clientKey = buf.String()
 
-	err := h.configurationSvc.DistributeConfiguration(context.TODO(), clientKey)
+	err = h.configurationSvc.DistributeConfiguration(context.TODO(), clientKey)
 	if err != nil {
 		log.Error().Err(err).Msg("[ConfigDistributor] error distribute configuration")
 		return

@@ -71,6 +71,9 @@ func (ps Pubsub) TopicRegister(topic string, opts ...PubsubRegisterOpt) {
 	})
 
 	ps.subscriber[topic] = newSubscriber()
+
+	// check is there backup for this topic
+	go ps.checkBackup(topic)
 }
 
 func (ps Pubsub) ConsumerRegister(topic string, handler SubscriberHandler, opts ...SubscriberOption) error {
@@ -118,11 +121,38 @@ func (ps Pubsub) Len(topic string) int {
 	return ps.publisher[topic].len()
 }
 
+func (ps Pubsub) checkBackup(topic string) error {
+	if ps.database == nil {
+		return nil
+	}
+	log.Println("checking backup...")
+	backups, err := ps.database.RetrieveAndDelete(topic)
+	if err != nil {
+		return err
+	}
+	if len(backups) == 0 {
+		log.Println("no backup...")
+		return nil
+	}
+
+	for _, backup := range backups {
+		if err := ps.Publish(backup.Topic, SendBytes(backup.Message)); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (ps Pubsub) Shutdown(ctx context.Context) error {
 	// todo: implement later
+	if ps.database == nil {
+		return nil
+	}
 	log.Println("backup message from queue")
 	backups := database.Backups{}
 	for topic, publisher := range ps.publisher {
+		ps.subscriber[topic].shutdownSubscriber()
 		messages, err := publisher.shutdownAndRetrieveMessages()
 		if err != nil {
 			return err
@@ -134,7 +164,11 @@ func (ps Pubsub) Shutdown(ctx context.Context) error {
 				Message: []byte(message),
 			})
 		}
+	}
 
+	if len(backups) == 0 {
+		log.Println("there is no message from queue")
+		return nil
 	}
 
 	for _, backup := range backups {
