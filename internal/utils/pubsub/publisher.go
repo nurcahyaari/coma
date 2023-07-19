@@ -1,9 +1,14 @@
 package pubsub
 
-import "io"
+import (
+	"fmt"
+	"io"
+	"strings"
+)
 
 type publisher struct {
-	message chan io.Reader
+	shutdown chan bool
+	message  chan io.Reader
 }
 
 type publisherOptions struct {
@@ -12,7 +17,8 @@ type publisherOptions struct {
 
 func newPublisher(options publisherOptions) *publisher {
 	pub := &publisher{
-		message: make(chan io.Reader, options.bufferCapacity),
+		shutdown: make(chan bool),
+		message:  make(chan io.Reader, options.bufferCapacity),
 	}
 
 	return pub
@@ -26,6 +32,24 @@ func (p *publisher) publish(message MessageHandler) error {
 
 	p.message <- data
 	return nil
+}
+
+func (p *publisher) shutdownAndRetrieveMessages() ([]string, error) {
+	messages := []string{}
+	fmt.Println("test")
+	close(p.message)
+	for message := range p.message {
+		fmt.Println(message)
+		buf := new(strings.Builder)
+		_, err := io.Copy(buf, message)
+		if err != nil {
+			return nil, err
+		}
+
+		messages = append(messages, buf.String())
+	}
+
+	return messages, nil
 }
 
 func (p *publisher) capacity() int {

@@ -1,7 +1,9 @@
 package pubsub_test
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"strings"
 	"testing"
@@ -102,5 +104,24 @@ func TestPubsub(t *testing.T) {
 		)
 
 		assert.Equal(t, 0, ps.Len("test-topic-1"))
+	})
+}
+
+func TestShutdown(t *testing.T) {
+	t.Run("message queue is empty", func(t *testing.T) {
+		ps := pubsub.NewPubsub()
+		ps.TopicRegister(
+			"test-topic-1",
+			pubsub.PubsubSetMaxBufferCapacity(5),
+		)
+
+		ps.ConsumerRegister("test-topic-1", func(id string, r io.Reader) {
+			fmt.Println(id, r)
+		}, pubsub.PubsubSetMaxWorker(5))
+
+		go ps.Listen()
+
+		err := ps.Shutdown(context.TODO())
+		assert.NoError(t, err)
 	})
 }

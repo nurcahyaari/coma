@@ -3,6 +3,10 @@ package pubsub
 import (
 	"context"
 	"errors"
+	"log"
+
+	"github.com/coma/coma/internal/utils/pubsub/database"
+	"github.com/ostafen/clover"
 )
 
 var (
@@ -11,14 +15,32 @@ var (
 )
 
 type Pubsub struct {
+	shutdown   chan bool
+	database   database.Databaser
 	publisher  map[string]*publisher
 	subscriber map[string]*subscriber
 }
 
-func NewPubsub() *Pubsub {
+type PubsubOption func(pb *Pubsub)
+
+func SetCloverForBackup(db *clover.DB) PubsubOption {
+	return func(pb *Pubsub) {
+		database := database.Database{
+			DatabaseDriver: database.CLOVER,
+		}
+		pb.database = database.NewCloverDatabase(db)
+	}
+}
+
+func NewPubsub(opts ...PubsubOption) *Pubsub {
 	pubsub := &Pubsub{
+		shutdown:   make(chan bool),
 		publisher:  make(map[string]*publisher),
 		subscriber: make(map[string]*subscriber),
+	}
+
+	for _, opt := range opts {
+		opt(pubsub)
 	}
 
 	return pubsub
@@ -98,5 +120,30 @@ func (ps Pubsub) Len(topic string) int {
 
 func (ps Pubsub) Shutdown(ctx context.Context) error {
 	// todo: implement later
+	log.Println("backup message from queue")
+	backups := database.Backups{}
+	for topic, publisher := range ps.publisher {
+		messages, err := publisher.shutdownAndRetrieveMessages()
+		if err != nil {
+			return err
+		}
+
+		for _, message := range messages {
+			backups = append(backups, database.Backup{
+				Topic:   topic,
+				Message: []byte(message),
+			})
+		}
+
+	}
+
+	for _, backup := range backups {
+		err := ps.database.Store(backup)
+		if err != nil {
+			return err
+		}
+	}
+
+	log.Println("success backup message from queue")
 	return nil
 }
