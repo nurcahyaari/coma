@@ -13,6 +13,9 @@ func (h LocalPubsub) ConfigDistributor(id string, r io.Reader) {
 		Str("id", id).
 		Msg("[ConfigDistributor] send configuration toward client")
 
+	if r == nil {
+		return
+	}
 	var clientKey string
 	buf := new(strings.Builder)
 	_, err := io.Copy(buf, r)

@@ -73,7 +73,7 @@ func (ps Pubsub) TopicRegister(topic string, opts ...PubsubRegisterOpt) {
 	ps.subscriber[topic] = newSubscriber()
 
 	// check is there backup for this topic
-	go ps.checkBackup(topic)
+	go ps.CheckBackup(topic)
 }
 
 func (ps Pubsub) ConsumerRegister(topic string, handler SubscriberHandler, opts ...SubscriberOption) error {
@@ -110,6 +110,8 @@ func (ps Pubsub) Publish(topic string, message MessageHandler) error {
 		return ErrConsumerIsNotExists
 	}
 
+	log.Printf("publish message to %s, current message: %d\n", topic, pub.len())
+
 	return pub.publish(message)
 }
 
@@ -121,7 +123,7 @@ func (ps Pubsub) Len(topic string) int {
 	return ps.publisher[topic].len()
 }
 
-func (ps Pubsub) checkBackup(topic string) error {
+func (ps Pubsub) CheckBackup(topic string) error {
 	if ps.database == nil {
 		return nil
 	}
@@ -135,13 +137,21 @@ func (ps Pubsub) checkBackup(topic string) error {
 		return nil
 	}
 
+	log.Printf("found %d backups, start publish...\n", len(backups))
+
 	for _, backup := range backups {
 		if err := ps.Publish(backup.Topic, SendBytes(backup.Message)); err != nil {
 			return err
 		}
 	}
 
+	log.Printf("success retrieve %d message...\n", len(backups))
 	return nil
+}
+
+func (ps Pubsub) shutdownSubscriber(topic string) {
+	ps.subscriber[topic].shutdownSubscriber()
+	ps.subscriber[topic] = nil
 }
 
 func (ps Pubsub) Shutdown(ctx context.Context) error {
@@ -152,7 +162,7 @@ func (ps Pubsub) Shutdown(ctx context.Context) error {
 	log.Println("backup message from queue")
 	backups := database.Backups{}
 	for topic, publisher := range ps.publisher {
-		ps.subscriber[topic].shutdownSubscriber()
+		// ps.shutdownSubscriber(topic)
 		messages, err := publisher.shutdownAndRetrieveMessages()
 		if err != nil {
 			return err
@@ -178,6 +188,6 @@ func (ps Pubsub) Shutdown(ctx context.Context) error {
 		}
 	}
 
-	log.Println("success backup message from queue")
+	log.Printf("success backup %d message from queue\n", len(backups))
 	return nil
 }

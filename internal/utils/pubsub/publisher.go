@@ -6,8 +6,7 @@ import (
 )
 
 type publisher struct {
-	shutdown chan bool
-	message  chan io.Reader
+	message chan io.Reader
 }
 
 type publisherOptions struct {
@@ -16,8 +15,7 @@ type publisherOptions struct {
 
 func newPublisher(options publisherOptions) *publisher {
 	pub := &publisher{
-		shutdown: make(chan bool),
-		message:  make(chan io.Reader, options.bufferCapacity),
+		message: make(chan io.Reader, options.bufferCapacity),
 	}
 
 	return pub

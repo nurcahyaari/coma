@@ -83,69 +83,65 @@ func (w *WebsocketHandler) Websocket(c *websocket.Conn) {
 	}
 
 	for {
-		select {
-		case <-w.shutdown:
-			return
-		default:
-			var (
-				msg  string
-				data RequestDistribute
-			)
+		var (
+			msg  string
+			data RequestDistribute
+		)
 
-			err := websocket.Message.Receive(c, &msg)
-			if err != nil {
-				if err == io.EOF {
-					log.Error().
-						Err(err).
-						Msg("[Websocket] connection is closed")
-					break
-				}
+		err := websocket.Message.Receive(c, &msg)
+		if err != nil {
+			if err == io.EOF {
 				log.Error().
 					Err(err).
-					Msg("[Websocket] err: marshaling from message")
-				continue
+					Msg("[Websocket] connection is closed")
+				break
 			}
 
-			log.Info().
-				Str("message", msg).
-				Msg("[Websocket] received message")
-
-			err = json.Unmarshal([]byte(msg), &data)
-			if err != nil {
-				log.Error().
-					Err(err).
-					Msg("[Websocket] err: unmarshaling to struct")
-				continue
-			}
-
-			if errs := data.Validate(); len(errs) > 0 {
-				log.Error().
-					Errs("validate", errs).
-					Msg("[Websocket] there is an error on the request object")
-				continue
-			}
-
-			byt, err := json.Marshal(data)
-			if err != nil {
-				log.Error().
-					Err(err).
-					Msg("[Websocket] err: marshaling to byte")
-				continue
-			}
-
-			clients, err := w.connection.broadcast(byt,
-				SetClientKey(data.ClientKey))
-			if err != nil {
-				w.connection.clientsRemoved <- clients
-				log.Error().
-					Err(err).
-					Msg("[Websocket] err: send message")
-				continue
-			}
-
-			log.Info().
-				Str("message", string(msg)).
-				Msg("[Websocket] success send message")
+			log.Error().
+				Err(err).
+				Msg("[Websocket] err: marshaling from message")
+			break
 		}
+
+		log.Info().
+			Str("message", msg).
+			Msg("[Websocket] received message")
+
+		err = json.Unmarshal([]byte(msg), &data)
+		if err != nil {
+			log.Error().
+				Err(err).
+				Msg("[Websocket] err: unmarshaling to struct")
+			continue
+		}
+
+		if errs := data.Validate(); len(errs) > 0 {
+			log.Error().
+				Errs("validate", errs).
+				Msg("[Websocket] there is an error on the request object")
+			continue
+		}
+
+		byt, err := json.Marshal(data)
+		if err != nil {
+			log.Error().
+				Err(err).
+				Msg("[Websocket] err: marshaling to byte")
+			continue
+		}
+
+		clients, err := w.connection.broadcast(byt,
+			SetClientKey(data.ClientKey))
+		if err != nil {
+			w.connection.clientsRemoved <- clients
+			log.Error().
+				Err(err).
+				Msg("[Websocket] err: send message")
+			continue
+		}
+
+		log.Info().
+			Str("message", string(msg)).
+			Msg("[Websocket] success send message")
 	}
 }

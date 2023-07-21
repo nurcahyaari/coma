@@ -38,25 +38,21 @@ func SetSubscriberRetryWaitTime(retryWaitTime time.Duration) SubscriberOpt {
 }
 
 type subscriber struct {
-	shutdownDispatcher chan bool
-	shutdownConsumer   chan bool
-	async              bool
-	maxWorker          int
-	maxElapsedTime     time.Duration
-	retryWaitTime      time.Duration
-	handler            SubscriberHandler
-	message            chan io.Reader
+	async          bool
+	maxWorker      int
+	maxElapsedTime time.Duration
+	retryWaitTime  time.Duration
+	handler        SubscriberHandler
+	message        chan io.Reader
 }
 
 func newSubscriber() *subscriber {
 	sub := &subscriber{
-		shutdownDispatcher: make(chan bool),
-		shutdownConsumer:   make(chan bool),
-		async:              false,
-		maxWorker:          1,
-		maxElapsedTime:     1 * time.Second,
-		retryWaitTime:      3 * time.Second,
-		message:            make(chan io.Reader),
+		async:          false,
+		maxWorker:      1,
+		maxElapsedTime: 1 * time.Second,
+		retryWaitTime:  3 * time.Second,
+		message:        make(chan io.Reader),
 	}
 
 	if sub.maxWorker == 0 {
@@ -100,11 +96,7 @@ func (s *subscriber) registerSubscriberHandler(handler SubscriberHandler, opts .
 }
 
 func (s *subscriber) shutdownSubscriber() {
-	s.shutdownDispatcher <- true
-	s.shutdownConsumer <- true
-	close(s.shutdownConsumer)
-	close(s.shutdownDispatcher)
-	close(s.message)
+	// defer close(s.message)
 }
 
 func (s *subscriber) listen() {
@@ -115,42 +107,40 @@ func (s *subscriber) listen() {
 
 func (s *subscriber) dispatcher(publisher *publisher) {
 	for {
-		select {
-		case <-s.shutdownDispatcher:
-			return
-		case message := <-publisher.message:
-			s.message <- message
+		if s.handler == nil {
+			continue
 		}
+		message := <-publisher.message
+		s.message <- message
 	}
 }
 
 func (s *subscriber) consume() {
 	for {
-		select {
-		case <-s.shutdownConsumer:
-			return
-		case message := <-s.message:
-			id := uuid.New()
+		if s.handler == nil {
+			continue
+		}
+		id := uuid.New()
+		message := <-s.message
 
-			backoffExponential := backoff.NewExponentialBackOff()
-			backoffExponential.MaxInterval = s.retryWaitTime
-			backoffExponential.MaxElapsedTime = s.maxElapsedTime
+		backoffExponential := backoff.NewExponentialBackOff()
+		backoffExponential.MaxInterval = s.retryWaitTime
+		backoffExponential.MaxElapsedTime = s.maxElapsedTime
 
-			if s.async {
-				go backoff.Retry(func() error {
-					s.handler(id.String(), message)
-					return nil
-				}, backoffExponential)
-				continue
-			}
-
-			err := backoff.Retry(func() error {
+		if s.async {
+			go backoff.Retry(func() error {
 				s.handler(id.String(), message)
 				return nil
 			}, backoffExponential)
-			if err != nil {
-				log.Error().Err(err).Msg("error consume message")
-			}
+			continue
+		}
+
+		err := backoff.Retry(func() error {
+			s.handler(id.String(), message)
+			return nil
+		}, backoffExponential)
+		if err != nil {
+			log.Error().Err(err).Msg("error consume message")
 		}
 	}
 }

@@ -28,6 +28,9 @@ func (db *CloverDatabase) getLastSequenceId() (int64, error) {
 	if err != nil {
 		return 0, err
 	}
+	if doc == nil {
+		return 0, nil
+	}
 
 	err = doc.Unmarshal(&backup)
 	if err != nil {

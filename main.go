@@ -150,19 +150,20 @@ func main() {
 		log.Fatal().Errs("error", err).Msg("container service")
 	}
 
-	httpProtocol := initHttpProtocol(*c.Service)
-
 	localPubsubHandler := localpubsub.NewLocalPubsub(&cfg, c)
-	localPubsubHandler.TopicRegistry()
 
-	// listen local pubsub
-	go localPubsubHandler.Listen()
+	httpProtocol := initHttpProtocol(*c.Service)
 
 	// init http protocol
 	go httpProtocol.Listen()
 
 	// init other protocols here
 	go distributorExtSvc.Connect()
+
+	localPubsubHandler.TopicRegistry()
+
+	// listen local pubsub
+	go localPubsubHandler.Listen()
 
 	ctx, cancel := context.WithCancel(context.TODO())
 	defer cancel()
