@@ -26,11 +26,11 @@ type Http struct {
 	serverState graceful.ServerState
 }
 
-func NewHttp(httpRouter *router.HttpRoute) *Http {
+func New(httpRouter *router.HttpRoute) *Http {
 	return &Http{HttpRouter: httpRouter}
 }
 
-func (p *Http) setupRouter(app *chi.Mux) {
+func (p *Http) router(app *chi.Mux) {
 	p.HttpRouter.Router(app)
 }
 
@@ -38,7 +38,7 @@ func (h *Http) cors(r *chi.Mux) {
 	r.Use(cors.AllowAll().Handler)
 }
 
-func (h *Http) setupSwagger(app *chi.Mux) {
+func (h *Http) swagger(app *chi.Mux) {
 	app.Mount("/swagger", httpswagger.WrapHandler)
 	app.Handle("/public/*", http.StripPrefix("/public/", http.FileServer(http.Dir("public"))))
 }
@@ -58,7 +58,7 @@ func (h *Http) shutdownStateMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func (h *Http) setupPprof(r *chi.Mux) {
+func (h *Http) pprof(r *chi.Mux) {
 	r.HandleFunc("/debug/pprof/", pprof.Index)
 	r.HandleFunc("/debug/pprof/heap", pprof.Index)
 	r.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
@@ -70,13 +70,13 @@ func (h *Http) setupPprof(r *chi.Mux) {
 func (p *Http) Listen() {
 	app := chi.NewRouter()
 
-	p.cors(app)
 	app.Use(middleware.Logger)
 	app.Use(middleware.Recoverer)
 	app.Use(p.shutdownStateMiddleware)
-	p.setupRouter(app)
-	p.setupSwagger(app)
-	p.setupPprof(app)
+	p.cors(app)
+	p.router(app)
+	p.swagger(app)
+	p.pprof(app)
 
 	serverPort := fmt.Sprintf(":%d", config.Get().Application.Port)
 	p.httpServer = &http.Server{

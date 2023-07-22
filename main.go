@@ -35,7 +35,7 @@ func initHttpProtocol(c container.Service) *http.Http {
 	router := httprouter.NewHttpRouter(
 		handler,
 		websocketHandler)
-	return http.NewHttp(router)
+	return http.New(router)
 }
 
 func main() {
