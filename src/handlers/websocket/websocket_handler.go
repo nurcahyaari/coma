@@ -86,14 +86,13 @@ func (w *WebsocketHandler) Websocket(c *websocket.Conn) {
 		)
 
 		err := websocket.Message.Receive(c, &msg)
+		if err == io.EOF {
+			log.Warn().
+				Err(err).
+				Msg("[Websocket] connection is closed")
+			break
+		}
 		if err != nil {
-			if err == io.EOF {
-				log.Error().
-					Err(err).
-					Msg("[Websocket] connection is closed")
-				break
-			}
-
 			log.Error().
 				Err(err).
 				Msg("[Websocket] err: marshaling from message")
