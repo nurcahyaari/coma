@@ -38,21 +38,25 @@ func SetSubscriberRetryWaitTime(retryWaitTime time.Duration) SubscriberOpt {
 }
 
 type subscriber struct {
-	async          bool
-	maxWorker      int
-	maxElapsedTime time.Duration
-	retryWaitTime  time.Duration
-	handler        SubscriberHandler
-	message        chan io.Reader
+	shutdownDispatcher chan bool
+	shutdownListener   chan bool
+	async              bool
+	maxWorker          int
+	maxElapsedTime     time.Duration
+	retryWaitTime      time.Duration
+	handler            SubscriberHandler
+	message            chan io.Reader
 }
 
 func newSubscriber() *subscriber {
 	sub := &subscriber{
-		async:          false,
-		maxWorker:      1,
-		maxElapsedTime: 1 * time.Second,
-		retryWaitTime:  3 * time.Second,
-		message:        make(chan io.Reader),
+		shutdownDispatcher: make(chan bool),
+		shutdownListener:   make(chan bool),
+		async:              false,
+		maxWorker:          1,
+		maxElapsedTime:     1 * time.Second,
+		retryWaitTime:      3 * time.Second,
+		message:            make(chan io.Reader),
 	}
 
 	if sub.maxWorker == 0 {
@@ -95,10 +99,6 @@ func (s *subscriber) registerSubscriberHandler(handler SubscriberHandler, opts .
 	s.handler = handler
 }
 
-func (s *subscriber) shutdownSubscriber() {
-	// defer close(s.message)
-}
-
 func (s *subscriber) listen() {
 	for i := 1; i <= s.maxWorker; i++ {
 		go s.consume()
@@ -107,40 +107,53 @@ func (s *subscriber) listen() {
 
 func (s *subscriber) dispatcher(publisher *publisher) {
 	for {
-		if s.handler == nil {
-			continue
+		select {
+		case <-s.shutdownDispatcher:
+			return
+		case message := <-publisher.message:
+			if s.handler == nil {
+				continue
+			}
+			s.message <- message
 		}
-		message := <-publisher.message
-		s.message <- message
+
 	}
 }
 
 func (s *subscriber) consume() {
 	for {
-		if s.handler == nil {
-			continue
-		}
-		id := uuid.New()
-		message := <-s.message
+		select {
+		case <-s.shutdownListener:
+			return
+		case message := <-s.message:
+			if s.handler == nil {
+				continue
+			}
+			id := uuid.New()
+			backoffExponential := backoff.NewExponentialBackOff()
+			backoffExponential.MaxInterval = s.retryWaitTime
+			backoffExponential.MaxElapsedTime = s.maxElapsedTime
 
-		backoffExponential := backoff.NewExponentialBackOff()
-		backoffExponential.MaxInterval = s.retryWaitTime
-		backoffExponential.MaxElapsedTime = s.maxElapsedTime
+			if s.async {
+				go backoff.Retry(func() error {
+					s.handler(id.String(), message)
+					return nil
+				}, backoffExponential)
+				continue
+			}
 
-		if s.async {
-			go backoff.Retry(func() error {
+			err := backoff.Retry(func() error {
 				s.handler(id.String(), message)
 				return nil
 			}, backoffExponential)
-			continue
-		}
-
-		err := backoff.Retry(func() error {
-			s.handler(id.String(), message)
-			return nil
-		}, backoffExponential)
-		if err != nil {
-			log.Error().Err(err).Msg("error consume message")
+			if err != nil {
+				log.Error().Err(err).Msg("error consume message")
+			}
 		}
 	}
+}
+
+func (s *subscriber) close() {
+	s.shutdownListener <- true
+	s.shutdownDispatcher <- true
 }

@@ -31,9 +31,12 @@ func (p *publisher) publish(message MessageHandler) error {
 	return nil
 }
 
-func (p *publisher) shutdownAndRetrieveMessages() ([]string, error) {
-	messages := []string{}
+func (p *publisher) close() {
 	close(p.message)
+}
+
+func (p *publisher) retrieveMessages() ([]string, error) {
+	messages := []string{}
 	for message := range p.message {
 		buf := new(strings.Builder)
 		_, err := io.Copy(buf, message)

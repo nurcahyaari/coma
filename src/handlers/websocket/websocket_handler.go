@@ -17,7 +17,6 @@ import (
 )
 
 type WebsocketHandler struct {
-	shutdown          chan bool
 	connection        *WebsocketConnection
 	configurationSvc  service.ApplicationConfigurationServicer
 	applicationKeySvc service.ApplicationKeyServicer
@@ -35,7 +34,6 @@ func (h WebsocketHandler) Router(r *chi.Mux) {
 
 func NewWebsocketHandler(c container.Service) *WebsocketHandler {
 	websocketHandler := &WebsocketHandler{
-		shutdown:          make(chan bool),
 		connection:        NewWebsocketConnection(c),
 		configurationSvc:  c.ApplicationConfigurationServicer,
 		applicationKeySvc: c.ApplicationKeyServicer,
@@ -49,7 +47,6 @@ func NewWebsocketHandler(c container.Service) *WebsocketHandler {
 func (w *WebsocketHandler) Close() {
 	log.Warn().Msg("Clossing websocket connection")
 	w.connection.close <- true
-	w.shutdown <- true
 }
 
 func (w *WebsocketHandler) Websocket(c *websocket.Conn) {

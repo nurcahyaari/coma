@@ -150,8 +150,11 @@ func (ps Pubsub) CheckBackup(topic string) error {
 }
 
 func (ps Pubsub) shutdownSubscriber(topic string) {
-	ps.subscriber[topic].shutdownSubscriber()
-	ps.subscriber[topic] = nil
+	ps.subscriber[topic].close()
+}
+
+func (ps Pubsub) shutdownPublisher(topic string) {
+	ps.publisher[topic].close()
 }
 
 func (ps Pubsub) Shutdown(ctx context.Context) error {
@@ -160,10 +163,12 @@ func (ps Pubsub) Shutdown(ctx context.Context) error {
 		return nil
 	}
 	log.Println("backup message from queue")
+
 	backups := database.Backups{}
 	for topic, publisher := range ps.publisher {
-		// ps.shutdownSubscriber(topic)
-		messages, err := publisher.shutdownAndRetrieveMessages()
+		ps.shutdownSubscriber(topic)
+		ps.shutdownPublisher(topic)
+		messages, err := publisher.retrieveMessages()
 		if err != nil {
 			return err
 		}
