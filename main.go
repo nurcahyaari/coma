@@ -5,6 +5,7 @@ package main
 import (
 	"context"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"github.com/coma/coma/config"
@@ -40,19 +41,47 @@ func initHttpProtocol(c container.Service) *http.Http {
 func main() {
 	logger.InitLogger()
 
-	c := container.Container{
-		Repository:  &container.Repository{},
-		Service:     &container.Service{},
-		Integration: &container.Integration{},
-		Event:       &container.Event{},
-	}
-
-	cfg := config.Get()
+	var (
+		cfg         = config.Get()
+		wd          = "/var/lib/coma"
+		storagePath = filepath.Join(wd, "coma", cfg.DB.Clover.Path)
+		c           = container.Container{
+			Repository:  &container.Repository{},
+			Service:     &container.Service{},
+			Integration: &container.Integration{},
+			Event:       &container.Event{},
+		}
+	)
 
 	// init database
-	wd, _ := os.Getwd()
+	if cfg.Application.Development {
+		wd, _ = os.Getwd()
+	}
+	storagePath = filepath.Join(wd, cfg.DB.Clover.Path)
+
+	cmd := exec.Command("mkdir", "-m", "0777", "-p", filepath.Join(storagePath, cfg.DB.Clover.Name))
+	cmd.Env = append(os.Environ(), "SUDO_COMMAND=true")
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	if err := cmd.Run(); err != nil {
+		log.Fatal().Err(err).
+			Str("path", storagePath).
+			Msg("creating database directory")
+	}
+
+	cmd = exec.Command("chmod", "755", filepath.Join(storagePath, cfg.DB.Clover.Name))
+	cmd.Env = append(os.Environ(), "SUDO_COMMAND=true")
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	if err := cmd.Run(); err != nil {
+		log.Fatal().Err(err).
+			Str("path", storagePath).
+			Msg("creating access database directory")
+	}
+
+	log.Info().Msgf("initialization database on path: %s", storagePath)
 	cloverDB := database.NewClover(database.Config{
-		Path: filepath.Join(wd, cfg.DB.Clover.Path),
+		Path: storagePath,
 		Name: cfg.DB.Clover.Name,
 	})
 

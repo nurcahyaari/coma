@@ -10,8 +10,9 @@ import (
 
 type Config struct {
 	Application struct {
-		Port int `mapstructure:"PORT"`
-		Log  struct {
+		Port        int  `mapstructure:"PORT"`
+		Development bool `mapstructure:"DEVELOPMENT"`
+		Log         struct {
 			Path string `mapstructure:"PATH"`
 		} `mapstructure:"LOG"`
 		Key struct {
