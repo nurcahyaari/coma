@@ -1,7 +1,7 @@
 package database
 
 import (
-	"fmt"
+	"path/filepath"
 
 	"github.com/ostafen/clover"
 	"github.com/rs/zerolog/log"
@@ -13,7 +13,7 @@ type Config struct {
 }
 
 func (c Config) BuildDirPath() string {
-	return fmt.Sprintf("%s/%s", c.Path, c.Name)
+	return filepath.Join(c.Path, c.Name)
 }
 
 type Clover struct {

@@ -4,8 +4,8 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/coma/coma/config"
 	"github.com/coma/coma/container"
@@ -52,7 +52,7 @@ func main() {
 	// init database
 	wd, _ := os.Getwd()
 	cloverDB := database.NewClover(database.Config{
-		Path: fmt.Sprintf("%s/%s", wd, cfg.DB.Clover.Path),
+		Path: filepath.Join(wd, cfg.DB.Clover.Path),
 		Name: cfg.DB.Clover.Name,
 	})
 
