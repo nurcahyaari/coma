@@ -111,9 +111,6 @@ func (s *subscriber) dispatcher(publisher *publisher) {
 		case <-s.shutdownDispatcher:
 			return
 		case message := <-publisher.message:
-			if s.handler == nil {
-				continue
-			}
 			s.message <- message
 		}
 
@@ -126,9 +123,6 @@ func (s *subscriber) consume() {
 		case <-s.shutdownListener:
 			return
 		case message := <-s.message:
-			if s.handler == nil {
-				continue
-			}
 			id := uuid.New()
 			backoffExponential := backoff.NewExponentialBackOff()
 			backoffExponential.MaxInterval = s.retryWaitTime
@@ -154,6 +148,9 @@ func (s *subscriber) consume() {
 }
 
 func (s *subscriber) close() {
+	if s.handler == nil {
+		return
+	}
 	s.shutdownListener <- true
 	s.shutdownDispatcher <- true
 }

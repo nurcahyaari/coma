@@ -23,7 +23,7 @@ func NewLocalPubsub(config *config.Config, c container.Container) *LocalPubsub {
 }
 
 func (h LocalPubsub) Consumer() {
-	// h.pubSub.ConsumerRegister(h.config.Pubsub.Local.Consumer.ConfigDistributor.Topic, h.ConfigDistributor)
+	h.pubSub.ConsumerRegister(h.config.Pubsub.Local.Consumer.ConfigDistributor.Topic, h.ConfigDistributor)
 }
 
 func (h LocalPubsub) TopicRegistry() {

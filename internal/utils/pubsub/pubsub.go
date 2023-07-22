@@ -93,6 +93,10 @@ func (ps Pubsub) Listen() error {
 			return ErrTopicIsNotExists
 		}
 
+		if subscriber.handler == nil {
+			continue
+		}
+
 		go subscriber.dispatcher(publisher)
 		go subscriber.listen()
 	}
