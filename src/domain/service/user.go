@@ -1,3 +1,5 @@
 package service
 
-// TODO: implement user service
+type UserServicer interface {
+	// CreateUser(ctx context.Context)
+}
