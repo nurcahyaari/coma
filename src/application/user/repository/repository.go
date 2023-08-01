@@ -6,23 +6,23 @@ import (
 )
 
 type Repository struct {
-	dbName string
-	db     *database.Clover
+	name string
+	db   *database.Clover
 }
 
-func NewRepository(db *database.Clover) *Repository {
-	dbName := "application"
+func New(db *database.Clover) *Repository {
+	dbName := "user"
 	db.DB.CreateCollection(dbName)
 	return &Repository{
-		db:     db,
-		dbName: dbName,
+		db:   db,
+		name: dbName,
 	}
 }
 
 func (r *Repository) NewRepositoryUserReader() repository.RepositoryUserReader {
-	return NewRepositoryUserReader(r.db)
+	return NewRepositoryUserReader(r.name, r.db)
 }
 
 func (r *Repository) NewRepositoryUserWriter() repository.RepositoryUserWriter {
-	return NewRepositoryUserWriter(r.db)
+	return NewRepositoryUserWriter(r.name, r.db)
 }

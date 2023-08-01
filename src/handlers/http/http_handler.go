@@ -12,6 +12,7 @@ type HttpHandle struct {
 	applicationStageSvc service.ApplicationStageServicer
 	applicationSvc      service.ApplicationServicer
 	applicationKeySvc   service.ApplicationKeyServicer
+	userSvc             service.UserServicer
 }
 
 func (h HttpHandle) Router(r *chi.Mux) {
@@ -47,6 +48,14 @@ func (h HttpHandle) Router(r *chi.Mux) {
 			r.Post("/upsert", h.UpsertConfiguration)
 			r.Delete("/{id}", h.DeleteConfiguration)
 		})
+
+		r.Route("/users", func(r chi.Router) {
+			r.Get("/{id}", h.FindUser)
+			r.Post("/", h.CreateUser)
+			r.Delete("/{id}", h.DeleteUser)
+			r.Put("/{id}", h.UpdateUser)
+			r.Patch("/password/{id}", h.UpdateUserPassword)
+		})
 	})
 }
 
@@ -57,6 +66,7 @@ func NewHttpHandler(c container.Service) *HttpHandle {
 		applicationStageSvc: c.ApplicationStageServicer,
 		applicationSvc:      c.ApplicationServicer,
 		applicationKeySvc:   c.ApplicationKeyServicer,
+		userSvc:             c.UserServicer,
 	}
 	return httpHandle
 }

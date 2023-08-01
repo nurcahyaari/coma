@@ -22,6 +22,8 @@ type Repository struct {
 	repository.RepositoryApplicationKeyReader
 	repository.RepositoryApplicationConfigurationWriter
 	repository.RepositoryApplicationConfigurationReader
+	repository.RepositoryUserWriter
+	repository.RepositoryUserReader
 }
 
 func (c Repository) Validate() []error {
@@ -47,6 +49,7 @@ type Service struct {
 	service.ApplicationServicer
 	service.ApiKeyServicer
 	service.AuthServicer
+	service.UserServicer
 }
 
 func (c Service) Validate() []error {

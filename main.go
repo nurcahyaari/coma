@@ -21,6 +21,8 @@ import (
 	applicationsvc "github.com/coma/coma/src/application/application/service"
 	authrepo "github.com/coma/coma/src/application/auth/repository"
 	authsvc "github.com/coma/coma/src/application/auth/service"
+	userrepo "github.com/coma/coma/src/application/user/repository"
+	usersvc "github.com/coma/coma/src/application/user/service"
 	"github.com/rs/zerolog/log"
 
 	httphandler "github.com/coma/coma/src/handlers/http"
@@ -100,6 +102,7 @@ func main() {
 
 	authRepo := authrepo.New(cloverDB)
 	applicationRepo := applicationrepo.New(cloverDB)
+	userRepo := userrepo.New(cloverDB)
 
 	containerRepo := container.Repository{
 		RepositoryAuthReader:                     authRepo.NewRepositoryReader(),
@@ -113,6 +116,8 @@ func main() {
 		RepositoryApplicationKeyReader:           applicationRepo.NewRepositoryApplicationKeyReader(),
 		RepositoryApplicationConfigurationWriter: applicationRepo.NewRepositoryApplicationConfigurationWriter(),
 		RepositoryApplicationConfigurationReader: applicationRepo.NewRepositoryApplicationConfigurationReader(),
+		RepositoryUserWriter:                     userRepo.NewRepositoryUserWriter(),
+		RepositoryUserReader:                     userRepo.NewRepositoryUserReader(),
 	}
 	if err := containerRepo.Validate(); err != nil {
 		log.Fatal().Errs("error", err).Msg("container repository")
@@ -145,6 +150,9 @@ func main() {
 
 	configurationSvc := applicationsvc.NewApplicationConfiguration(&cfg, c)
 	c.Service.ApplicationConfigurationServicer = configurationSvc
+
+	userSvc := usersvc.NewUserRepository(&cfg, c)
+	c.Service.UserServicer = userSvc
 
 	if err := c.Service.Validate(); err != nil {
 		log.Fatal().Errs("error", err).Msg("container service")
