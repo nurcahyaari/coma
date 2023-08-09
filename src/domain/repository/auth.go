@@ -20,3 +20,15 @@ type AuthRepositorier interface {
 	NewRepositoryReader() RepositoryAuthReader
 	NewRepositoryWriter() RepositoryAuthWriter
 }
+
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . RepositoryOAuthReader
+type RepositoryOAuthReader interface{}
+
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . RepositoryOAuthWriter
+type RepositoryOAuthWriter interface{}
+
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . OauthRepositorier
+type OauthRepositorier interface {
+	NewRepositoryOAuthReader() RepositoryOAuthReader
+	NewRepositoryOAuthWriter() RepositoryOAuthWriter
+}
