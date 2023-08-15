@@ -12,4 +12,5 @@ type UserServicer interface {
 	UpdateUser(context.Context, dto.RequestUser) (dto.ResponseUser, error)
 	PatchUserPassword(context.Context, dto.RequestPatchUserPassword) error
 	FindUser(context.Context, dto.RequestUser) (dto.ResponseUser, error)
+	FindUsers(context.Context, dto.RequestUsers) (dto.ResponseUsers, error)
 }

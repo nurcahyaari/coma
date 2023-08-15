@@ -17,6 +17,11 @@ func (r RequestUser) User() entity.User {
 	}
 }
 
+type RequestUsers struct {
+	Page int
+	Size int
+}
+
 type RequestCreateUser struct {
 	Username string `json:"username"`
 	Password string `json:"password"`

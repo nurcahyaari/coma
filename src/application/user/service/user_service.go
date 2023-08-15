@@ -151,3 +151,20 @@ func (s *UserService) FindUser(ctx context.Context, req dto.RequestUser) (dto.Re
 
 	return resp, nil
 }
+
+func (s *UserService) FindUsers(ctx context.Context, req dto.RequestUsers) (dto.ResponseUsers, error) {
+	var (
+		resp dto.ResponseUsers
+	)
+
+	users, err := s.reader.FindUsers(ctx, entity.FilterUser{})
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("[FindUsers.FindUsers] err: failed to find users")
+	}
+
+	resp = dto.NewResponseUsers(users)
+
+	return resp, nil
+}

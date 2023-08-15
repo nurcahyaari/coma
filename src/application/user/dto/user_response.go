@@ -15,3 +15,13 @@ func NewResponseUser(user entity.User) ResponseUser {
 }
 
 type ResponseUsers []ResponseUser
+
+func NewResponseUsers(users entity.Users) ResponseUsers {
+	resp := make(ResponseUsers, 0)
+
+	for _, u := range users {
+		resp = append(resp, NewResponseUser(u))
+	}
+
+	return resp
+}

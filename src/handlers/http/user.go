@@ -33,6 +33,27 @@ func (h *HttpHandle) FindUser(w http.ResponseWriter, r *http.Request) {
 		response.SetData[userdto.ResponseUser](resp))
 }
 
+// FindUsers find users
+// @Summary find users
+// @Description find users
+// @Tags Users
+// @Produce json
+// @Router /v1/users [GET]
+func (h *HttpHandle) FindUsers(w http.ResponseWriter, r *http.Request) {
+	req := userdto.RequestUsers{}
+
+	resp, err := h.userSvc.FindUsers(r.Context(), req)
+	if err != nil {
+		response.Err[string](w,
+			response.SetErr[string](err.Error()))
+		return
+	}
+
+	response.Json[userdto.ResponseUsers](w,
+		response.SetMessage[userdto.ResponseUsers]("success"),
+		response.SetData[userdto.ResponseUsers](resp))
+}
+
 // CreateUser set new users
 // @Summary set new users
 // @Description set new users

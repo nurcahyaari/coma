@@ -50,6 +50,7 @@ func (h HttpHandle) Router(r *chi.Mux) {
 		})
 
 		r.Route("/users", func(r chi.Router) {
+			r.Get("/", h.FindUsers)
 			r.Get("/{id}", h.FindUser)
 			r.Post("/", h.CreateUser)
 			r.Delete("/{id}", h.DeleteUser)
