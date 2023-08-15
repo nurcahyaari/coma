@@ -11,13 +11,16 @@ import (
 )
 
 type RepositoryRead struct {
-	db *database.Clover
+	dbName string
+	db     *database.Clover
 }
 
 //counterfeiter:generate . RepositoryRead
-func NewRepositoryReader(db *database.Clover) repository.RepositoryAuthReader {
+func NewRepositoryReader(db *database.Clover, name string) repository.RepositoryAuthReader {
+	db.DB.CreateCollection(name)
 	return &RepositoryRead{
-		db: db,
+		db:     db,
+		dbName: name,
 	}
 }
 

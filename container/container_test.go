@@ -83,8 +83,7 @@ func TestContainerValidate(t *testing.T) {
 				ApplicationKeyServicer:           &applicationsvc.ApplicationKeyService{},
 				ApplicationStageServicer:         &applicationsvc.ApplicationStageService{},
 				ApplicationServicer:              &applicationsvc.ApplicationService{},
-				ApiKeyServicer:                   &authsvc.ApiKeyService{},
-				AuthServicer:                     &authsvc.Service{},
+				AuthServicer:                     &authsvc.UserAuthService{},
 			},
 			Integration: &container.Integration{
 				WebsocketClient: &coma.WebsocketClient{},

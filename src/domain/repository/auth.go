@@ -19,6 +19,8 @@ type RepositoryAuthWriter interface{}
 type AuthRepositorier interface {
 	NewRepositoryReader() RepositoryAuthReader
 	NewRepositoryWriter() RepositoryAuthWriter
+	NewRepositoryUserAuthReader() RepositoryUserAuthReader
+	NewRepositoryUserAuthWriter() RepositoryUserAuthWriter
 }
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . RepositoryOAuthReader
@@ -31,4 +33,12 @@ type RepositoryOAuthWriter interface{}
 type OauthRepositorier interface {
 	NewRepositoryOAuthReader() RepositoryOAuthReader
 	NewRepositoryOAuthWriter() RepositoryOAuthWriter
+}
+
+type RepositoryUserAuthReader interface {
+	FindTokenBy(ctx context.Context, filter entity.FilterUserAuth) (*entity.UserAuth, error)
+}
+
+type RepositoryUserAuthWriter interface {
+	CreateUserToken(ctx context.Context, userAuth entity.UserAuth) error
 }

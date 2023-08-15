@@ -7,11 +7,14 @@ import (
 
 //counterfeiter:generate . RepositoryWrite
 type RepositoryWrite struct {
-	db *database.Clover
+	dbName string
+	db     *database.Clover
 }
 
-func NewRepositoryWriter(db *database.Clover) repository.RepositoryAuthWriter {
+func NewRepositoryWriter(db *database.Clover, name string) repository.RepositoryAuthWriter {
+	db.DB.CreateCollection(name)
 	return &RepositoryWrite{
-		db: db,
+		db:     db,
+		dbName: name,
 	}
 }

@@ -24,6 +24,10 @@ func NewRepositoryUserReader(name string, db *database.Clover) repository.Reposi
 func (r *RepositoryUserRead) FindUser(ctx context.Context, filter entity.FilterUser) (entity.User, error) {
 	var user entity.User
 
+	if filter.Filter() == nil {
+		return user, nil
+	}
+
 	users, err := r.FindUsers(ctx, filter)
 	if err != nil {
 		return user, err

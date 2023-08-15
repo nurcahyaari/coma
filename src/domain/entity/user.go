@@ -2,7 +2,9 @@ package entity
 
 import (
 	"encoding/json"
+	"time"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/ostafen/clover"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -11,6 +13,10 @@ type User struct {
 	Id       string `json:"_id"`
 	Username string `json:"username"`
 	Password string `json:"password"`
+}
+
+func (a User) Empty() bool {
+	return a.Id == "" && a.Username == ""
 }
 
 func (a *User) Update(u User) {
@@ -34,6 +40,26 @@ func (a *User) HashPassword() error {
 	return nil
 }
 
+func (a *User) ComparePassword(password string) error {
+	return bcrypt.CompareHashAndPassword([]byte(a.Password), []byte(password))
+}
+
+func (a User) GenerateToken(key string, duration time.Duration) (string, time.Time, error) {
+	now := time.Now()
+	exp := now.Add(duration)
+	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"exp":    exp,
+		"iat":    now,
+		"userId": a.Id,
+	})
+	token, err := jwtToken.SignedString([]byte(key))
+	if err != nil {
+		return "", exp, err
+	}
+
+	return token, exp, nil
+}
+
 func (a User) MapStringInterface() (map[string]interface{}, error) {
 	mapStringIntf := make(map[string]interface{})
 	j, err := json.Marshal(a)
@@ -51,7 +77,8 @@ func (a User) MapStringInterface() (map[string]interface{}, error) {
 type Users []User
 
 type FilterUser struct {
-	Id string
+	Id       string
+	Username string
 }
 
 func (f *FilterUser) Filter() *clover.Criteria {
@@ -59,6 +86,10 @@ func (f *FilterUser) Filter() *clover.Criteria {
 
 	if f.Id != "" {
 		criterias = append(criterias, clover.Field("_id").Eq(f.Id))
+	}
+
+	if f.Username != "" {
+		criterias = append(criterias, clover.Field("username").Eq(f.Username))
 	}
 
 	filter := &clover.Criteria{}

@@ -118,6 +118,8 @@ func main() {
 		RepositoryApplicationConfigurationReader: applicationRepo.NewRepositoryApplicationConfigurationReader(),
 		RepositoryUserWriter:                     userRepo.NewRepositoryUserWriter(),
 		RepositoryUserReader:                     userRepo.NewRepositoryUserReader(),
+		RepositoryUserAuthReader:                 authRepo.NewRepositoryUserAuthReader(),
+		RepositoryUserAuthWriter:                 authRepo.NewRepositoryUserAuthWriter(),
 	}
 	if err := containerRepo.Validate(); err != nil {
 		log.Fatal().Errs("error", err).Msg("container repository")
@@ -129,15 +131,6 @@ func main() {
 
 	c.Repository = &containerRepo
 	c.Integration = &containerIntegration
-
-	apiKeySvc := authsvc.NewApiKey(&cfg, c)
-	c.Service.ApiKeyServicer = apiKeySvc
-
-	oauthSvc := authsvc.NewOauth(&cfg, c)
-	c.Service.AuthServicer = oauthSvc
-
-	authSvc := authsvc.New(&cfg, c)
-	c.Service.AuthServicer = authSvc
 
 	applicationStageSvc := applicationsvc.NewApplicationStage(&cfg, c)
 	c.Service.ApplicationStageServicer = applicationStageSvc
@@ -153,6 +146,9 @@ func main() {
 
 	userSvc := usersvc.NewUserRepository(&cfg, c)
 	c.Service.UserServicer = userSvc
+
+	userAuthSvc := authsvc.NewUserAuthService(&cfg, c)
+	c.Service.AuthServicer = userAuthSvc
 
 	if err := c.Service.Validate(); err != nil {
 		log.Fatal().Errs("error", err).Msg("container service")

@@ -70,6 +70,15 @@ type Config struct {
 			} `mapstructure:"CONSUMER"`
 		} `mapstructure:"LOCAL"`
 	} `mapstructure:"PUBSUB"`
+
+	Auth struct {
+		User struct {
+			AccessTokenKey       string        `mapstructure:"ACCESS_TOKEN_KEY"`
+			RefreshTokenKey      string        `mapstructure:"REFRESH_TOKEN_KEY"`
+			AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
+			RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
+		} `mapstructure:"USER"`
+	} `mapstructure:"AUTH"`
 }
 
 var cfg Config

@@ -26,6 +26,31 @@ func NewUserRepository(config *config.Config, c container.Container) service.Use
 	}
 }
 
+func (s *UserService) InternalFindUser(ctx context.Context, req dto.RequestUser) (entity.User, error) {
+	user, err := s.reader.FindUser(ctx, entity.FilterUser{
+		Id:       req.Id,
+		Username: req.Username,
+	})
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("[FindUser.FindUser] err: failed to find user")
+	}
+
+	return user, nil
+}
+
+func (s *UserService) InternalFindUsers(ctx context.Context, req dto.RequestUsers) (entity.Users, error) {
+	users, err := s.reader.FindUsers(ctx, entity.FilterUser{})
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("[FindUsers.FindUsers] err: failed to find users")
+	}
+
+	return users, nil
+}
+
 func (s *UserService) CreateUser(ctx context.Context, req dto.RequestCreateUser) (dto.ResponseUser, error) {
 	var (
 		resp dto.ResponseUser
@@ -138,9 +163,7 @@ func (s *UserService) FindUser(ctx context.Context, req dto.RequestUser) (dto.Re
 		resp dto.ResponseUser
 	)
 
-	user, err := s.reader.FindUser(ctx, entity.FilterUser{
-		Id: req.Id,
-	})
+	user, err := s.InternalFindUser(ctx, req)
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -157,7 +180,7 @@ func (s *UserService) FindUsers(ctx context.Context, req dto.RequestUsers) (dto.
 		resp dto.ResponseUsers
 	)
 
-	users, err := s.reader.FindUsers(ctx, entity.FilterUser{})
+	users, err := s.InternalFindUsers(ctx, req)
 	if err != nil {
 		log.Error().
 			Err(err).

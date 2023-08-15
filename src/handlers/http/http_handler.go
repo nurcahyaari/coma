@@ -17,12 +17,6 @@ type HttpHandle struct {
 
 func (h HttpHandle) Router(r *chi.Mux) {
 	r.Route("/v1", func(r chi.Router) {
-		r.Route("/auth", func(r chi.Router) {
-			r.Route("/oauth", func(r chi.Router) {
-				r.Post("/login", h.OauthLogin)
-			})
-		})
-
 		r.Route("/applications", func(r chi.Router) {
 			r.Get("/", h.FindApplications)
 			r.Post("/", h.CreateApplication)
@@ -56,6 +50,12 @@ func (h HttpHandle) Router(r *chi.Mux) {
 			r.Delete("/{id}", h.DeleteUser)
 			r.Put("/{id}", h.UpdateUser)
 			r.Patch("/password/{id}", h.UpdateUserPassword)
+		})
+
+		r.Route("/auth", func(r chi.Router) {
+			r.Route("/user", func(r chi.Router) {
+				r.Post("/login", h.AuthUserLogin)
+			})
 		})
 	})
 }
