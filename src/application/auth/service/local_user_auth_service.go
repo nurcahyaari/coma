@@ -34,16 +34,38 @@ func NewUserAuthService(config *config.Config, c container.Container) service.Au
 }
 
 func (s *UserAuthService) ValidateToken(ctx context.Context, request dto.RequestValidateToken) (dto.ResponseValidateKey, error) {
-	_, err := s.reader.FindTokenBy(ctx, entity.FilterUserAuth{
-		AccessToken: request.AccessToken,
+	userToken, err := s.reader.FindTokenBy(ctx, entity.FilterUserAuth{
+		AccessToken: request.Token,
 	})
 	if err != nil {
 		log.Error().
 			Err(err).
 			Msg("[ValidateToken.FindTokenByAccessToken] error find user access token")
+		return dto.ResponseValidateKey{}, errors.New("err: token doesn't found")
+	}
+	if userToken == nil {
+		return dto.ResponseValidateKey{}, errors.New("err: token doesn't found")
 	}
 
-	return dto.ResponseValidateKey{}, nil
+	switch request.TokenType {
+	case entity.AccessToken:
+		now := time.Now()
+		if userToken.AccessTokenExpiredAt.Before(now) {
+			return dto.ResponseValidateKey{}, errors.New("err: token has expired")
+		}
+	case entity.RefreshToken:
+		now := time.Now()
+		if userToken.RefreshTokenExpiredAt.Before(now) {
+			return dto.ResponseValidateKey{}, errors.New("err: refresh token has expired")
+		}
+	default:
+		return dto.ResponseValidateKey{}, errors.New("err: token type doesn't valid")
+
+	}
+
+	return dto.ResponseValidateKey{
+		Valid: true,
+	}, nil
 }
 
 func (s *UserAuthService) GenerateToken(ctx context.Context, request dto.RequestGenerateToken) (dto.ResponseGenerateToken, error) {
@@ -83,7 +105,10 @@ func (s *UserAuthService) GenerateToken(ctx context.Context, request dto.Request
 		}, nil
 	}
 
-	accessToken, accessTokenExp, err := user.GenerateToken(s.config.Auth.User.AccessTokenKey, s.config.Auth.User.AccessTokenDuration)
+	localUserAccessToken := user.LocalUserAuthToken(entity.AccessToken, s.config.Auth.User.AccessTokenDuration)
+	localUserRefreshToken := user.LocalUserAuthToken(entity.AccessToken, s.config.Auth.User.RefreshTokenDuration)
+
+	accessToken, err := localUserAccessToken.GenerateToken(s.config.Auth.User.AccessTokenKey)
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -91,7 +116,7 @@ func (s *UserAuthService) GenerateToken(ctx context.Context, request dto.Request
 		return dto.ResponseGenerateToken{}, internalerrors.NewError(err)
 	}
 
-	refreshToken, refreshTokenExp, err := user.GenerateToken(s.config.Auth.User.RefreshTokenKey, s.config.Auth.User.RefreshTokenDuration)
+	refreshToken, err := localUserRefreshToken.GenerateToken(s.config.Auth.User.RefreshTokenKey)
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -102,8 +127,8 @@ func (s *UserAuthService) GenerateToken(ctx context.Context, request dto.Request
 	userAuth := entity.CreateUserAuth(user.Id)
 	userAuth.AccessToken = accessToken
 	userAuth.RefreshToken = refreshToken
-	userAuth.AccessTokenExpiredAt = accessTokenExp
-	userAuth.RefreshTokenExpiredAt = refreshTokenExp
+	userAuth.AccessTokenExpiredAt = localUserAccessToken.Exp
+	userAuth.RefreshTokenExpiredAt = localUserRefreshToken.Exp
 
 	err = s.writer.CreateUserToken(ctx, userAuth)
 	if err != nil {
@@ -119,4 +144,8 @@ func (s *UserAuthService) GenerateToken(ctx context.Context, request dto.Request
 		AccessTokenExp:  userAuth.AccessTokenExpiredAt.String(),
 		RefreshTokenExp: userAuth.RefreshTokenExpiredAt.String(),
 	}, nil
+}
+
+func (s *UserAuthService) ExtractToken(context.Context, dto.RequestValidateToken) (dto.ResponseExtractedToken, error) {
+	return dto.ResponseExtractedToken{}, nil
 }

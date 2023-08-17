@@ -13,6 +13,7 @@ import (
 // FindApplicationStages get stages
 // @Summary get stages
 // @Description get stages
+// @Param authorization header string true "User accessToken"
 // @Param stageName query string false "<Stage name>"
 // @Tags Stages
 // @Produce json
@@ -39,6 +40,7 @@ func (h *HttpHandle) FindApplicationStages(w http.ResponseWriter, r *http.Reques
 // CreateApplicationStages set new stages
 // @Summary set new stages
 // @Description Set new stages
+// @Param authorization header string true "User accessToken"
 // @Param RequestCreateStage body applicationdto.RequestCreateStage true "create new stages"
 // @Tags Stages
 // @Produce json
@@ -70,6 +72,7 @@ func (h *HttpHandle) CreateApplicationStages(w http.ResponseWriter, r *http.Requ
 // DeleteApplicationStages delete stages
 // @Summary delete stages
 // @Description delete stages
+// @Param authorization header string true "User accessToken"
 // @Param stageName path int true "StageName"
 // @Tags Stages
 // @Produce json

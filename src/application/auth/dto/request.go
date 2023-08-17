@@ -1,7 +1,10 @@
 package dto
 
+import "github.com/coma/coma/src/domain/entity"
+
 type RequestValidateToken struct {
-	AccessToken string
+	Token     string
+	TokenType entity.TokenType
 }
 
 type RequestGenerateToken struct {

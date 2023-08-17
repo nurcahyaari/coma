@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/golang-jwt/jwt"
 	"github.com/ostafen/clover"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -44,20 +43,16 @@ func (a *User) ComparePassword(password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(a.Password), []byte(password))
 }
 
-func (a User) GenerateToken(key string, duration time.Duration) (string, time.Time, error) {
+func (a User) LocalUserAuthToken(tokenType TokenType, duration time.Duration) LocalUserAuthToken {
 	now := time.Now()
 	exp := now.Add(duration)
-	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"exp":    exp,
-		"iat":    now,
-		"userId": a.Id,
-	})
-	token, err := jwtToken.SignedString([]byte(key))
-	if err != nil {
-		return "", exp, err
-	}
 
-	return token, exp, nil
+	return LocalUserAuthToken{
+		Id:   a.Id,
+		Exp:  exp,
+		Iat:  now,
+		Type: tokenType,
+	}
 }
 
 func (a User) MapStringInterface() (map[string]interface{}, error) {

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"github.com/ostafen/clover"
 )
@@ -86,3 +87,38 @@ func (f *FilterUserAuth) Filter() *clover.Criteria {
 
 	return filter
 }
+
+type LocalUserAuthToken struct {
+	Id   string    `json:"id"`
+	Iat  time.Time `json:"iat"`
+	Exp  time.Time `json:"exp"`
+	Key  string    `json:"key"`
+	Type TokenType `json:"tokenType"`
+}
+
+func (a LocalUserAuthToken) GenerateToken(key string) (string, error) {
+	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"exp":    a.Exp,
+		"iat":    a.Iat,
+		"userId": a.Id,
+	})
+	token, err := jwtToken.SignedString([]byte(key))
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
+}
+
+type TokenType string
+
+var (
+	AccessToken  TokenType = "accessToken"
+	RefreshToken TokenType = "refreshToken"
+)
+
+type AuthenticationTokenType string
+
+var (
+	BearerAuthenticationToken AuthenticationTokenType = "Bearer"
+)

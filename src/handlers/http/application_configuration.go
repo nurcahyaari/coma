@@ -12,6 +12,7 @@ import (
 // GetConfiguration get it's config
 // @Summary set new config
 // @Description Set new config
+// @Param authorization header string true "User accessToken"
 // @Param x-clientkey header string true "<Client Key>"
 // @Param viewType query string true "<View Type>" Enums(JSON, schema)
 // @Tags Config
@@ -55,6 +56,7 @@ func (h *HttpHandle) GetConfiguration(w http.ResponseWriter, r *http.Request) {
 // SetConfiguration set new config
 // @Summary set new config
 // @Description Set new config
+// @Param authorization header string true "User accessToken"
 // @Param x-clientkey header string true "<Client Key>"
 // @Param RequestSetConfiguration body applicationdto.RequestSetConfiguration true "create new field of config"
 // @Tags Config
@@ -88,6 +90,7 @@ func (h *HttpHandle) SetConfiguration(w http.ResponseWriter, r *http.Request) {
 // @Summary update new config
 // @Description update new config
 // @Tags Config
+// @Param authorization header string true "User accessToken"
 // @Param x-clientkey header string true "<Client Key>"
 // @Param RequestUpdateConfiguration body applicationdto.RequestUpdateConfiguration true "update data of config"
 // @Produce json
@@ -118,6 +121,7 @@ func (h *HttpHandle) UpdateConfiguration(w http.ResponseWriter, r *http.Request)
 // UpsertConfiguration update/set configuration
 // @Summary update or set configuration
 // @Description update or set configuration
+// @Param authorization header string true "User accessToken"
 // @Param x-clientkey header string true "<Client Key>"
 // @Param RequestSetConfiguration body applicationdto.RequestSetConfiguration true "create new field of config"
 // @Tags Config
@@ -149,6 +153,7 @@ func (h *HttpHandle) UpsertConfiguration(w http.ResponseWriter, r *http.Request)
 // DeleteConfiguration delete configuration based on it's id
 // @Summary delete a config
 // @Description delete a config
+// @Param authorization header string true "User accessToken"
 // @Param x-clientkey header string true "<Client Key>"
 // @Param id path string true "The config field identifier it's a UUID."
 // @Tags Config

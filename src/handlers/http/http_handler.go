@@ -18,23 +18,27 @@ type HttpHandle struct {
 func (h HttpHandle) Router(r *chi.Mux) {
 	r.Route("/v1", func(r chi.Router) {
 		r.Route("/applications", func(r chi.Router) {
+			r.Use(h.MiddlewareLocalAuthAccessTokenValidate)
 			r.Get("/", h.FindApplications)
 			r.Post("/", h.CreateApplication)
 			r.Delete("/{applicationId}", h.DeleteApplications)
 		})
 
 		r.Route("/stages", func(r chi.Router) {
+			r.Use(h.MiddlewareLocalAuthAccessTokenValidate)
 			r.Get("/", h.FindApplicationStages)
 			r.Post("/", h.CreateApplicationStages)
 			r.Delete("/{stageName}", h.DeleteApplicationStages)
 		})
 
 		r.Route("/keys", func(r chi.Router) {
+			r.Use(h.MiddlewareLocalAuthAccessTokenValidate)
 			r.Get("/", h.FindApplicationKey)
 			r.Post("/", h.CreateOrUpdateApplicationKey)
 		})
 
 		r.Route("/configuration", func(r chi.Router) {
+			r.Use(h.MiddlewareLocalAuthAccessTokenValidate)
 			r.Use(h.MiddlewareCheckIsClientKeyExists)
 			r.Get("/", h.GetConfiguration)
 			r.Post("/", h.SetConfiguration)

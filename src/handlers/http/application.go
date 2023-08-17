@@ -13,6 +13,7 @@ import (
 // FindApplications get applications
 // @Summary get applications
 // @Description get applications
+// @Param authorization header string true "User accessToken"
 // @Param stageId query string false "<Stage id>"
 // @Param applicationName query string false "<application name>"
 // @Tags Applications
@@ -39,6 +40,7 @@ func (h *HttpHandle) FindApplications(w http.ResponseWriter, r *http.Request) {
 // CreateApplicationStages set new applications
 // @Summary set new applications
 // @Description Set new applications
+// @Param authorization header string true "User accessToken"
 // @Param RequestCreateApplication body applicationdto.RequestCreateApplication true "create new application"
 // @Tags Applications
 // @Produce json
@@ -70,6 +72,7 @@ func (h *HttpHandle) CreateApplication(w http.ResponseWriter, r *http.Request) {
 // DeleteApplications delete application
 // @Summary delete application
 // @Description delete application
+// @Param authorization header string true "User accessToken"
 // @Param applicationId path int true "application id"
 // @Tags Applications
 // @Produce json

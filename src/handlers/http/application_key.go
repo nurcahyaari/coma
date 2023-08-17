@@ -12,6 +12,7 @@ import (
 // FindApplicationKey get key
 // @Summary get key
 // @Description get key
+// @Param authorization header string true "User accessToken"
 // @Param applicationId query string false "<Application Id>"
 // @Param stageId query string false "<Stage Id>"
 // @Tags Key
@@ -40,6 +41,7 @@ func (h *HttpHandle) FindApplicationKey(w http.ResponseWriter, r *http.Request) 
 // CreateOrUpdateApplicationKey create or update existing key
 // @Summary create or update existing key
 // @Description create or update existing key
+// @Param authorization header string true "User accessToken"
 // @Param RequestCreateApplicationKey body applicationdto.RequestCreateApplicationKey true "create new stages"
 // @Tags Key
 // @Produce json
