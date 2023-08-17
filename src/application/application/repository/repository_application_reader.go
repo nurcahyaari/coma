@@ -15,6 +15,7 @@ type RepositoryApplicationRead struct {
 }
 
 func NewRepositoryApplicationReader(db *database.Clover, name string) repository.RepositoryApplicationReader {
+	db.DB.CreateCollection(name)
 	return &RepositoryApplicationRead{
 		db:     db,
 		dbName: name,

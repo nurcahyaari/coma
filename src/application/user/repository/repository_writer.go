@@ -15,6 +15,7 @@ type RepositoryUserWrite struct {
 }
 
 func NewRepositoryUserWriter(name string, db *database.Clover) repository.RepositoryUserWriter {
+	db.DB.CreateCollection(name)
 	return &RepositoryUserWrite{
 		name: name,
 		db:   db,

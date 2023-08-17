@@ -15,6 +15,7 @@ type RepositoryUserRead struct {
 }
 
 func NewRepositoryUserReader(name string, db *database.Clover) repository.RepositoryUserReader {
+	db.DB.CreateCollection(name)
 	return &RepositoryUserRead{
 		name: name,
 		db:   db,

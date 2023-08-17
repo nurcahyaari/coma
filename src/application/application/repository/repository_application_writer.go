@@ -15,6 +15,7 @@ type RepositoryApplicationWrite struct {
 }
 
 func NewRepositoryApplicationWriter(db *database.Clover, name string) repository.RepositoryApplicationWriter {
+	db.DB.CreateCollection(name)
 	return &RepositoryApplicationWrite{
 		db:     db,
 		dbName: name,

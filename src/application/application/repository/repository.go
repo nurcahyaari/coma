@@ -14,7 +14,6 @@ type Repository struct {
 
 func New(db *database.Clover) *Repository {
 	dbName := "application"
-	db.DB.CreateCollection(dbName)
 	return &Repository{
 		db:     db,
 		dbName: dbName,
