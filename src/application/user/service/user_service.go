@@ -18,7 +18,7 @@ type UserService struct {
 	writer domainrepository.RepositoryUserWriter
 }
 
-func NewUserRepository(config *config.Config, c container.Container) service.UserServicer {
+func NewUserService(config *config.Config, c container.Container) service.UserServicer {
 	return &UserService{
 		config: config,
 		reader: c.Repository.RepositoryUserReader,

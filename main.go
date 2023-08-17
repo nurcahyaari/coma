@@ -144,7 +144,7 @@ func main() {
 	configurationSvc := applicationsvc.NewApplicationConfiguration(&cfg, c)
 	c.Service.ApplicationConfigurationServicer = configurationSvc
 
-	userSvc := usersvc.NewUserRepository(&cfg, c)
+	userSvc := usersvc.NewUserService(&cfg, c)
 	c.Service.UserServicer = userSvc
 
 	userAuthSvc := authsvc.NewUserAuthService(&cfg, c)
