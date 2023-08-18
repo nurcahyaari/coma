@@ -6,8 +6,9 @@ import (
 )
 
 type RequestUser struct {
-	Id       string `json:"-"`
-	Username string `json:"username"`
+	Id       string          `json:"-"`
+	Username string          `json:"username"`
+	UserType entity.UserType `json:"-"`
 }
 
 func (r RequestUser) User() entity.User {
@@ -33,6 +34,17 @@ func (r RequestCreateUser) User() entity.User {
 		Id:       uid.String(),
 		Username: r.Username,
 		Password: r.Password,
+		UserType: entity.UserTypeUser,
+	}
+}
+
+func (r RequestCreateUser) UserRoot() entity.User {
+	uid := uuid.New()
+	return entity.User{
+		Id:       uid.String(),
+		Username: r.Username,
+		Password: r.Password,
+		UserType: entity.UserTypeRoot,
 	}
 }
 

@@ -2,16 +2,43 @@ package entity
 
 import (
 	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/ostafen/clover"
 	"golang.org/x/crypto/bcrypt"
 )
 
+type UserType string
+
+var (
+	UserTypeRoot UserType = "root"
+	UserTypeUser UserType = "user"
+)
+
+func NewUserType(userType string) (UserType, error) {
+	var (
+		resp UserType
+		err  error
+	)
+
+	switch userType {
+	case string(UserTypeRoot):
+		resp = UserTypeRoot
+	case string(UserTypeUser):
+		resp = UserTypeUser
+	default:
+		err = errors.New("err: user type isn't exists")
+	}
+
+	return resp, err
+}
+
 type User struct {
-	Id       string `json:"_id"`
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Id       string   `json:"_id"`
+	Username string   `json:"username"`
+	Password string   `json:"password"`
+	UserType UserType `json:"userType"`
 }
 
 func (a User) Empty() bool {

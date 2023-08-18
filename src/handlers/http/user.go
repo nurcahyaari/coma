@@ -83,6 +83,35 @@ func (h *HttpHandle) CreateUser(w http.ResponseWriter, r *http.Request) {
 		response.SetData[userdto.ResponseUser](resp))
 }
 
+// CreateUserRoot set new users as root access
+// @Summary set new users as root access
+// @Description set new users as root access
+// @Param RequestCreateUser body userdto.RequestCreateUser true "create new user"
+// @Tags Users
+// @Produce json
+// @Router /v1/users/root [POST]
+func (h *HttpHandle) CreateUserRoot(w http.ResponseWriter, r *http.Request) {
+	req := userdto.RequestCreateUser{}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Err[string](w,
+			response.SetErr[string](err.Error()))
+		return
+	}
+
+	// TODO: make validation
+	resp, err := h.userSvc.CreateRootUser(r.Context(), req)
+	if err != nil {
+		response.Err[string](w,
+			response.SetErr[string](err.Error()))
+		return
+	}
+
+	response.Json[userdto.ResponseUser](w,
+		response.SetMessage[userdto.ResponseUser]("success"),
+		response.SetData[userdto.ResponseUser](resp))
+}
+
 // DeleteUser delete users
 // @Summary delete users
 // @Description delete users

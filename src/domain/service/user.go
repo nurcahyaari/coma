@@ -15,6 +15,7 @@ type InternalUserServicer interface {
 type UserServicer interface {
 	InternalUserServicer
 	CreateUser(context.Context, dto.RequestCreateUser) (dto.ResponseUser, error)
+	CreateRootUser(ctx context.Context, req dto.RequestCreateUser) (dto.ResponseUser, error)
 	DeleteUser(context.Context, dto.RequestUser) error
 	UpdateUser(context.Context, dto.RequestUser) (dto.ResponseUser, error)
 	PatchUserPassword(context.Context, dto.RequestPatchUserPassword) error

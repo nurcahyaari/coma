@@ -51,6 +51,46 @@ func (s *UserService) InternalFindUsers(ctx context.Context, req dto.RequestUser
 	return users, nil
 }
 
+func (s *UserService) CreateRootUser(ctx context.Context, req dto.RequestCreateUser) (dto.ResponseUser, error) {
+	var (
+		resp dto.ResponseUser
+		user = req.UserRoot()
+	)
+
+	existingUser, err := s.InternalFindUser(ctx, dto.RequestUser{
+		UserType: entity.UserTypeRoot,
+	})
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("[CreateRootUser.FindUser] err: failed to find user")
+		return resp, err
+	}
+	if existingUser.Empty() {
+		log.Warn().
+			Msg("[CreateRootUser] user root has already exists")
+		return resp, err
+	}
+
+	if err := user.HashPassword(); err != nil {
+		log.Error().
+			Err(err).
+			Msg("[CreateRootUser.HashPassword] err: failed to hash password")
+		return resp, err
+	}
+
+	if err := s.writer.SaveUser(ctx, user); err != nil {
+		log.Error().
+			Err(err).
+			Msg("[CreateRootUser.SaveUser] err: failed to save user")
+		return resp, err
+	}
+
+	resp = dto.NewResponseUser(user)
+
+	return resp, nil
+}
+
 func (s *UserService) CreateUser(ctx context.Context, req dto.RequestCreateUser) (dto.ResponseUser, error) {
 	var (
 		resp dto.ResponseUser
