@@ -48,13 +48,16 @@ func (h HttpHandle) Router(r *chi.Mux) {
 		})
 
 		r.Route("/users", func(r chi.Router) {
-			r.Get("/", h.FindUsers)
-			r.Get("/{id}", h.FindUser)
-			r.Post("/", h.CreateUser)
 			r.Post("/root", h.CreateUserRoot)
-			r.Delete("/{id}", h.DeleteUser)
-			r.Put("/{id}", h.UpdateUser)
-			r.Patch("/password/{id}", h.UpdateUserPassword)
+			r.Group(func(r chi.Router) {
+				r.Use(h.MiddlewareLocalAuthAccessTokenValidate)
+				r.Get("/", h.FindUsers)
+				r.Get("/{id}", h.FindUser)
+				r.Post("/", h.CreateUser)
+				r.Delete("/{id}", h.DeleteUser)
+				r.Put("/{id}", h.UpdateUser)
+				r.Patch("/password/{id}", h.UpdateUserPassword)
+			})
 		})
 
 		r.Route("/auth", func(r chi.Router) {
