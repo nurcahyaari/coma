@@ -66,7 +66,7 @@ func (s *UserService) CreateRootUser(ctx context.Context, req dto.RequestCreateU
 			Msg("[CreateRootUser.FindUser] err: failed to find user")
 		return resp, err
 	}
-	if existingUser.Empty() {
+	if !existingUser.Empty() {
 		log.Warn().
 			Msg("[CreateRootUser] user root has already exists")
 		return resp, err
