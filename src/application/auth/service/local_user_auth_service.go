@@ -60,7 +60,6 @@ func (s *UserAuthService) ValidateToken(ctx context.Context, request dto.Request
 		}
 	default:
 		return dto.ResponseValidateKey{}, errors.New("err: token type doesn't valid")
-
 	}
 
 	return dto.ResponseValidateKey{
