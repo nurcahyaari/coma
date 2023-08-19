@@ -45,6 +45,22 @@ func (h *HttpHandle) MiddlewareLocalAuthAccessTokenValidate(next http.Handler) h
 			return
 		}
 
+		extracted, err := h.authSvc.ExtractToken(r.Context(), dto.RequestValidateToken{
+			Token:     token[1],
+			TokenType: entity.AccessToken,
+		})
+		if err != nil {
+			response.Err[string](
+				w,
+				response.SetErr[string]("err: unauthorized"),
+				response.SetHttpCode[string](http.StatusUnauthorized),
+			)
+			return
+		}
+
+		r.Header.Set("x-coma-user-id", extracted.UserId)
+		r.Header.Set("x-coma-user-type", extracted.UserType)
+
 		next.ServeHTTP(w, r)
 	})
 }

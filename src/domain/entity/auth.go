@@ -2,9 +2,10 @@ package entity
 
 import (
 	"encoding/json"
+	"errors"
 	"time"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/ostafen/clover"
 )
@@ -89,25 +90,40 @@ func (f *FilterUserAuth) Filter() *clover.Criteria {
 }
 
 type LocalUserAuthToken struct {
-	Id   string    `json:"id"`
-	Iat  time.Time `json:"iat"`
-	Exp  time.Time `json:"exp"`
-	Key  string    `json:"key"`
-	Type TokenType `json:"tokenType"`
+	jwt.RegisteredClaims
+	Id       string    `json:"id"`
+	Type     TokenType `json:"tokenType"`
+	UserType string    `json:"scope"`
+}
+
+func NewLocalUserAuthTokenFromToken(token, key string) (LocalUserAuthToken, error) {
+	localUserAuthToken := LocalUserAuthToken{}
+	jwtToken, err := jwt.ParseWithClaims(token, &localUserAuthToken, func(t *jwt.Token) (interface{}, error) {
+		return []byte(key), nil
+	})
+	if err != nil {
+		return localUserAuthToken, err
+	}
+
+	if !jwtToken.Valid {
+		return localUserAuthToken, errors.New("err: token is not valid")
+	}
+
+	return localUserAuthToken, nil
 }
 
 func (a LocalUserAuthToken) GenerateToken(key string) (string, error) {
-	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"exp":    a.Exp,
-		"iat":    a.Iat,
-		"userId": a.Id,
-	})
+	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, a)
 	token, err := jwtToken.SignedString([]byte(key))
 	if err != nil {
 		return "", err
 	}
 
 	return token, nil
+}
+
+func (a LocalUserAuthToken) ValidTokenType(tokenType TokenType) bool {
+	return a.Type == tokenType
 }
 
 type TokenType string

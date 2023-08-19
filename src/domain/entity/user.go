@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/ostafen/clover"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -75,10 +76,13 @@ func (a User) LocalUserAuthToken(tokenType TokenType, duration time.Duration) Lo
 	exp := now.Add(duration)
 
 	return LocalUserAuthToken{
-		Id:   a.Id,
-		Exp:  exp,
-		Iat:  now,
-		Type: tokenType,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(exp),
+			IssuedAt:  jwt.NewNumericDate(now),
+		},
+		Id:       a.Id,
+		Type:     tokenType,
+		UserType: string(a.UserType),
 	}
 }
 

@@ -127,8 +127,8 @@ func (s *UserAuthService) GenerateToken(ctx context.Context, request dto.Request
 	userAuth := entity.CreateUserAuth(user.Id)
 	userAuth.AccessToken = accessToken
 	userAuth.RefreshToken = refreshToken
-	userAuth.AccessTokenExpiredAt = localUserAccessToken.Exp
-	userAuth.RefreshTokenExpiredAt = localUserRefreshToken.Exp
+	userAuth.AccessTokenExpiredAt = localUserAccessToken.ExpiresAt.Time
+	userAuth.RefreshTokenExpiredAt = localUserRefreshToken.ExpiresAt.Time
 
 	err = s.writer.CreateUserToken(ctx, userAuth)
 	if err != nil {
@@ -146,6 +146,24 @@ func (s *UserAuthService) GenerateToken(ctx context.Context, request dto.Request
 	}, nil
 }
 
-func (s *UserAuthService) ExtractToken(context.Context, dto.RequestValidateToken) (dto.ResponseExtractedToken, error) {
-	return dto.ResponseExtractedToken{}, nil
+func (s *UserAuthService) ExtractToken(ctx context.Context, req dto.RequestValidateToken) (dto.ResponseExtractedToken, error) {
+	localUserAuthToken, err := entity.NewLocalUserAuthTokenFromToken(req.Token, s.config.Auth.User.RefreshTokenKey)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("[ExtractToken.NewLocalUserAuthTokenFromToken] error token is not valid")
+		return dto.ResponseExtractedToken{}, internalerrors.NewError(err)
+	}
+
+	if !localUserAuthToken.ValidTokenType(req.TokenType) {
+		log.Warn().
+			Msg("[ExtractToken.ValidTokenType] error token is mismatch")
+		return dto.ResponseExtractedToken{}, internalerrors.NewError(errors.New("err: token type is mismatch"))
+	}
+
+	return dto.ResponseExtractedToken{
+		UserId:    localUserAuthToken.ID,
+		ExpiredAt: localUserAuthToken.ExpiresAt.Time,
+		UserType:  localUserAuthToken.UserType,
+	}, nil
 }
