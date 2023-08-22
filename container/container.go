@@ -26,6 +26,8 @@ type Repository struct {
 	repository.RepositoryUserReader
 	repository.RepositoryUserAuthReader
 	repository.RepositoryUserAuthWriter
+	repository.RepositoryUserAccessScopeWriter
+	repository.RepositoryUserAccessScopeReader
 }
 
 func (c Repository) Validate() []error {
@@ -50,7 +52,11 @@ type Service struct {
 	service.ApplicationStageServicer
 	service.ApplicationServicer
 	service.AuthServicer
+	service.LocalUserAuthServicer
 	service.UserServicer
+	service.InternalUserServicer
+	service.UserAccessScopeServicer
+	service.InternalUserAccessScopeServicer
 }
 
 func (c Service) Validate() []error {

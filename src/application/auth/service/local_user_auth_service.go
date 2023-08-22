@@ -20,16 +20,18 @@ import (
 type UserAuthService struct {
 	config  *config.Config
 	userSvc service.InternalUserServicer
-	reader  repository.RepositoryUserAuthReader
-	writer  repository.RepositoryUserAuthWriter
+	// userAccessSvc service.InternalUserAccessScopeServicer
+	reader repository.RepositoryUserAuthReader
+	writer repository.RepositoryUserAuthWriter
 }
 
-func NewUserAuthService(config *config.Config, c container.Container) service.AuthServicer {
+func NewUserAuthService(config *config.Config, c container.Container) service.LocalUserAuthServicer {
 	return &UserAuthService{
 		config:  config,
 		userSvc: c.UserServicer,
-		reader:  c.RepositoryUserAuthReader,
-		writer:  c.RepositoryUserAuthWriter,
+		// userAccessSvc: c.InternalUserAccessScopeServicer,
+		reader: c.RepositoryUserAuthReader,
+		writer: c.RepositoryUserAuthWriter,
 	}
 }
 
@@ -50,12 +52,12 @@ func (s *UserAuthService) ValidateToken(ctx context.Context, request dto.Request
 	switch request.TokenType {
 	case entity.AccessToken:
 		now := time.Now()
-		if userToken.AccessTokenExpiredAt.Before(now) {
+		if userToken.AccessTokenExpired(now) {
 			return dto.ResponseValidateKey{}, errors.New("err: token has expired")
 		}
 	case entity.RefreshToken:
 		now := time.Now()
-		if userToken.RefreshTokenExpiredAt.Before(now) {
+		if userToken.RefreshTokenExpired(now) {
 			return dto.ResponseValidateKey{}, errors.New("err: refresh token has expired")
 		}
 	default:
@@ -146,7 +148,18 @@ func (s *UserAuthService) GenerateToken(ctx context.Context, request dto.Request
 }
 
 func (s *UserAuthService) ExtractToken(ctx context.Context, req dto.RequestValidateToken) (dto.ResponseExtractedToken, error) {
-	localUserAuthToken, err := entity.NewLocalUserAuthTokenFromToken(req.Token, s.config.Auth.User.RefreshTokenKey)
+	var key string
+
+	switch req.TokenType {
+	case entity.AccessToken:
+		key = s.config.Auth.User.AccessTokenKey
+	case entity.RefreshToken:
+		key = s.config.Auth.User.RefreshTokenKey
+	default:
+		return dto.ResponseExtractedToken{}, errors.New("err: token type is not valid")
+	}
+
+	localUserAuthToken, err := entity.NewLocalUserAuthTokenFromToken(req.Token, key)
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -161,8 +174,42 @@ func (s *UserAuthService) ExtractToken(ctx context.Context, req dto.RequestValid
 	}
 
 	return dto.ResponseExtractedToken{
-		UserId:    localUserAuthToken.ID,
+		UserId:    localUserAuthToken.Id,
 		ExpiredAt: localUserAuthToken.ExpiresAt.Time,
 		UserType:  localUserAuthToken.UserType,
 	}, nil
+}
+
+func (s *UserAuthService) ValidateUserScope(ctx context.Context, req dto.RequestUserScopeValidation) (dto.ResponseValidateKey, error) {
+	user, err := s.userSvc.InternalFindUser(ctx, userdto.RequestUser{
+		Id: req.UserId,
+	})
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("[ValidateUserScope.InternalFindUser] error user id is not found")
+		return dto.ResponseValidateKey{}, internalerrors.NewError(err)
+	}
+
+	if user.UserAdmin() {
+		return dto.ResponseValidateKey{
+			Valid: true,
+		}, nil
+	}
+
+	if user.Rbac == nil {
+		return dto.ResponseValidateKey{}, nil
+	}
+
+	if !user.HasRbacAccess(req.Method) {
+		return dto.ResponseValidateKey{}, nil
+	}
+
+	return dto.ResponseValidateKey{
+		Valid: true,
+	}, nil
+}
+
+func (s *UserAuthService) ValidateUserAccessScope(ctx context.Context, req dto.RequestUserAccessScopeValidation) (dto.ResponseValidateKey, error) {
+	return dto.ResponseValidateKey{}, nil
 }

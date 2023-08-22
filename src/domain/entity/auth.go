@@ -93,7 +93,7 @@ type LocalUserAuthToken struct {
 	jwt.RegisteredClaims
 	Id       string    `json:"id"`
 	Type     TokenType `json:"tokenType"`
-	UserType string    `json:"scope"`
+	UserType string    `json:"userType"`
 }
 
 func NewLocalUserAuthTokenFromToken(token, key string) (LocalUserAuthToken, error) {

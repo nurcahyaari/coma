@@ -18,3 +18,16 @@ type RepositoryUserWriter interface {
 	DeleteUser(ctx context.Context, filter entity.FilterUser) error
 	UpdateUser(ctx context.Context, user entity.User) error
 }
+
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . RepositoryUserAccessScopeReader
+type RepositoryUserAccessScopeReader interface {
+	FindUserAccessScope(ctx context.Context, filter entity.FilterUserAccessScope) (entity.UserAccessScope, error)
+	FindUserAccessesScope(ctx context.Context, filter entity.FilterUserAccessScope) (entity.UserAccessesScope, error)
+}
+
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . RepositoryUserAccessScopeWriter
+type RepositoryUserAccessScopeWriter interface {
+	SaveUserAccessScope(ctx context.Context, userAccessScope entity.UserAccessScope) error
+	UpdateUserAccessScope(ctx context.Context, userAccessScope entity.UserAccessScope) error
+	DeleteUserAccess(ctx context.Context, filter entity.FilterUserAccessScope) error
+}

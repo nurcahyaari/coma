@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"errors"
 
 	"github.com/coma/coma/infrastructure/database"
 	"github.com/coma/coma/src/domain/entity"
@@ -34,7 +33,7 @@ func (r *RepositoryUserRead) FindUser(ctx context.Context, filter entity.FilterU
 		return user, err
 	}
 	if len(users) == 0 {
-		return user, errors.New("err: user doesn't found")
+		return user, nil
 	}
 
 	user = users[0]

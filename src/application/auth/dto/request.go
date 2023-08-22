@@ -14,6 +14,16 @@ type RequestGenerateToken struct {
 	Secret string `json:"secret"`
 }
 
+type RequestUserAccessScopeValidation struct {
+	UserId string
+	Method string
+}
+
+type RequestUserScopeValidation struct {
+	UserId string
+	Method string
+}
+
 type ResponseGenerateToken struct {
 	AccessToken     string `json:"accessToken"`
 	AccessTokenExp  string `json:"accessTokenExp"`

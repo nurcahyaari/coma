@@ -2,9 +2,12 @@ package service
 
 import (
 	"context"
+	"errors"
+	"net/http"
 
 	"github.com/coma/coma/config"
 	"github.com/coma/coma/container"
+	internalerrors "github.com/coma/coma/internal/utils/errors"
 	"github.com/coma/coma/src/application/user/dto"
 	"github.com/coma/coma/src/domain/entity"
 	domainrepository "github.com/coma/coma/src/domain/repository"
@@ -30,11 +33,13 @@ func (s *UserService) InternalFindUser(ctx context.Context, req dto.RequestUser)
 	user, err := s.reader.FindUser(ctx, entity.FilterUser{
 		Id:       req.Id,
 		Username: req.Username,
+		UserType: req.UserType,
 	})
 	if err != nil {
 		log.Error().
 			Err(err).
 			Msg("[FindUser.FindUser] err: failed to find user")
+		return entity.User{}, err
 	}
 
 	return user, nil
@@ -46,6 +51,7 @@ func (s *UserService) InternalFindUsers(ctx context.Context, req dto.RequestUser
 		log.Error().
 			Err(err).
 			Msg("[FindUsers.FindUsers] err: failed to find users")
+		return entity.Users{}, internalerrors.NewError(err)
 	}
 
 	return users, nil
@@ -64,26 +70,28 @@ func (s *UserService) CreateRootUser(ctx context.Context, req dto.RequestCreateU
 		log.Error().
 			Err(err).
 			Msg("[CreateRootUser.FindUser] err: failed to find user")
-		return resp, err
+		return resp, internalerrors.NewError(err)
 	}
 	if !existingUser.Empty() {
 		log.Warn().
 			Msg("[CreateRootUser] user root has already exists")
-		return resp, err
+		return resp, internalerrors.NewError(
+			errors.New("err: user root has already exists"),
+			internalerrors.SetErrorCode(http.StatusConflict))
 	}
 
 	if err := user.HashPassword(); err != nil {
 		log.Error().
 			Err(err).
 			Msg("[CreateRootUser.HashPassword] err: failed to hash password")
-		return resp, err
+		return resp, internalerrors.NewError(err)
 	}
 
 	if err := s.writer.SaveUser(ctx, user); err != nil {
 		log.Error().
 			Err(err).
 			Msg("[CreateRootUser.SaveUser] err: failed to save user")
-		return resp, err
+		return resp, internalerrors.NewError(err)
 	}
 
 	resp = dto.NewResponseUser(user)
@@ -91,24 +99,41 @@ func (s *UserService) CreateRootUser(ctx context.Context, req dto.RequestCreateU
 	return resp, nil
 }
 
-func (s *UserService) CreateUser(ctx context.Context, req dto.RequestCreateUser) (dto.ResponseUser, error) {
+func (s *UserService) CreateUser(ctx context.Context, req dto.RequestCreateUserNonRoot) (dto.ResponseUser, error) {
 	var (
 		resp dto.ResponseUser
 		user = req.User()
 	)
 
+	existingUser, err := s.InternalFindUser(ctx, dto.RequestUser{
+		Username: req.Username,
+	})
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("[CreateUser.FindUser] err: failed to find user")
+		return resp, internalerrors.NewError(err)
+	}
+	if !existingUser.Empty() {
+		log.Warn().
+			Msg("[CreateUser] user has already exists")
+		return resp, internalerrors.NewError(
+			errors.New("err: user has already exists"),
+			internalerrors.SetErrorCode(http.StatusConflict))
+	}
+
 	if err := user.HashPassword(); err != nil {
 		log.Error().
 			Err(err).
 			Msg("[CreateUser.HashPassword] err: failed to hash password")
-		return resp, err
+		return resp, internalerrors.NewError(err)
 	}
 
 	if err := s.writer.SaveUser(ctx, user); err != nil {
 		log.Error().
 			Err(err).
 			Msg("[CreateUser.SaveUser] err: failed to save user")
-		return resp, err
+		return resp, internalerrors.NewError(err)
 	}
 
 	resp = dto.NewResponseUser(user)
@@ -117,14 +142,19 @@ func (s *UserService) CreateUser(ctx context.Context, req dto.RequestCreateUser)
 }
 
 func (s *UserService) DeleteUser(ctx context.Context, req dto.RequestUser) error {
-	_, err := s.reader.FindUser(ctx, entity.FilterUser{
+	user, err := s.reader.FindUser(ctx, entity.FilterUser{
 		Id: req.Id,
 	})
 	if err != nil {
 		log.Error().
 			Err(err).
 			Msg("[DeleteUser.FindUser] err: failed to get user")
-		return err
+		return internalerrors.NewError(err)
+	}
+	if user.Empty() {
+		log.Warn().
+			Msg("[DeleteUser.FindUser] warn: user doesn't found")
+		return nil
 	}
 
 	err = s.writer.DeleteUser(ctx, entity.FilterUser{
@@ -134,7 +164,7 @@ func (s *UserService) DeleteUser(ctx context.Context, req dto.RequestUser) error
 		log.Error().
 			Err(err).
 			Msg("[DeleteUser.DeleteUser] err: failed to delete user")
-		return err
+		return internalerrors.NewError(err)
 	}
 
 	return nil
@@ -153,7 +183,12 @@ func (s *UserService) UpdateUser(ctx context.Context, req dto.RequestUser) (dto.
 		log.Error().
 			Err(err).
 			Msg("[UpdateUser.FindUser] err: failed to get user")
-		return resp, err
+		return resp, internalerrors.NewError(err)
+	}
+	if user.Empty() {
+		log.Warn().
+			Msg("[UpdateUser.FindUser] warn: user doesn't found")
+		return resp, internalerrors.NewError(errors.New("err: user doesn't found"))
 	}
 
 	userOld.Update(user)
@@ -162,7 +197,7 @@ func (s *UserService) UpdateUser(ctx context.Context, req dto.RequestUser) (dto.
 		log.Error().
 			Err(err).
 			Msg("[UpdateUser.UpdateUser] err: failed to update user")
-		return resp, err
+		return resp, internalerrors.NewError(err)
 	}
 
 	resp = dto.NewResponseUser(userOld)
@@ -178,21 +213,26 @@ func (s *UserService) PatchUserPassword(ctx context.Context, req dto.RequestPatc
 		log.Error().
 			Err(err).
 			Msg("[PatchUserPassword.FindUser] err: failed to get user")
-		return err
+		return internalerrors.NewError(err)
+	}
+	if user.Empty() {
+		log.Warn().
+			Msg("[PatchUserPassword.FindUser] warn: user doesn't found")
+		return internalerrors.NewError(errors.New("err: user doesn't found"))
 	}
 
 	if err := user.PatchUserPassword(req.Passowrd); err != nil {
 		log.Error().
 			Err(err).
 			Msg("[PatchUserPassword.PatchUserPassword] err: failed to patch user password")
-		return err
+		return internalerrors.NewError(err)
 	}
 
 	if err := s.writer.UpdateUser(ctx, user); err != nil {
 		log.Error().
 			Err(err).
 			Msg("[PatchUserPassword.UpdateUser] err: failed to update user")
-		return err
+		return internalerrors.NewError(err)
 	}
 
 	return nil
@@ -208,6 +248,14 @@ func (s *UserService) FindUser(ctx context.Context, req dto.RequestUser) (dto.Re
 		log.Error().
 			Err(err).
 			Msg("[FindUser.FindUser] err: failed to find user")
+		return resp, internalerrors.NewError(err)
+	}
+	if user.Empty() {
+		log.Warn().
+			Msg("[FindUser.FindUser] warn: user doesn't found")
+		return resp, internalerrors.NewError(
+			errors.New("err: user doesn't found"),
+			internalerrors.SetErrorCode(http.StatusNotFound))
 	}
 
 	resp = dto.NewResponseUser(user)

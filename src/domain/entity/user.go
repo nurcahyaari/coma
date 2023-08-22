@@ -35,15 +35,42 @@ func NewUserType(userType string) (UserType, error) {
 	return resp, err
 }
 
+type UserRbac struct {
+	Create bool `json:"create"`
+	Delete bool `json:"delete"`
+	Update bool `json:"update"`
+}
+
 type User struct {
-	Id       string   `json:"_id"`
-	Username string   `json:"username"`
-	Password string   `json:"password"`
-	UserType UserType `json:"userType"`
+	Id       string    `json:"_id"`
+	Username string    `json:"username"`
+	Password string    `json:"password"`
+	UserType UserType  `json:"userType"`
+	Rbac     *UserRbac `json:"rbac"`
 }
 
 func (a User) Empty() bool {
 	return a.Id == "" && a.Username == ""
+}
+
+func (a User) UserAdmin() bool {
+	return a.UserType == UserTypeRoot
+}
+
+func (a *User) HasRbacAccess(method string) bool {
+	hasAccess := false
+	switch method {
+	case "GET":
+		hasAccess = true
+	case "POST":
+		hasAccess = a.Rbac.Create
+	case "PUT", "PATCH":
+		hasAccess = a.Rbac.Update
+	case "DELETE":
+		hasAccess = a.Rbac.Delete
+	}
+
+	return hasAccess
 }
 
 func (a *User) Update(u User) {
@@ -105,6 +132,7 @@ type Users []User
 type FilterUser struct {
 	Id       string
 	Username string
+	UserType UserType
 }
 
 func (f *FilterUser) Filter() *clover.Criteria {
@@ -116,6 +144,10 @@ func (f *FilterUser) Filter() *clover.Criteria {
 
 	if f.Username != "" {
 		criterias = append(criterias, clover.Field("username").Eq(f.Username))
+	}
+
+	if f.UserType != "" {
+		criterias = append(criterias, clover.Field("userType").Eq(f.UserType))
 	}
 
 	filter := &clover.Criteria{}

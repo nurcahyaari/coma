@@ -118,6 +118,8 @@ func main() {
 		RepositoryApplicationConfigurationReader: applicationRepo.NewRepositoryApplicationConfigurationReader(),
 		RepositoryUserWriter:                     userRepo.NewRepositoryUserWriter(),
 		RepositoryUserReader:                     userRepo.NewRepositoryUserReader(),
+		RepositoryUserAccessScopeWriter:          userRepo.NewRepositoryUserAccessScopeWriter(),
+		RepositoryUserAccessScopeReader:          userRepo.NewRepositoryUserAccessScopeReader(),
 		RepositoryUserAuthReader:                 authRepo.NewRepositoryUserAuthReader(),
 		RepositoryUserAuthWriter:                 authRepo.NewRepositoryUserAuthWriter(),
 	}
@@ -146,9 +148,15 @@ func main() {
 
 	userSvc := usersvc.NewUserService(&cfg, c)
 	c.Service.UserServicer = userSvc
+	c.Service.InternalUserServicer = userSvc
+
+	userAccessScopeSvc := usersvc.NewUserAccessScopeService(&cfg, c)
+	c.Service.UserAccessScopeServicer = userAccessScopeSvc
+	c.Service.InternalUserAccessScopeServicer = userAccessScopeSvc
 
 	userAuthSvc := authsvc.NewUserAuthService(&cfg, c)
 	c.Service.AuthServicer = userAuthSvc
+	c.Service.LocalUserAuthServicer = userAuthSvc
 
 	if err := c.Service.Validate(); err != nil {
 		log.Fatal().Errs("error", err).Msg("container service")

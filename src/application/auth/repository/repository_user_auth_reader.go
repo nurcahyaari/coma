@@ -7,6 +7,7 @@ import (
 	"github.com/coma/coma/infrastructure/database"
 	"github.com/coma/coma/src/domain/entity"
 	"github.com/coma/coma/src/domain/repository"
+	"github.com/ostafen/clover"
 )
 
 type RepositoryUserRead struct {
@@ -36,6 +37,10 @@ func (r *RepositoryUserRead) FindTokenBy(ctx context.Context, filter entity.Filt
 
 	doc, err := r.db.DB.Query(r.dbName).
 		Where(criteria).
+		Sort(clover.SortOption{
+			Field:     "accessTokenExpiredAt",
+			Direction: -1,
+		}).
 		FindFirst()
 	if err != nil {
 		return nil, err

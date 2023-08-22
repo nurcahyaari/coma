@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/coma/coma/internal/protocols/http/response"
+	internalerrors "github.com/coma/coma/internal/utils/errors"
 	userdto "github.com/coma/coma/src/application/user/dto"
 	"github.com/go-chi/chi/v5"
 )
@@ -12,6 +13,7 @@ import (
 // FindUser find user
 // @Summary find user
 // @Description find user
+// @Param authorization header string true "User accessToken"
 // @Param id path string true "user id"
 // @Tags Users
 // @Produce json
@@ -23,8 +25,10 @@ func (h *HttpHandle) FindUser(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.userSvc.FindUser(r.Context(), req)
 	if err != nil {
+		errCustom := err.(*internalerrors.Error)
 		response.Err[string](w,
-			response.SetErr[string](err.Error()))
+			response.SetErr[string](errCustom.Error()),
+			response.SetHttpCode[string](errCustom.ErrCode))
 		return
 	}
 
@@ -36,6 +40,7 @@ func (h *HttpHandle) FindUser(w http.ResponseWriter, r *http.Request) {
 // FindUsers find users
 // @Summary find users
 // @Description find users
+// @Param authorization header string true "User accessToken"
 // @Tags Users
 // @Produce json
 // @Router /v1/users [GET]
@@ -44,8 +49,10 @@ func (h *HttpHandle) FindUsers(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.userSvc.FindUsers(r.Context(), req)
 	if err != nil {
+		errCustom := err.(*internalerrors.Error)
 		response.Err[string](w,
-			response.SetErr[string](err.Error()))
+			response.SetErr[string](errCustom.Error()),
+			response.SetHttpCode[string](errCustom.ErrCode))
 		return
 	}
 
@@ -57,24 +64,29 @@ func (h *HttpHandle) FindUsers(w http.ResponseWriter, r *http.Request) {
 // CreateUser set new users
 // @Summary set new users
 // @Description set new users
-// @Param RequestCreateUser body userdto.RequestCreateUser true "create new user"
+// @Param authorization header string true "User accessToken"
+// @Param RequestCreateUserNonRoot body userdto.RequestCreateUserNonRoot true "create new user"
 // @Tags Users
 // @Produce json
 // @Router /v1/users [POST]
 func (h *HttpHandle) CreateUser(w http.ResponseWriter, r *http.Request) {
-	req := userdto.RequestCreateUser{}
+	req := userdto.RequestCreateUserNonRoot{}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		errCustom := err.(*internalerrors.Error)
 		response.Err[string](w,
-			response.SetErr[string](err.Error()))
+			response.SetErr[string](errCustom.Error()),
+			response.SetHttpCode[string](errCustom.ErrCode))
 		return
 	}
 
 	// TODO: make validation
 	resp, err := h.userSvc.CreateUser(r.Context(), req)
 	if err != nil {
+		errCustom := err.(*internalerrors.Error)
 		response.Err[string](w,
-			response.SetErr[string](err.Error()))
+			response.SetErr[string](errCustom.Error()),
+			response.SetHttpCode[string](errCustom.ErrCode))
 		return
 	}
 
@@ -102,8 +114,10 @@ func (h *HttpHandle) CreateUserRoot(w http.ResponseWriter, r *http.Request) {
 	// TODO: make validation
 	resp, err := h.userSvc.CreateRootUser(r.Context(), req)
 	if err != nil {
+		errCustom := err.(*internalerrors.Error)
 		response.Err[string](w,
-			response.SetErr[string](err.Error()))
+			response.SetErr[string](errCustom.Error()),
+			response.SetHttpCode[string](errCustom.ErrCode))
 		return
 	}
 
@@ -115,6 +129,7 @@ func (h *HttpHandle) CreateUserRoot(w http.ResponseWriter, r *http.Request) {
 // DeleteUser delete users
 // @Summary delete users
 // @Description delete users
+// @Param authorization header string true "User accessToken"
 // @Param id path string true "user id"
 // @Tags Users
 // @Produce json
@@ -139,6 +154,7 @@ func (h *HttpHandle) DeleteUser(w http.ResponseWriter, r *http.Request) {
 // UpdateUser update users
 // @Summary update users
 // @Description update users
+// @Param authorization header string true "User accessToken"
 // @Param id path string true "user id"
 // @Param RequestUser body userdto.RequestUser true "update user"
 // @Tags Users
@@ -165,6 +181,7 @@ func (h *HttpHandle) UpdateUser(w http.ResponseWriter, r *http.Request) {
 // UpdateUserPassword update users password
 // @Summary update users password
 // @Description update users password
+// @Param authorization header string true "User accessToken"
 // @Param id path string true "user id"
 // @Param RequestPatchUserPassword body userdto.RequestPatchUserPassword true "update user password"
 // @Tags Users

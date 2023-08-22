@@ -7,6 +7,7 @@ import (
 	"github.com/coma/coma/internal/protocols/http/response"
 	"github.com/coma/coma/src/application/auth/dto"
 	"github.com/coma/coma/src/domain/entity"
+	"github.com/rs/zerolog/log"
 )
 
 func (h *HttpHandle) MiddlewareLocalAuthAccessTokenValidate(next http.Handler) http.Handler {
@@ -16,6 +17,8 @@ func (h *HttpHandle) MiddlewareLocalAuthAccessTokenValidate(next http.Handler) h
 		token := strings.Split(authorization, " ")
 
 		if len(token) < 2 && token[0] != string(entity.BearerAuthenticationToken) {
+			log.Error().
+				Msg("[MiddlewareLocalAuthAccessTokenValidate.ValidateToken] token mismatch")
 			response.Err[string](
 				w,
 				response.SetErr[string]("err: token mismatch"),
@@ -29,6 +32,9 @@ func (h *HttpHandle) MiddlewareLocalAuthAccessTokenValidate(next http.Handler) h
 			TokenType: entity.AccessToken,
 		})
 		if err != nil {
+			log.Error().
+				Err(err).
+				Msg("[MiddlewareLocalAuthAccessTokenValidate.ValidateToken]")
 			response.Err[string](
 				w,
 				response.SetErr[string]("err: unauthorized"),
@@ -37,6 +43,8 @@ func (h *HttpHandle) MiddlewareLocalAuthAccessTokenValidate(next http.Handler) h
 			return
 		}
 		if !resp.Valid {
+			log.Error().
+				Msg("[MiddlewareLocalAuthAccessTokenValidate.ValidateToken] token isn't valid")
 			response.Err[string](
 				w,
 				response.SetErr[string]("err: unauthorized"),
@@ -50,6 +58,8 @@ func (h *HttpHandle) MiddlewareLocalAuthAccessTokenValidate(next http.Handler) h
 			TokenType: entity.AccessToken,
 		})
 		if err != nil {
+			log.Error().
+				Msg("[MiddlewareLocalAuthAccessTokenValidate.ExtractToken] token cannot be extracted")
 			response.Err[string](
 				w,
 				response.SetErr[string]("err: unauthorized"),

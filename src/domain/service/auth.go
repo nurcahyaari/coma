@@ -11,3 +11,9 @@ type AuthServicer interface {
 	ValidateToken(context.Context, dto.RequestValidateToken) (dto.ResponseValidateKey, error)
 	ExtractToken(context.Context, dto.RequestValidateToken) (dto.ResponseExtractedToken, error)
 }
+
+type LocalUserAuthServicer interface {
+	AuthServicer
+	ValidateUserScope(context.Context, dto.RequestUserScopeValidation) (dto.ResponseValidateKey, error)
+	ValidateUserAccessScope(context.Context, dto.RequestUserAccessScopeValidation) (dto.ResponseValidateKey, error)
+}

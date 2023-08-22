@@ -14,11 +14,21 @@ type InternalUserServicer interface {
 
 type UserServicer interface {
 	InternalUserServicer
-	CreateUser(context.Context, dto.RequestCreateUser) (dto.ResponseUser, error)
+	CreateUser(context.Context, dto.RequestCreateUserNonRoot) (dto.ResponseUser, error)
 	CreateRootUser(ctx context.Context, req dto.RequestCreateUser) (dto.ResponseUser, error)
 	DeleteUser(context.Context, dto.RequestUser) error
 	UpdateUser(context.Context, dto.RequestUser) (dto.ResponseUser, error)
 	PatchUserPassword(context.Context, dto.RequestPatchUserPassword) error
 	FindUser(context.Context, dto.RequestUser) (dto.ResponseUser, error)
 	FindUsers(context.Context, dto.RequestUsers) (dto.ResponseUsers, error)
+}
+
+type InternalUserAccessScopeServicer interface {
+	InternalFindUserAccessScope(context.Context, dto.RequestFindUserAccessScope) (entity.UserAccessScope, error)
+}
+
+type UserAccessScopeServicer interface {
+	InternalUserAccessScopeServicer
+	FindUserAccessScope(context.Context, dto.RequestFindUserAccessScope) (dto.ResponseUserAccessScope, error)
+	CreateUserAccessScope(context.Context, dto.RequestCreateUserAccessScope) error
 }
