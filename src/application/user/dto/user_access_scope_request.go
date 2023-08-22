@@ -8,7 +8,6 @@ import (
 type RequestCreateUserApplicationScope struct {
 	UserId        string                    `json:"userId"`
 	ApplicationId string                    `json:"applicationId"`
-	StageId       string                    `json:"stageId"`
 	Rbac          *UserApplicationScopeRbac `json:"rbac"`
 }
 
@@ -17,7 +16,7 @@ func (r RequestCreateUserApplicationScope) UserApplicationScope() entity.UserApp
 	userApplicationScope := entity.UserApplicationScope{
 		Id:            id.String(),
 		ApplicationId: r.ApplicationId,
-		StageId:       r.StageId,
+		UserId:        r.UserId,
 		Rbac:          &entity.UserApplicationScopeRbac{},
 	}
 
@@ -29,5 +28,6 @@ func (r RequestCreateUserApplicationScope) UserApplicationScope() entity.UserApp
 }
 
 type RequestFindUserApplicationScope struct {
-	UserId string `json:"userId"`
+	UserId        string `json:"userId"`
+	ApplicationId string `json:"applicationId"`
 }

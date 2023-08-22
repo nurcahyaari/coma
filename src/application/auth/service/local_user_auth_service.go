@@ -211,5 +211,31 @@ func (s *UserAuthService) ValidateUserScope(ctx context.Context, req dto.Request
 }
 
 func (s *UserAuthService) ValidateUserApplicationScope(ctx context.Context, req dto.RequestUserApplicationScopeValidation) (dto.ResponseValidateKey, error) {
+	userApplicationScope, exist, err := s.userApplicationSvc.InternalFindUserApplicationScope(ctx, userdto.RequestFindUserApplicationScope{
+		UserId: req.UserId,
+	})
+
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("[ValidateUserApplicationScope.InternalFindUserApplicationScope] error")
+		return dto.ResponseValidateKey{}, internalerrors.NewError(err)
+	}
+	if !exist {
+		err := errors.New("err: user application scope is not exist")
+		log.Error().
+			Err(err).
+			Msg("[ValidateUserApplicationScope.InternalFindUserApplicationScope] error user application scope is not found")
+		return dto.ResponseValidateKey{}, internalerrors.NewError(err)
+	}
+
+	if userApplicationScope.Rbac == nil {
+		return dto.ResponseValidateKey{}, nil
+	}
+
+	if !userApplicationScope.HasRbacAccess(req.Method) {
+		return dto.ResponseValidateKey{}, nil
+	}
+
 	return dto.ResponseValidateKey{}, nil
 }

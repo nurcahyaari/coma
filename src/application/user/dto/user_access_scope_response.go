@@ -34,3 +34,15 @@ func NewResponseUserApplicationScope(userApplicationScope entity.UserApplication
 		},
 	}
 }
+
+type ResponseUserApplicationsScope []ResponseUserApplicationScope
+
+func NewResponseUserApplicationsScope(userApplicationsScope entity.UserApplicationsScope) ResponseUserApplicationsScope {
+	resp := make(ResponseUserApplicationsScope, 0)
+
+	for _, r := range userApplicationsScope {
+		resp = append(resp, NewResponseUserApplicationScope(r))
+	}
+
+	return resp
+}

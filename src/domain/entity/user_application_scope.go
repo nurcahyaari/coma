@@ -10,7 +10,6 @@ type UserApplicationScope struct {
 	Id            string                    `json:"_id"`
 	UserId        string                    `json:"userId"`
 	ApplicationId string                    `json:"applicationId"`
-	StageId       string                    `json:"stageId"`
 	Rbac          *UserApplicationScopeRbac `json:"rbac"`
 }
 
@@ -20,6 +19,22 @@ func (a *UserApplicationScope) UpdateRbac(userApplicationScopeNew UserApplicatio
 	}
 
 	a.Rbac = userApplicationScopeNew.Rbac
+}
+
+func (a *UserApplicationScope) HasRbacAccess(method string) bool {
+	hasAccess := false
+	switch method {
+	case "GET":
+		hasAccess = true
+	case "POST":
+		hasAccess = a.Rbac.Create
+	case "PUT", "PATCH":
+		hasAccess = a.Rbac.Update
+	case "DELETE":
+		hasAccess = a.Rbac.Delete
+	}
+
+	return hasAccess
 }
 
 func (a UserApplicationScope) MapStringInterface() (map[string]interface{}, error) {
@@ -50,7 +65,6 @@ type FilterUserApplicationScope struct {
 	UserId        string
 	UserIds       []string
 	ApplicationId string
-	StageId       string
 }
 
 func (f *FilterUserApplicationScope) Filter() *clover.Criteria {
@@ -70,10 +84,6 @@ func (f *FilterUserApplicationScope) Filter() *clover.Criteria {
 
 	if f.ApplicationId != "" {
 		criterias = append(criterias, clover.Field("applicationId").Eq(f.ApplicationId))
-	}
-
-	if f.StageId != "" {
-		criterias = append(criterias, clover.Field("stageId").Eq(f.StageId))
 	}
 
 	filter := &clover.Criteria{}

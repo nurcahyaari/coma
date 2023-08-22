@@ -40,22 +40,16 @@ func (s *UserApplicationScopeService) InternalFindUserApplicationScope(ctx conte
 	return userApplicationScope, exists, nil
 }
 
-func (s *UserApplicationScopeService) FindUserApplicationScope(ctx context.Context, req dto.RequestFindUserApplicationScope) (dto.ResponseUserApplicationScope, error) {
-	userApplicationScope, exists, err := s.InternalFindUserApplicationScope(ctx, req)
+func (s *UserApplicationScopeService) FindUserApplicationsScope(ctx context.Context, req dto.RequestFindUserApplicationScope) (dto.ResponseUserApplicationsScope, error) {
+	userApplicationScope, err := s.reader.FindUserApplicationsScope(ctx, entity.FilterUserApplicationScope{})
 	if err != nil {
 		log.Error().
 			Err(err).
 			Msg("[FindUserApplicationScope.InternalFindUserApplicationScope] err: failed to find user access scope")
-		return dto.ResponseUserApplicationScope{}, err
-	}
-	if !exists {
-		log.Error().
-			Err(err).
-			Msg("[FindUserApplicationScope.InternalFindUserApplicationScope] err: user access doesn't exists")
-		return dto.ResponseUserApplicationScope{}, nil
+		return dto.ResponseUserApplicationsScope{}, err
 	}
 
-	return dto.NewResponseUserApplicationScope(userApplicationScope), nil
+	return dto.NewResponseUserApplicationsScope(userApplicationScope), nil
 }
 
 func (s *UserApplicationScopeService) UpsetUserApplicationScope(ctx context.Context, req dto.RequestCreateUserApplicationScope) error {
@@ -83,6 +77,7 @@ func (s *UserApplicationScopeService) UpsetUserApplicationScope(ctx context.Cont
 				Msg("[UpsetUserApplicationScope.UpdateUserApplicationScope] err: failed to update user access scope")
 			return err
 		}
+		return nil
 	}
 
 	if err := s.writer.SaveUserApplicationScope(ctx, userApplicationScope); err != nil {

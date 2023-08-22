@@ -29,6 +29,6 @@ type InternalUserApplicationScopeServicer interface {
 
 type UserApplicationScopeServicer interface {
 	InternalUserApplicationScopeServicer
-	FindUserApplicationScope(context.Context, dto.RequestFindUserApplicationScope) (dto.ResponseUserApplicationScope, error)
+	FindUserApplicationsScope(ctx context.Context, req dto.RequestFindUserApplicationScope) (dto.ResponseUserApplicationsScope, error)
 	UpsetUserApplicationScope(context.Context, dto.RequestCreateUserApplicationScope) error
 }

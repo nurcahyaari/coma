@@ -7,12 +7,13 @@ import (
 )
 
 type HttpHandle struct {
-	authSvc             service.LocalUserAuthServicer
-	configurationSvc    service.ApplicationConfigurationServicer
-	applicationStageSvc service.ApplicationStageServicer
-	applicationSvc      service.ApplicationServicer
-	applicationKeySvc   service.ApplicationKeyServicer
-	userSvc             service.UserServicer
+	authSvc                 service.LocalUserAuthServicer
+	configurationSvc        service.ApplicationConfigurationServicer
+	applicationStageSvc     service.ApplicationStageServicer
+	applicationSvc          service.ApplicationServicer
+	applicationKeySvc       service.ApplicationKeyServicer
+	userSvc                 service.UserServicer
+	userApplicationScopeSvc service.UserApplicationScopeServicer
 }
 
 func (h HttpHandle) Router(r *chi.Mux) {
@@ -67,10 +68,16 @@ func (h HttpHandle) Router(r *chi.Mux) {
 				r.Group(func(r chi.Router) {
 					r.Use(h.MiddlewareLocalAuthUserScope)
 					r.Get("/", h.FindUsers)
-					r.Get("/{id}", h.FindUser)
 					r.Post("/", h.CreateUser)
-					r.Delete("/{id}", h.DeleteUser)
-					r.Put("/{id}", h.UpdateUser)
+					r.Route("/{id}", func(r chi.Router) {
+						r.Get("/", h.FindUser)
+						r.Delete("/", h.DeleteUser)
+						r.Put("/", h.UpdateUser)
+					})
+					r.Route("/application", func(r chi.Router) {
+						r.Get("/scope", h.FindUserApplicationsScope)
+						r.Post("/scope", h.CreateOrUpdateUserApplicationScope)
+					})
 				})
 			})
 		})
@@ -85,12 +92,13 @@ func (h HttpHandle) Router(r *chi.Mux) {
 
 func NewHttpHandler(c container.Service) *HttpHandle {
 	httpHandle := &HttpHandle{
-		authSvc:             c.LocalUserAuthServicer,
-		configurationSvc:    c.ApplicationConfigurationServicer,
-		applicationStageSvc: c.ApplicationStageServicer,
-		applicationSvc:      c.ApplicationServicer,
-		applicationKeySvc:   c.ApplicationKeyServicer,
-		userSvc:             c.UserServicer,
+		authSvc:                 c.LocalUserAuthServicer,
+		configurationSvc:        c.ApplicationConfigurationServicer,
+		applicationStageSvc:     c.ApplicationStageServicer,
+		applicationSvc:          c.ApplicationServicer,
+		applicationKeySvc:       c.ApplicationKeyServicer,
+		userSvc:                 c.UserServicer,
+		userApplicationScopeSvc: c.UserApplicationScopeServicer,
 	}
 	return httpHandle
 }
