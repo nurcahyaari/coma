@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	"github.com/coma/coma/infrastructure/database"
 	"github.com/coma/coma/src/domain/repository"
 )
@@ -27,9 +29,9 @@ func (r *Repository) NewRepositoryUserWriter() repository.RepositoryUserWriter {
 }
 
 func (r *Repository) NewRepositoryUserApplicationScopeReader() repository.RepositoryUserApplicationScopeReader {
-	return NewRepositoryUserApplicationScopeRead(r.name, r.db)
+	return NewRepositoryUserApplicationScopeRead(fmt.Sprintf("%s_application_scope", r.name), r.db)
 }
 
 func (r *Repository) NewRepositoryUserApplicationScopeWriter() repository.RepositoryUserApplicationScopeWriter {
-	return NewRepositoryUserApplicationScopeWrite(r.name, r.db)
+	return NewRepositoryUserApplicationScopeWrite(fmt.Sprintf("%s_application_scope", r.name), r.db)
 }
