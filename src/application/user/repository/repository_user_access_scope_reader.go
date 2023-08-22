@@ -2,64 +2,63 @@ package repository
 
 import (
 	"context"
-	"errors"
 
 	"github.com/coma/coma/infrastructure/database"
 	"github.com/coma/coma/src/domain/entity"
 	"github.com/coma/coma/src/domain/repository"
 )
 
-type RepositoryUserAccessScopeRead struct {
+type RepositoryUserApplicationScopeRead struct {
 	name string
 	db   *database.Clover
 }
 
-func NewRepositoryUserAccessScopeRead(name string, db *database.Clover) repository.RepositoryUserAccessScopeReader {
+func NewRepositoryUserApplicationScopeRead(name string, db *database.Clover) repository.RepositoryUserApplicationScopeReader {
 	db.DB.CreateCollection(name)
-	return &RepositoryUserAccessScopeRead{
+	return &RepositoryUserApplicationScopeRead{
 		name: name,
 		db:   db,
 	}
 }
 
-func (r *RepositoryUserAccessScopeRead) FindUserAccessScope(ctx context.Context, filter entity.FilterUserAccessScope) (entity.UserAccessScope, error) {
-	var userAccessScope entity.UserAccessScope
+func (r *RepositoryUserApplicationScopeRead) FindUserApplicationScope(ctx context.Context, filter entity.FilterUserApplicationScope) (entity.UserApplicationScope, bool, error) {
+	var userApplicationScope entity.UserApplicationScope
 
 	if filter.Filter() == nil {
-		return userAccessScope, nil
+		return userApplicationScope, false, nil
 	}
 
-	userAccessesScope, err := r.FindUserAccessesScope(ctx, filter)
+	userApplicationsScope, err := r.FindUserApplicationsScope(ctx, filter)
 	if err != nil {
-		return userAccessScope, err
+		return userApplicationScope, false, err
 	}
-	if len(userAccessesScope) == 0 {
-		return userAccessScope, errors.New("err: user access doesn't found")
+	if len(userApplicationsScope) == 0 {
+		return userApplicationScope, false, nil
 	}
 
-	userAccessScope = userAccessesScope[0]
+	userApplicationScope = userApplicationsScope[0]
 
-	return userAccessScope, nil
+	return userApplicationScope, true, nil
 }
 
-func (r *RepositoryUserAccessScopeRead) FindUserAccessesScope(ctx context.Context, filter entity.FilterUserAccessScope) (entity.UserAccessesScope, error) {
-	var userAccessesScope entity.UserAccessesScope
+func (r *RepositoryUserApplicationScopeRead) FindUserApplicationsScope(ctx context.Context, filter entity.FilterUserApplicationScope) (entity.UserApplicationsScope, error) {
+	var userApplicationsScope entity.UserApplicationsScope
 
 	docs, err := r.db.DB.Query(r.name).
 		Where(filter.Filter()).
 		FindAll()
 	if err != nil {
-		return userAccessesScope, err
+		return userApplicationsScope, err
 	}
 
 	for _, doc := range docs {
-		userAccessScope := entity.UserAccessScope{}
-		if err := doc.Unmarshal(&userAccessScope); err != nil {
-			return userAccessesScope, err
+		userApplicationScope := entity.UserApplicationScope{}
+		if err := doc.Unmarshal(&userApplicationScope); err != nil {
+			return userApplicationsScope, err
 		}
 
-		userAccessesScope = append(userAccessesScope, userAccessScope)
+		userApplicationsScope = append(userApplicationsScope, userApplicationScope)
 	}
 
-	return userAccessesScope, nil
+	return userApplicationsScope, nil
 }

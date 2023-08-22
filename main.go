@@ -118,8 +118,8 @@ func main() {
 		RepositoryApplicationConfigurationReader: applicationRepo.NewRepositoryApplicationConfigurationReader(),
 		RepositoryUserWriter:                     userRepo.NewRepositoryUserWriter(),
 		RepositoryUserReader:                     userRepo.NewRepositoryUserReader(),
-		RepositoryUserAccessScopeWriter:          userRepo.NewRepositoryUserAccessScopeWriter(),
-		RepositoryUserAccessScopeReader:          userRepo.NewRepositoryUserAccessScopeReader(),
+		RepositoryUserApplicationScopeWriter:     userRepo.NewRepositoryUserApplicationScopeWriter(),
+		RepositoryUserApplicationScopeReader:     userRepo.NewRepositoryUserApplicationScopeReader(),
 		RepositoryUserAuthReader:                 authRepo.NewRepositoryUserAuthReader(),
 		RepositoryUserAuthWriter:                 authRepo.NewRepositoryUserAuthWriter(),
 	}
@@ -150,9 +150,9 @@ func main() {
 	c.Service.UserServicer = userSvc
 	c.Service.InternalUserServicer = userSvc
 
-	userAccessScopeSvc := usersvc.NewUserAccessScopeService(&cfg, c)
-	c.Service.UserAccessScopeServicer = userAccessScopeSvc
-	c.Service.InternalUserAccessScopeServicer = userAccessScopeSvc
+	userApplicationScopeSvc := usersvc.NewUserApplicationScopeService(&cfg, c)
+	c.Service.UserApplicationScopeServicer = userApplicationScopeSvc
+	c.Service.InternalUserApplicationScopeServicer = userApplicationScopeSvc
 
 	userAuthSvc := authsvc.NewUserAuthService(&cfg, c)
 	c.Service.AuthServicer = userAuthSvc

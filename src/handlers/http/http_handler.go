@@ -20,7 +20,7 @@ func (h HttpHandle) Router(r *chi.Mux) {
 		r.Route("/applications", func(r chi.Router) {
 			r.Use(
 				h.MiddlewareLocalAuthAccessTokenValidate,
-				h.MiddlewareLocalAuthUserAccessScope,
+				h.MiddlewareLocalAuthUserApplicationScope,
 				h.MiddlewareLocalAuthUserScope)
 			r.Get("/", h.FindApplications)
 			r.Post("/", h.CreateApplication)
@@ -30,7 +30,7 @@ func (h HttpHandle) Router(r *chi.Mux) {
 		r.Route("/stages", func(r chi.Router) {
 			r.Use(
 				h.MiddlewareLocalAuthAccessTokenValidate,
-				h.MiddlewareLocalAuthUserAccessScope,
+				h.MiddlewareLocalAuthUserApplicationScope,
 				h.MiddlewareLocalAuthUserScope)
 			r.Get("/", h.FindApplicationStages)
 			r.Post("/", h.CreateApplicationStages)
@@ -40,7 +40,7 @@ func (h HttpHandle) Router(r *chi.Mux) {
 		r.Route("/keys", func(r chi.Router) {
 			r.Use(
 				h.MiddlewareLocalAuthAccessTokenValidate,
-				h.MiddlewareLocalAuthUserAccessScope,
+				h.MiddlewareLocalAuthUserApplicationScope,
 				h.MiddlewareLocalAuthUserScope)
 			r.Get("/", h.FindApplicationKey)
 			r.Post("/", h.CreateOrUpdateApplicationKey)
@@ -50,7 +50,7 @@ func (h HttpHandle) Router(r *chi.Mux) {
 			r.Use(
 				h.MiddlewareLocalAuthAccessTokenValidate,
 				h.MiddlewareCheckIsClientKeyExists,
-				h.MiddlewareLocalAuthUserAccessScope,
+				h.MiddlewareLocalAuthUserApplicationScope,
 				h.MiddlewareLocalAuthUserScope)
 			r.Get("/", h.GetConfiguration)
 			r.Post("/", h.SetConfiguration)

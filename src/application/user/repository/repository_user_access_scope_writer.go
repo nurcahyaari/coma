@@ -9,21 +9,21 @@ import (
 	"github.com/ostafen/clover"
 )
 
-type RepositoryUserAccessScopeWrite struct {
+type RepositoryUserApplicationScopeWrite struct {
 	name string
 	db   *database.Clover
 }
 
-func NewRepositoryUserAccessScopeWrite(name string, db *database.Clover) repository.RepositoryUserAccessScopeWriter {
+func NewRepositoryUserApplicationScopeWrite(name string, db *database.Clover) repository.RepositoryUserApplicationScopeWriter {
 	db.DB.CreateCollection(name)
-	return &RepositoryUserAccessScopeWrite{
+	return &RepositoryUserApplicationScopeWrite{
 		name: name,
 		db:   db,
 	}
 }
 
-func (r *RepositoryUserAccessScopeWrite) SaveUserAccessScope(ctx context.Context, userAccessScope entity.UserAccessScope) error {
-	dataMap, err := userAccessScope.MapStringInterface()
+func (r *RepositoryUserApplicationScopeWrite) SaveUserApplicationScope(ctx context.Context, userApplicationScope entity.UserApplicationScope) error {
+	dataMap, err := userApplicationScope.MapStringInterface()
 	if err != nil {
 		return err
 	}
@@ -39,14 +39,14 @@ func (r *RepositoryUserAccessScopeWrite) SaveUserAccessScope(ctx context.Context
 	return nil
 }
 
-func (r *RepositoryUserAccessScopeWrite) UpdateUserAccessScope(ctx context.Context, userAccessScope entity.UserAccessScope) error {
-	dataMap, err := userAccessScope.MapStringInterface()
+func (r *RepositoryUserApplicationScopeWrite) UpdateUserApplicationScope(ctx context.Context, userApplicationScope entity.UserApplicationScope) error {
+	dataMap, err := userApplicationScope.MapStringInterface()
 	if err != nil {
 		return err
 	}
 
 	err = r.db.DB.Query(r.name).
-		UpdateById(userAccessScope.Id, dataMap)
+		UpdateById(userApplicationScope.Id, dataMap)
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func (r *RepositoryUserAccessScopeWrite) UpdateUserAccessScope(ctx context.Conte
 	return nil
 }
 
-func (r *RepositoryUserAccessScopeWrite) DeleteUserAccess(ctx context.Context, filter entity.FilterUserAccessScope) error {
+func (r *RepositoryUserApplicationScopeWrite) RevokeUserApplicationScope(ctx context.Context, filter entity.FilterUserApplicationScope) error {
 	err := r.db.DB.Query(r.name).
 		Where(filter.Filter()).
 		Delete()

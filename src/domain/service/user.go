@@ -23,12 +23,12 @@ type UserServicer interface {
 	FindUsers(context.Context, dto.RequestUsers) (dto.ResponseUsers, error)
 }
 
-type InternalUserAccessScopeServicer interface {
-	InternalFindUserAccessScope(context.Context, dto.RequestFindUserAccessScope) (entity.UserAccessScope, error)
+type InternalUserApplicationScopeServicer interface {
+	InternalFindUserApplicationScope(context.Context, dto.RequestFindUserApplicationScope) (entity.UserApplicationScope, bool, error)
 }
 
-type UserAccessScopeServicer interface {
-	InternalUserAccessScopeServicer
-	FindUserAccessScope(context.Context, dto.RequestFindUserAccessScope) (dto.ResponseUserAccessScope, error)
-	CreateUserAccessScope(context.Context, dto.RequestCreateUserAccessScope) error
+type UserApplicationScopeServicer interface {
+	InternalUserApplicationScopeServicer
+	FindUserApplicationScope(context.Context, dto.RequestFindUserApplicationScope) (dto.ResponseUserApplicationScope, error)
+	UpsetUserApplicationScope(context.Context, dto.RequestCreateUserApplicationScope) error
 }

@@ -26,10 +26,10 @@ func (r *Repository) NewRepositoryUserWriter() repository.RepositoryUserWriter {
 	return NewRepositoryUserWriter(r.name, r.db)
 }
 
-func (r *Repository) NewRepositoryUserAccessScopeReader() repository.RepositoryUserAccessScopeReader {
-	return NewRepositoryUserAccessScopeRead(r.name, r.db)
+func (r *Repository) NewRepositoryUserApplicationScopeReader() repository.RepositoryUserApplicationScopeReader {
+	return NewRepositoryUserApplicationScopeRead(r.name, r.db)
 }
 
-func (r *Repository) NewRepositoryUserAccessScopeWriter() repository.RepositoryUserAccessScopeWriter {
-	return NewRepositoryUserAccessScopeWrite(r.name, r.db)
+func (r *Repository) NewRepositoryUserApplicationScopeWriter() repository.RepositoryUserApplicationScopeWriter {
+	return NewRepositoryUserApplicationScopeWrite(r.name, r.db)
 }

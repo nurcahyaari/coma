@@ -18,20 +18,20 @@ import (
 )
 
 type UserAuthService struct {
-	config  *config.Config
-	userSvc service.InternalUserServicer
-	// userAccessSvc service.InternalUserAccessScopeServicer
-	reader repository.RepositoryUserAuthReader
-	writer repository.RepositoryUserAuthWriter
+	config             *config.Config
+	userSvc            service.InternalUserServicer
+	userApplicationSvc service.InternalUserApplicationScopeServicer
+	reader             repository.RepositoryUserAuthReader
+	writer             repository.RepositoryUserAuthWriter
 }
 
 func NewUserAuthService(config *config.Config, c container.Container) service.LocalUserAuthServicer {
 	return &UserAuthService{
-		config:  config,
-		userSvc: c.UserServicer,
-		// userAccessSvc: c.InternalUserAccessScopeServicer,
-		reader: c.RepositoryUserAuthReader,
-		writer: c.RepositoryUserAuthWriter,
+		config:             config,
+		userSvc:            c.UserServicer,
+		userApplicationSvc: c.InternalUserApplicationScopeServicer,
+		reader:             c.RepositoryUserAuthReader,
+		writer:             c.RepositoryUserAuthWriter,
 	}
 }
 
@@ -210,6 +210,6 @@ func (s *UserAuthService) ValidateUserScope(ctx context.Context, req dto.Request
 	}, nil
 }
 
-func (s *UserAuthService) ValidateUserAccessScope(ctx context.Context, req dto.RequestUserAccessScopeValidation) (dto.ResponseValidateKey, error) {
+func (s *UserAuthService) ValidateUserApplicationScope(ctx context.Context, req dto.RequestUserApplicationScopeValidation) (dto.ResponseValidateKey, error) {
 	return dto.ResponseValidateKey{}, nil
 }

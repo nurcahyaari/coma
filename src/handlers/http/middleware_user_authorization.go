@@ -44,7 +44,7 @@ func (h *HttpHandle) MiddlewareLocalAuthUserScope(next http.Handler) http.Handle
 }
 
 // TODO: add middleware based on user access scope
-func (h *HttpHandle) MiddlewareLocalAuthUserAccessScope(next http.Handler) http.Handler {
+func (h *HttpHandle) MiddlewareLocalAuthUserApplicationScope(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(r.Method)
 		next.ServeHTTP(w, r)

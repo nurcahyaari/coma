@@ -15,5 +15,5 @@ type AuthServicer interface {
 type LocalUserAuthServicer interface {
 	AuthServicer
 	ValidateUserScope(context.Context, dto.RequestUserScopeValidation) (dto.ResponseValidateKey, error)
-	ValidateUserAccessScope(context.Context, dto.RequestUserAccessScopeValidation) (dto.ResponseValidateKey, error)
+	ValidateUserApplicationScope(context.Context, dto.RequestUserApplicationScopeValidation) (dto.ResponseValidateKey, error)
 }

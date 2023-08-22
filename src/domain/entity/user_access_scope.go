@@ -6,15 +6,23 @@ import (
 	"github.com/ostafen/clover"
 )
 
-type UserAccessScope struct {
-	Id            string               `json:"_id"`
-	UserId        string               `json:"userId"`
-	ApplicationId string               `json:"applicationId"`
-	StageId       string               `json:"stageId"`
-	Rbac          *UserAccessScopeRbac `json:"rbac"`
+type UserApplicationScope struct {
+	Id            string                    `json:"_id"`
+	UserId        string                    `json:"userId"`
+	ApplicationId string                    `json:"applicationId"`
+	StageId       string                    `json:"stageId"`
+	Rbac          *UserApplicationScopeRbac `json:"rbac"`
 }
 
-func (a UserAccessScope) MapStringInterface() (map[string]interface{}, error) {
+func (a *UserApplicationScope) UpdateRbac(userApplicationScopeNew UserApplicationScope) {
+	if a.Rbac == nil && userApplicationScopeNew.Rbac == nil {
+		return
+	}
+
+	a.Rbac = userApplicationScopeNew.Rbac
+}
+
+func (a UserApplicationScope) MapStringInterface() (map[string]interface{}, error) {
 	mapStringIntf := make(map[string]interface{})
 	j, err := json.Marshal(a)
 	if err != nil {
@@ -28,16 +36,16 @@ func (a UserAccessScope) MapStringInterface() (map[string]interface{}, error) {
 	return mapStringIntf, nil
 }
 
-type UserAccessesScope []UserAccessScope
+type UserApplicationsScope []UserApplicationScope
 
-type UserAccessScopeRbac struct {
+type UserApplicationScopeRbac struct {
 	Create bool `json:"create"`
 	Read   bool `json:"read"`
 	Update bool `json:"update"`
 	Delete bool `json:"delete"`
 }
 
-type FilterUserAccessScope struct {
+type FilterUserApplicationScope struct {
 	Id            string
 	UserId        string
 	UserIds       []string
@@ -45,7 +53,7 @@ type FilterUserAccessScope struct {
 	StageId       string
 }
 
-func (f *FilterUserAccessScope) Filter() *clover.Criteria {
+func (f *FilterUserApplicationScope) Filter() *clover.Criteria {
 	criterias := make([]*clover.Criteria, 0)
 
 	if f.Id != "" {

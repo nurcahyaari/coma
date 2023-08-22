@@ -2,20 +2,20 @@ package dto
 
 import "github.com/coma/coma/src/domain/entity"
 
-type ResponseUserAccessScope struct {
-	UserId string               `json:"userId"`
-	Rbac   *UserAccessScopeRbac `json:"rbac"`
+type ResponseUserApplicationScope struct {
+	UserId string                    `json:"userId"`
+	Rbac   *UserApplicationScopeRbac `json:"rbac"`
 }
 
-type UserAccessScopeRbac struct {
+type UserApplicationScopeRbac struct {
 	Create bool `json:"create"`
 	Read   bool `json:"read"`
 	Update bool `json:"update"`
 	Delete bool `json:"delete"`
 }
 
-func (r UserAccessScopeRbac) UserAccessScopeRbac() *entity.UserAccessScopeRbac {
-	return &entity.UserAccessScopeRbac{
+func (r UserApplicationScopeRbac) UserApplicationScopeRbac() *entity.UserApplicationScopeRbac {
+	return &entity.UserApplicationScopeRbac{
 		Create: r.Create,
 		Read:   r.Read,
 		Update: r.Update,
@@ -23,14 +23,14 @@ func (r UserAccessScopeRbac) UserAccessScopeRbac() *entity.UserAccessScopeRbac {
 	}
 }
 
-func NewResponseUserAccessScope(userAccessScope entity.UserAccessScope) ResponseUserAccessScope {
-	return ResponseUserAccessScope{
-		UserId: userAccessScope.UserId,
-		Rbac: &UserAccessScopeRbac{
-			Create: userAccessScope.Rbac.Create,
-			Read:   userAccessScope.Rbac.Read,
-			Update: userAccessScope.Rbac.Update,
-			Delete: userAccessScope.Rbac.Delete,
+func NewResponseUserApplicationScope(userApplicationScope entity.UserApplicationScope) ResponseUserApplicationScope {
+	return ResponseUserApplicationScope{
+		UserId: userApplicationScope.UserId,
+		Rbac: &UserApplicationScopeRbac{
+			Create: userApplicationScope.Rbac.Create,
+			Read:   userApplicationScope.Rbac.Read,
+			Update: userApplicationScope.Rbac.Update,
+			Delete: userApplicationScope.Rbac.Delete,
 		},
 	}
 }

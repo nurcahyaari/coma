@@ -19,15 +19,15 @@ type RepositoryUserWriter interface {
 	UpdateUser(ctx context.Context, user entity.User) error
 }
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . RepositoryUserAccessScopeReader
-type RepositoryUserAccessScopeReader interface {
-	FindUserAccessScope(ctx context.Context, filter entity.FilterUserAccessScope) (entity.UserAccessScope, error)
-	FindUserAccessesScope(ctx context.Context, filter entity.FilterUserAccessScope) (entity.UserAccessesScope, error)
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . RepositoryUserApplicationScopeReader
+type RepositoryUserApplicationScopeReader interface {
+	FindUserApplicationScope(ctx context.Context, filter entity.FilterUserApplicationScope) (entity.UserApplicationScope, bool, error)
+	FindUserApplicationsScope(ctx context.Context, filter entity.FilterUserApplicationScope) (entity.UserApplicationsScope, error)
 }
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . RepositoryUserAccessScopeWriter
-type RepositoryUserAccessScopeWriter interface {
-	SaveUserAccessScope(ctx context.Context, userAccessScope entity.UserAccessScope) error
-	UpdateUserAccessScope(ctx context.Context, userAccessScope entity.UserAccessScope) error
-	DeleteUserAccess(ctx context.Context, filter entity.FilterUserAccessScope) error
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . RepositoryUserApplicationScopeWriter
+type RepositoryUserApplicationScopeWriter interface {
+	SaveUserApplicationScope(ctx context.Context, userApplicationScope entity.UserApplicationScope) error
+	UpdateUserApplicationScope(ctx context.Context, userApplicationScope entity.UserApplicationScope) error
+	RevokeUserApplicationScope(ctx context.Context, filter entity.FilterUserApplicationScope) error
 }

@@ -5,28 +5,29 @@ import (
 	"github.com/google/uuid"
 )
 
-type RequestCreateUserAccessScope struct {
-	UserId        string               `json:"userId"`
-	ApplicationId string               `json:"applicationId"`
-	StageId       string               `json:"stageId"`
-	Rbac          *UserAccessScopeRbac `json:"rbac"`
+type RequestCreateUserApplicationScope struct {
+	UserId        string                    `json:"userId"`
+	ApplicationId string                    `json:"applicationId"`
+	StageId       string                    `json:"stageId"`
+	Rbac          *UserApplicationScopeRbac `json:"rbac"`
 }
 
-func (r RequestCreateUserAccessScope) UserAccessScope() entity.UserAccessScope {
+func (r RequestCreateUserApplicationScope) UserApplicationScope() entity.UserApplicationScope {
 	id := uuid.New()
-	userAccessScope := entity.UserAccessScope{
+	userApplicationScope := entity.UserApplicationScope{
 		Id:            id.String(),
 		ApplicationId: r.ApplicationId,
 		StageId:       r.StageId,
+		Rbac:          &entity.UserApplicationScopeRbac{},
 	}
 
 	if r.Rbac != nil {
-		userAccessScope.Rbac = r.Rbac.UserAccessScopeRbac()
+		userApplicationScope.Rbac = r.Rbac.UserApplicationScopeRbac()
 	}
 
-	return userAccessScope
+	return userApplicationScope
 }
 
-type RequestFindUserAccessScope struct {
+type RequestFindUserApplicationScope struct {
 	UserId string `json:"userId"`
 }

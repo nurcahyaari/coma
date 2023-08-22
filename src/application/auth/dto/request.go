@@ -14,7 +14,7 @@ type RequestGenerateToken struct {
 	Secret string `json:"secret"`
 }
 
-type RequestUserAccessScopeValidation struct {
+type RequestUserApplicationScopeValidation struct {
 	UserId string
 	Method string
 }
