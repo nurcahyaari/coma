@@ -42,6 +42,7 @@ func (h *HttpHandle) MiddlewareLocalAuthUserScope(next http.Handler) http.Handle
 	})
 }
 
+// TODO: update later
 func (h *HttpHandle) MiddlewareLocalAuthUserApplicationScope(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		resp, err := h.authSvc.ValidateUserApplicationScope(r.Context(), dto.RequestUserApplicationScopeValidation{
