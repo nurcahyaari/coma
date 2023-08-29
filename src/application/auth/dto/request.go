@@ -1,6 +1,12 @@
 package dto
 
-import "github.com/coma/coma/src/domain/entity"
+import (
+	"net/http"
+
+	internalerror "github.com/coma/coma/internal/utils/errors"
+	"github.com/coma/coma/src/domain/entity"
+	validation "github.com/go-ozzo/ozzo-validation"
+)
 
 type RequestValidateToken struct {
 	Token     string
@@ -12,6 +18,20 @@ type RequestGenerateToken struct {
 	Key string `json:"key"`
 	// secret can be user password
 	Secret string `json:"secret"`
+}
+
+func (r RequestGenerateToken) Validate() error {
+	err := validation.ValidateStruct(&r,
+		validation.Field(&r.Key, validation.Required),
+		validation.Field(&r.Secret, validation.Required),
+	)
+
+	if err == nil {
+		return nil
+	}
+
+	return internalerror.NewError(err,
+		internalerror.SetErrorCode(http.StatusBadRequest))
 }
 
 type RequestUserApplicationScopeValidation struct {

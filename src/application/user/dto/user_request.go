@@ -1,7 +1,11 @@
 package dto
 
 import (
+	"net/http"
+
+	internalerror "github.com/coma/coma/internal/utils/errors"
 	"github.com/coma/coma/src/domain/entity"
+	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/google/uuid"
 )
 
@@ -32,6 +36,19 @@ type UserRbac struct {
 type RequestCreateUser struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+}
+
+func (r RequestCreateUser) Validate() error {
+	err := validation.ValidateStruct(&r,
+		validation.Field(&r.Username, validation.Required),
+		validation.Field(&r.Password, validation.Required),
+	)
+	if err == nil {
+		return nil
+	}
+
+	return internalerror.NewError(err,
+		internalerror.SetErrorCode(http.StatusBadRequest))
 }
 
 type RequestCreateUserNonRoot struct {
@@ -67,4 +84,17 @@ func (r RequestCreateUser) UserRoot() entity.User {
 type RequestPatchUserPassword struct {
 	Id       string `json:"-"`
 	Passowrd string `json:"password"`
+}
+
+func (r RequestPatchUserPassword) Validate() error {
+	err := validation.ValidateStruct(&r,
+		validation.Field(&r.Id, validation.Required),
+		validation.Field(&r.Passowrd, validation.Required),
+	)
+	if err == nil {
+		return nil
+	}
+
+	return internalerror.NewError(err,
+		internalerror.SetErrorCode(http.StatusBadRequest))
 }

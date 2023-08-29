@@ -80,7 +80,13 @@ func (h *HttpHandle) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: make validation
+	if err := req.Validate(); err != nil {
+		errCustom := err.(*internalerrors.Error)
+		response.Err[string](w,
+			response.SetErr[string](errCustom.Error()))
+		return
+	}
+
 	resp, err := h.userSvc.CreateUser(r.Context(), req)
 	if err != nil {
 		errCustom := err.(*internalerrors.Error)
@@ -111,7 +117,13 @@ func (h *HttpHandle) CreateUserRoot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: make validation
+	if err := req.Validate(); err != nil {
+		errCustom := err.(*internalerrors.Error)
+		response.Err[string](w,
+			response.SetErr[string](errCustom.Error()))
+		return
+	}
+
 	resp, err := h.userSvc.CreateRootUser(r.Context(), req)
 	if err != nil {
 		errCustom := err.(*internalerrors.Error)
@@ -139,7 +151,6 @@ func (h *HttpHandle) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		Id: chi.URLParam(r, "id"),
 	}
 
-	// TODO: make validation
 	err := h.userSvc.DeleteUser(r.Context(), req)
 	if err != nil {
 		response.Err[string](w,
@@ -165,7 +176,6 @@ func (h *HttpHandle) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		Id: chi.URLParam(r, "id"),
 	}
 
-	// TODO: make validation
 	resp, err := h.userSvc.UpdateUser(r.Context(), req)
 	if err != nil {
 		response.Err[string](w,
@@ -198,7 +208,13 @@ func (h *HttpHandle) UpdateUserPassword(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// TODO: make validation
+	if err := req.Validate(); err != nil {
+		errCustom := err.(*internalerrors.Error)
+		response.Err[string](w,
+			response.SetErr[string](errCustom.Error()))
+		return
+	}
+
 	err := h.userSvc.PatchUserPassword(r.Context(), req)
 	if err != nil {
 		response.Err[string](w,

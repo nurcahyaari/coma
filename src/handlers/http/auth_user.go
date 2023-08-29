@@ -24,7 +24,13 @@ func (h *HttpHandle) AuthUserLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: make validation
+	if err := req.Validate(); err != nil {
+		errCustom := err.(*internalerrors.Error)
+		response.Err[string](w,
+			response.SetErr[string](errCustom.Error()))
+		return
+	}
+
 	resp, err := h.authSvc.GenerateToken(r.Context(), req)
 	if err != nil {
 		errCustom := err.(*internalerrors.Error)
