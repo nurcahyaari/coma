@@ -55,6 +55,7 @@ func (h *HttpHandle) CreateApplicationStages(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	// TODO: add validation
 	resp, err := h.applicationStageSvc.CreateStage(r.Context(), request)
 	if err != nil {
 		errCustom := err.(*internalerrors.Error)

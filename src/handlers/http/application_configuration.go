@@ -74,6 +74,7 @@ func (h *HttpHandle) SetConfiguration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO: add validation
 	res, err := h.configurationSvc.SetConfiguration(r.Context(), request)
 	if err != nil {
 		response.Err[string](w,
@@ -107,6 +108,7 @@ func (h *HttpHandle) UpdateConfiguration(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	// TODO: add validation
 	err = h.configurationSvc.UpdateConfiguration(r.Context(), request)
 	if err != nil {
 		response.Err[string](w,
@@ -139,6 +141,7 @@ func (h *HttpHandle) UpsertConfiguration(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	// TODO: add validation
 	err = h.configurationSvc.UpsertConfiguration(r.Context(), request)
 	if err != nil {
 		response.Err[string](w,

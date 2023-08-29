@@ -55,6 +55,7 @@ func (h *HttpHandle) CreateApplication(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO: add validation
 	resp, err := h.applicationSvc.CreateApplication(r.Context(), request)
 	if err != nil {
 		errCustom := err.(*internalerrors.Error)

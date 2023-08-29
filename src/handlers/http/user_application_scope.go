@@ -49,6 +49,7 @@ func (h *HttpHandle) CreateOrUpdateUserApplicationScope(w http.ResponseWriter, r
 		return
 	}
 
+	// TODO: add validation
 	err := h.userApplicationScopeSvc.UpsetUserApplicationScope(r.Context(), req)
 	if err != nil {
 		errCustom := err.(*internalerrors.Error)

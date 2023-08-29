@@ -56,6 +56,7 @@ func (h *HttpHandle) CreateOrUpdateApplicationKey(w http.ResponseWriter, r *http
 		return
 	}
 
+	// TODO: add validation
 	resp, err := h.applicationKeySvc.GenerateOrUpdateApplicationKey(r.Context(), request)
 	if err != nil {
 		errCustom := err.(*internalerrors.Error)
