@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"errors"
 
 	"github.com/coma/coma/infrastructure/database"
 	"github.com/coma/coma/src/domain/entity"
@@ -22,16 +21,20 @@ func NewRepositoryApplicationStageReader(db *database.Clover, name string) repos
 	}
 }
 
-func (r *RepositoryApplicationStageRead) FindStage(ctx context.Context, filter entity.FilterApplicationStage) (entity.ApplicationStage, error) {
-	stages, err := r.FindStages(ctx, filter)
-	if err != nil {
-		return entity.ApplicationStage{}, err
-	}
-	if len(stages) == 0 {
-		return entity.ApplicationStage{}, errors.New("err: stage is not found")
+func (r *RepositoryApplicationStageRead) FindStage(ctx context.Context, filter entity.FilterApplicationStage) (entity.ApplicationStage, bool, error) {
+	if filter.Filter() == nil {
+		return entity.ApplicationStage{}, false, nil
 	}
 
-	return stages[0], nil
+	stages, err := r.FindStages(ctx, filter)
+	if err != nil {
+		return entity.ApplicationStage{}, false, err
+	}
+	if len(stages) == 0 {
+		return entity.ApplicationStage{}, false, nil
+	}
+
+	return stages[0], true, nil
 }
 
 func (r *RepositoryApplicationStageRead) FindStages(ctx context.Context, filter entity.FilterApplicationStage) (entity.ApplicationStages, error) {

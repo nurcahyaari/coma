@@ -102,7 +102,7 @@ func (s *ApplicationKeyService) FindApplicationKey(ctx context.Context, request 
 	}, request.ApplicationId)
 
 	rtn.Add("findStage", &applicationStage, func(params ...any) (any, error) {
-		resp, err := s.stageReader.FindStage(ctx, entity.FilterApplicationStage{
+		resp, exist, err := s.stageReader.FindStage(ctx, entity.FilterApplicationStage{
 			Id: request.StageId,
 		})
 		if err != nil {
@@ -111,6 +111,14 @@ func (s *ApplicationKeyService) FindApplicationKey(ctx context.Context, request 
 				Msg("[GenerateOrUpdateApplicationKey.FindStages] error find stage")
 			return nil, err
 		}
+		if !exist {
+			err = errors.New("err: stage doesn't found")
+			log.Error().
+				Err(err).
+				Msg("[GenerateOrUpdateApplicationKey.FindStages] error not found")
+			return nil, err
+		}
+
 		return &resp, nil
 	}, request.StageId)
 
@@ -175,7 +183,7 @@ func (s *ApplicationKeyService) GenerateOrUpdateApplicationKey(ctx context.Conte
 
 	rtn.Add("findStage", &applicationStage, func(params ...any) (any, error) {
 		stageId := params[0].(string)
-		resp, err := s.stageReader.FindStage(ctx, entity.FilterApplicationStage{
+		resp, exist, err := s.stageReader.FindStage(ctx, entity.FilterApplicationStage{
 			Id: stageId,
 		})
 		if err != nil {
@@ -183,6 +191,13 @@ func (s *ApplicationKeyService) GenerateOrUpdateApplicationKey(ctx context.Conte
 				Err(err).
 				Msg("[GenerateOrUpdateApplicationKey.FindStages] error find stage")
 			return nil, internalerrors.NewError(err)
+		}
+		if !exist {
+			err = errors.New("err: stage doesn't found")
+			log.Error().
+				Err(err).
+				Msg("[GenerateOrUpdateApplicationKey.FindStages] error not found")
+			return nil, err
 		}
 		return &resp, nil
 	}, request.StageId)

@@ -11,6 +11,10 @@ type ApplicationStage struct {
 	Name string `json:"name"`
 }
 
+func (r ApplicationStage) Empty() bool {
+	return r.Id == ""
+}
+
 func (r ApplicationStage) MapStringInterface() (map[string]interface{}, error) {
 	mapStringIntf := make(map[string]interface{})
 	j, err := json.Marshal(r)
@@ -23,6 +27,12 @@ func (r ApplicationStage) MapStringInterface() (map[string]interface{}, error) {
 		return nil, err
 	}
 	return mapStringIntf, nil
+}
+
+func (r ApplicationStage) FilterStageById() FilterApplicationStage {
+	return FilterApplicationStage{
+		Id: r.Id,
+	}
 }
 
 type ApplicationStages []ApplicationStage

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/coma/coma/config"
@@ -66,7 +67,7 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, request dto.
 			internalerrors.SetErrorSource(internalerrors.OZZO_VALIDATION_ERR))
 	}
 
-	stage, err := s.stageReader.FindStage(ctx, entity.FilterApplicationStage{
+	stage, exist, err := s.stageReader.FindStage(ctx, entity.FilterApplicationStage{
 		Id: request.StageId,
 	})
 	if err != nil {
@@ -75,7 +76,16 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, request dto.
 			Msg("[CreateEnvirontment.FindStage] error finding stage")
 		return response, internalerrors.NewError(err)
 	}
-	if stage.Id == "" {
+	if !exist {
+		err = errors.New("err: stage doesn't found")
+		log.Error().
+			Err(err).
+			Msg("[CreateEnvirontment.FindStages] error not found")
+		return response, internalerrors.NewError(err,
+			internalerrors.SetErrorCode(http.StatusNotFound))
+	}
+
+	if stage.Empty() {
 		log.Error().
 			Err(err).
 			Msg("[CreateEnvirontment.FindStage] error stage doesn't found")

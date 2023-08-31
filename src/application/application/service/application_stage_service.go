@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"errors"
+	"net/http"
 
 	"github.com/coma/coma/config"
 	"github.com/coma/coma/container"
@@ -52,7 +54,27 @@ func (s *ApplicationStageService) CreateStage(ctx context.Context, request dto.R
 		applicationEnv = request.NewApplicationStage()
 		response       = dto.ResponseStage{}
 	)
-	err := s.writer.CreateOrSaveStage(ctx, applicationEnv)
+
+	stage, _, err := s.reader.FindStage(ctx, entity.FilterApplicationStage{
+		Name: request.Name,
+	})
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("[CreateEnvirontment] error searching existing stage")
+		return response, internalerrors.NewError(err)
+	}
+
+	if !stage.Empty() {
+		err = errors.New("err: stage has already exists")
+		log.Error().
+			Err(err).
+			Msg("[CreateEnvirontment] error searching existing stage")
+		return response, internalerrors.NewError(err,
+			internalerrors.SetErrorCode(http.StatusConflict))
+	}
+
+	err = s.writer.CreateStage(ctx, applicationEnv)
 	if err != nil {
 		log.Error().
 			Err(err).
