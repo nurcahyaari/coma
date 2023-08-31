@@ -73,31 +73,48 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, request dto.
 	if err != nil {
 		log.Error().
 			Err(err).
-			Msg("[CreateEnvirontment.FindStage] error finding stage")
+			Msg("[CreateApplication.FindStage] error finding stage")
 		return response, internalerrors.NewError(err)
 	}
 	if !exist {
 		err = errors.New("err: stage doesn't found")
 		log.Error().
 			Err(err).
-			Msg("[CreateEnvirontment.FindStages] error not found")
+			Msg("[CreateApplication.FindStages] error not found")
+		return response, internalerrors.NewError(err,
+			internalerrors.SetErrorCode(http.StatusNotFound))
+	}
+	if stage.Empty() {
+		log.Error().
+			Err(err).
+			Msg("[CreateApplication.FindStage] error stage doesn't found")
 		return response, internalerrors.NewError(err,
 			internalerrors.SetErrorCode(http.StatusNotFound))
 	}
 
-	if stage.Empty() {
+	_, exist, err = s.reader.FindApplication(ctx, entity.FilterApplication{
+		Name: request.Name,
+	})
+	if err != nil {
 		log.Error().
 			Err(err).
-			Msg("[CreateEnvirontment.FindStage] error stage doesn't found")
+			Msg("[CreateApplication.FindApplication] error finding stage")
+		return response, internalerrors.NewError(err)
+	}
+	if exist {
+		err = errors.New("err: application already exists")
+		log.Error().
+			Err(err).
+			Msg("[CreateApplication.FindApplication] error finding stage")
 		return response, internalerrors.NewError(err,
-			internalerrors.SetErrorCode(http.StatusNotFound))
+			internalerrors.SetErrorCode(http.StatusConflict))
 	}
 
 	err = s.writer.CreateApplication(ctx, application)
 	if err != nil {
 		log.Error().
 			Err(err).
-			Msg("[CreateEnvirontment] error creating new environment")
+			Msg("[CreateApplication] error creating new environment")
 		return response, internalerrors.NewError(err)
 	}
 

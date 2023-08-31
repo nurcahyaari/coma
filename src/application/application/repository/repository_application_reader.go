@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"errors"
 
 	"github.com/coma/coma/infrastructure/database"
 	"github.com/coma/coma/src/domain/entity"
@@ -22,16 +21,16 @@ func NewRepositoryApplicationReader(db *database.Clover, name string) repository
 	}
 }
 
-func (r *RepositoryApplicationRead) FindApplication(ctx context.Context, filter entity.FilterApplication) (entity.Application, error) {
+func (r *RepositoryApplicationRead) FindApplication(ctx context.Context, filter entity.FilterApplication) (entity.Application, bool, error) {
 	applications, err := r.FindApplications(ctx, filter)
 	if err != nil {
-		return entity.Application{}, err
+		return entity.Application{}, false, err
 	}
 	if len(applications) == 0 {
-		return entity.Application{}, errors.New("err: application is not found")
+		return entity.Application{}, false, nil
 	}
 
-	return applications[0], nil
+	return applications[0], true, nil
 }
 
 func (r *RepositoryApplicationRead) FindApplications(ctx context.Context, filter entity.FilterApplication) (entity.Applications, error) {

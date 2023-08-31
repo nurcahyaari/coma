@@ -14,6 +14,6 @@ type RepositoryApplicationWriter interface {
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . RepositoryApplicationReader
 type RepositoryApplicationReader interface {
-	FindApplication(ctx context.Context, filter entity.FilterApplication) (entity.Application, error)
+	FindApplication(ctx context.Context, filter entity.FilterApplication) (entity.Application, bool, error)
 	FindApplications(ctx context.Context, filter entity.FilterApplication) (entity.Applications, error)
 }

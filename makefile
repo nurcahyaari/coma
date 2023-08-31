@@ -1,3 +1,5 @@
+start:
+	go run github.com/cosmtrek/air
 
 dev: generate
 	go run github.com/cosmtrek/air

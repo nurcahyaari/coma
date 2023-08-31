@@ -89,7 +89,7 @@ func (s *ApplicationKeyService) FindApplicationKey(ctx context.Context, request 
 
 	rtn.Add("findApplication", &application, func(params ...any) (any, error) {
 		applicationId := params[0].(string)
-		resp, err := s.applicationReader.FindApplication(ctx, entity.FilterApplication{
+		resp, exist, err := s.applicationReader.FindApplication(ctx, entity.FilterApplication{
 			Id: applicationId,
 		})
 		if err != nil {
@@ -98,6 +98,14 @@ func (s *ApplicationKeyService) FindApplicationKey(ctx context.Context, request 
 				Msg("[GenerateOrUpdateApplicationKey.FindApplications] error find application")
 			return nil, internalerrors.NewError(err)
 		}
+		if !exist {
+			err = errors.New("err: application doesn't found")
+			log.Error().
+				Err(err).
+				Msg("[GenerateOrUpdateApplicationKey.FindApplications] error: application doesn't found")
+			return nil, internalerrors.NewError(err)
+		}
+
 		return &resp, nil
 	}, request.ApplicationId)
 
@@ -169,7 +177,7 @@ func (s *ApplicationKeyService) GenerateOrUpdateApplicationKey(ctx context.Conte
 
 	rtn.Add("findApplication", &application, func(params ...any) (any, error) {
 		applicationId := params[0].(string)
-		resp, err := s.applicationReader.FindApplication(ctx, entity.FilterApplication{
+		resp, exist, err := s.applicationReader.FindApplication(ctx, entity.FilterApplication{
 			Id: applicationId,
 		})
 		if err != nil {
@@ -178,6 +186,14 @@ func (s *ApplicationKeyService) GenerateOrUpdateApplicationKey(ctx context.Conte
 				Msg("[GenerateOrUpdateApplicationKey.FindApplications] error find application")
 			return nil, internalerrors.NewError(err)
 		}
+		if !exist {
+			err = errors.New("err: application doesn't found")
+			log.Error().
+				Err(err).
+				Msg("[GenerateOrUpdateApplicationKey.FindApplications] error: application doesn't found")
+			return nil, internalerrors.NewError(err)
+		}
+
 		return &resp, nil
 	}, request.ApplicationId)
 
