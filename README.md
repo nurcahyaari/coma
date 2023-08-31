@@ -5,11 +5,17 @@ Coma is a configuration manager that stores, manages, and distributes your confi
 ## 📚 Table Of Contents
 
 - [Getting Started]()
+- [Features]()
 
 ## 🚀 Getting Started
 
 UNDER CONSTRUCTION
 
+## Features
+- 👨‍💻 Managing user with their access control
+- 📦 Simpel to manage stage, application, key, and its on air configuration
+- 🚀 Real-time publishing configuration to the listener
+- 📦 SDK with many programming language implementation (currently only support Golang & Node.js)
 
 ## Roadmaps
 
