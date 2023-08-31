@@ -30,6 +30,10 @@ import (
 	websockethandler "github.com/coma/coma/src/handlers/websocket"
 )
 
+//@securityDefinitions.apikey comaStandardAuth
+//@in header
+//@name Authorization
+
 func initHttpProtocol(c container.Service) *http.Http {
 	handler := httphandler.NewHttpHandler(c)
 
