@@ -9,7 +9,9 @@ Coma is a configuration manager that stores, manages, and distributes your confi
 
 ## 🚀 Getting Started
 
-UNDER CONSTRUCTION
+### Manual Installation
+
+### Containerize with Docker
 
 ## Features
 - 👨‍💻 Managing user with their access control
