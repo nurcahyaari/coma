@@ -12,8 +12,8 @@ import (
 
 // FindApplicationStages get stages
 // @Summary get stages
+// @Security comaStandardAuth
 // @Description get stages
-// @Param authorization header string true "User accessToken"
 // @Param stageName query string false "<Stage name>"
 // @Tags Stages
 // @Produce json
@@ -39,8 +39,8 @@ func (h *HttpHandle) FindApplicationStages(w http.ResponseWriter, r *http.Reques
 
 // CreateApplicationStages set new stages
 // @Summary set new stages
+// @Security comaStandardAuth
 // @Description Set new stages
-// @Param authorization header string true "User accessToken"
 // @Param RequestCreateStage body applicationdto.RequestCreateStage true "create new stages"
 // @Tags Stages
 // @Produce json
@@ -55,7 +55,13 @@ func (h *HttpHandle) CreateApplicationStages(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	// TODO: add validation
+	if err := request.Validate(); err != nil {
+		errCustom := err.(*internalerrors.Error)
+		response.Err[any](w,
+			response.SetErr[any](errCustom.ErrorAsObject()))
+		return
+	}
+
 	resp, err := h.applicationStageSvc.CreateStage(r.Context(), request)
 	if err != nil {
 		errCustom := err.(*internalerrors.Error)
@@ -72,9 +78,9 @@ func (h *HttpHandle) CreateApplicationStages(w http.ResponseWriter, r *http.Requ
 
 // DeleteApplicationStages delete stages
 // @Summary delete stages
+// @Security comaStandardAuth
 // @Description delete stages
-// @Param authorization header string true "User accessToken"
-// @Param stageName path int true "StageName"
+// @Param stageName path string true "StageName"
 // @Tags Stages
 // @Produce json
 // @Router /v1/stages/{stageName} [DELETE]

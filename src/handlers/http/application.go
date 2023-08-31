@@ -12,8 +12,8 @@ import (
 
 // FindApplications get applications
 // @Summary get applications
+// @Security comaStandardAuth
 // @Description get applications
-// @Param authorization header string true "User accessToken"
 // @Param stageId query string false "<Stage id>"
 // @Param applicationName query string false "<application name>"
 // @Tags Applications
@@ -39,8 +39,8 @@ func (h *HttpHandle) FindApplications(w http.ResponseWriter, r *http.Request) {
 
 // CreateApplicationStages set new applications
 // @Summary set new applications
+// @Security comaStandardAuth
 // @Description Set new applications
-// @Param authorization header string true "User accessToken"
 // @Param RequestCreateApplication body applicationdto.RequestCreateApplication true "create new application"
 // @Tags Applications
 // @Produce json
@@ -55,7 +55,13 @@ func (h *HttpHandle) CreateApplication(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: add validation
+	if err := request.Validate(); err != nil {
+		errCustom := err.(*internalerrors.Error)
+		response.Err[any](w,
+			response.SetErr[any](errCustom.ErrorAsObject()))
+		return
+	}
+
 	resp, err := h.applicationSvc.CreateApplication(r.Context(), request)
 	if err != nil {
 		errCustom := err.(*internalerrors.Error)
@@ -72,9 +78,9 @@ func (h *HttpHandle) CreateApplication(w http.ResponseWriter, r *http.Request) {
 
 // DeleteApplications delete application
 // @Summary delete application
+// @Security comaStandardAuth
 // @Description delete application
-// @Param authorization header string true "User accessToken"
-// @Param applicationId path int true "application id"
+// @Param applicationId path string true "application id"
 // @Tags Applications
 // @Produce json
 // @Router /v1/applications/{applicationId} [DELETE]

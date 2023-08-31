@@ -11,8 +11,8 @@ import (
 
 // FindUserApplicationScope find user scope to application
 // @Summary find user scope to application
+// @Security comaStandardAuth
 // @Description find user scope to application
-// @Param authorization header string true "User accessToken"
 // @Tags UserApplicationScope
 // @Produce json
 // @Router /v1/users/application/scope [GET]
@@ -35,8 +35,8 @@ func (h *HttpHandle) FindUserApplicationsScope(w http.ResponseWriter, r *http.Re
 
 // CreateOrUpdateUserApplicationScope create or update user application scope
 // @Summary create or update user application scope
+// @Security comaStandardAuth
 // @Description create or update user application scope
-// @Param authorization header string true "User accessToken"
 // @Param RequestCreateUserApplicationScope body userdto.RequestCreateUserApplicationScope true "create or update application"
 // @Tags UserApplicationScope
 // @Produce json

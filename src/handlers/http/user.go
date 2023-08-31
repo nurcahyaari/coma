@@ -12,8 +12,8 @@ import (
 
 // FindUser find user
 // @Summary find user
+// @Security comaStandardAuth
 // @Description find user
-// @Param authorization header string true "User accessToken"
 // @Param id path string true "user id"
 // @Tags Users
 // @Produce json
@@ -39,8 +39,8 @@ func (h *HttpHandle) FindUser(w http.ResponseWriter, r *http.Request) {
 
 // FindUsers find users
 // @Summary find users
+// @Security comaStandardAuth
 // @Description find users
-// @Param authorization header string true "User accessToken"
 // @Tags Users
 // @Produce json
 // @Router /v1/users [GET]
@@ -63,8 +63,8 @@ func (h *HttpHandle) FindUsers(w http.ResponseWriter, r *http.Request) {
 
 // CreateUser set new users
 // @Summary set new users
+// @Security comaStandardAuth
 // @Description set new users
-// @Param authorization header string true "User accessToken"
 // @Param RequestCreateUserNonRoot body userdto.RequestCreateUserNonRoot true "create new user"
 // @Tags Users
 // @Produce json
@@ -140,8 +140,8 @@ func (h *HttpHandle) CreateUserRoot(w http.ResponseWriter, r *http.Request) {
 
 // DeleteUser delete users
 // @Summary delete users
+// @Security comaStandardAuth
 // @Description delete users
-// @Param authorization header string true "User accessToken"
 // @Param id path string true "user id"
 // @Tags Users
 // @Produce json
@@ -164,8 +164,8 @@ func (h *HttpHandle) DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 // UpdateUser update users
 // @Summary update users
+// @Security comaStandardAuth
 // @Description update users
-// @Param authorization header string true "User accessToken"
 // @Param id path string true "user id"
 // @Param RequestUser body userdto.RequestUser true "update user"
 // @Tags Users
@@ -190,8 +190,8 @@ func (h *HttpHandle) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 // UpdateUserPassword update users password
 // @Summary update users password
+// @Security comaStandardAuth
 // @Description update users password
-// @Param authorization header string true "User accessToken"
 // @Param id path string true "user id"
 // @Param RequestPatchUserPassword body userdto.RequestPatchUserPassword true "update user password"
 // @Tags Users

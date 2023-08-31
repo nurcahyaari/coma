@@ -5,14 +5,15 @@ import (
 	"net/http"
 
 	"github.com/coma/coma/internal/protocols/http/response"
+	internalerrors "github.com/coma/coma/internal/utils/errors"
 	applicationdto "github.com/coma/coma/src/application/application/dto"
 	"github.com/go-chi/chi/v5"
 )
 
 // GetConfiguration get it's config
 // @Summary set new config
+// @Security comaStandardAuth
 // @Description Set new config
-// @Param authorization header string true "User accessToken"
 // @Param x-clientkey header string true "<Client Key>"
 // @Param viewType query string true "<View Type>" Enums(JSON, schema)
 // @Tags Config
@@ -55,8 +56,8 @@ func (h *HttpHandle) GetConfiguration(w http.ResponseWriter, r *http.Request) {
 
 // SetConfiguration set new config
 // @Summary set new config
+// @Security comaStandardAuth
 // @Description Set new config
-// @Param authorization header string true "User accessToken"
 // @Param x-clientkey header string true "<Client Key>"
 // @Param RequestSetConfiguration body applicationdto.RequestSetConfiguration true "create new field of config"
 // @Tags Config
@@ -74,7 +75,13 @@ func (h *HttpHandle) SetConfiguration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: add validation
+	if err := request.Validate(); err != nil {
+		errCustom := err.(*internalerrors.Error)
+		response.Err[any](w,
+			response.SetErr[any](errCustom.ErrorAsObject()))
+		return
+	}
+
 	res, err := h.configurationSvc.SetConfiguration(r.Context(), request)
 	if err != nil {
 		response.Err[string](w,
@@ -89,9 +96,9 @@ func (h *HttpHandle) SetConfiguration(w http.ResponseWriter, r *http.Request) {
 
 // UpdateConfiguration update new config
 // @Summary update new config
+// @Security comaStandardAuth
 // @Description update new config
 // @Tags Config
-// @Param authorization header string true "User accessToken"
 // @Param x-clientkey header string true "<Client Key>"
 // @Param RequestUpdateConfiguration body applicationdto.RequestUpdateConfiguration true "update data of config"
 // @Produce json
@@ -108,7 +115,13 @@ func (h *HttpHandle) UpdateConfiguration(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	// TODO: add validation
+	if err := request.Validate(); err != nil {
+		errCustom := err.(*internalerrors.Error)
+		response.Err[string](w,
+			response.SetErr[string](errCustom.Error()))
+		return
+	}
+
 	err = h.configurationSvc.UpdateConfiguration(r.Context(), request)
 	if err != nil {
 		response.Err[string](w,
@@ -122,8 +135,8 @@ func (h *HttpHandle) UpdateConfiguration(w http.ResponseWriter, r *http.Request)
 
 // UpsertConfiguration update/set configuration
 // @Summary update or set configuration
+// @Security comaStandardAuth
 // @Description update or set configuration
-// @Param authorization header string true "User accessToken"
 // @Param x-clientkey header string true "<Client Key>"
 // @Param RequestSetConfiguration body applicationdto.RequestSetConfiguration true "create new field of config"
 // @Tags Config
@@ -141,7 +154,13 @@ func (h *HttpHandle) UpsertConfiguration(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	// TODO: add validation
+	if err := request.Validate(); err != nil {
+		errCustom := err.(*internalerrors.Error)
+		response.Err[string](w,
+			response.SetErr[string](errCustom.Error()))
+		return
+	}
+
 	err = h.configurationSvc.UpsertConfiguration(r.Context(), request)
 	if err != nil {
 		response.Err[string](w,
@@ -155,8 +174,8 @@ func (h *HttpHandle) UpsertConfiguration(w http.ResponseWriter, r *http.Request)
 
 // DeleteConfiguration delete configuration based on it's id
 // @Summary delete a config
+// @Security comaStandardAuth
 // @Description delete a config
-// @Param authorization header string true "User accessToken"
 // @Param x-clientkey header string true "<Client Key>"
 // @Param id path string true "The config field identifier it's a UUID."
 // @Tags Config

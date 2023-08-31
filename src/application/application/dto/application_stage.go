@@ -1,6 +1,9 @@
 package dto
 
 import (
+	"net/http"
+
+	internalerror "github.com/coma/coma/internal/utils/errors"
 	"github.com/coma/coma/src/domain/entity"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/google/uuid"
@@ -15,7 +18,14 @@ func (r RequestCreateStage) Validate() error {
 
 	validationFieldRules = append(validationFieldRules, validation.Field(&r.Name, validation.Required))
 
-	return validation.ValidateStruct(&r, validationFieldRules...)
+	err := validation.ValidateStruct(&r, validationFieldRules...)
+	if err == nil {
+		return nil
+	}
+
+	return internalerror.NewError(err,
+		internalerror.SetErrorCode(http.StatusBadRequest),
+		internalerror.SetErrorSource(internalerror.OZZO_VALIDATION_ERR))
 }
 
 func (r RequestCreateStage) NewApplicationStage() entity.ApplicationStage {

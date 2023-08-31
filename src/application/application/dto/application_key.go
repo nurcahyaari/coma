@@ -1,6 +1,9 @@
 package dto
 
 import (
+	"net/http"
+
+	internalerror "github.com/coma/coma/internal/utils/errors"
 	"github.com/coma/coma/src/domain/entity"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/google/uuid"
@@ -17,7 +20,14 @@ func (r RequestCreateApplicationKey) Validate() error {
 	validationFieldRules = append(validationFieldRules, validation.Field(&r.ApplicationId, validation.Required))
 	validationFieldRules = append(validationFieldRules, validation.Field(&r.StageId, validation.Required))
 
-	return validation.ValidateStruct(&r, validationFieldRules...)
+	err := validation.ValidateStruct(&r, validationFieldRules...)
+	if err == nil {
+		return nil
+	}
+
+	return internalerror.NewError(err,
+		internalerror.SetErrorCode(http.StatusBadRequest),
+		internalerror.SetErrorSource(internalerror.OZZO_VALIDATION_ERR))
 }
 
 func (r RequestCreateApplicationKey) ApplicationKey() entity.ApplicationKey {
@@ -48,7 +58,14 @@ func (r RequestFindApplicationKey) ValidateKey() error {
 
 	validationFieldRules = append(validationFieldRules, validation.Field(&r.Key, validation.Required))
 
-	return validation.ValidateStruct(&r, validationFieldRules...)
+	err := validation.ValidateStruct(&r, validationFieldRules...)
+	if err == nil {
+		return nil
+	}
+
+	return internalerror.NewError(err,
+		internalerror.SetErrorCode(http.StatusBadRequest),
+		internalerror.SetErrorSource(internalerror.OZZO_VALIDATION_ERR))
 }
 
 func (r RequestFindApplicationKey) Validate() error {
@@ -57,7 +74,14 @@ func (r RequestFindApplicationKey) Validate() error {
 	validationFieldRules = append(validationFieldRules, validation.Field(&r.ApplicationId, validation.Required))
 	validationFieldRules = append(validationFieldRules, validation.Field(&r.StageId, validation.Required))
 
-	return validation.ValidateStruct(&r, validationFieldRules...)
+	err := validation.ValidateStruct(&r, validationFieldRules...)
+	if err == nil {
+		return nil
+	}
+
+	return internalerror.NewError(err,
+		internalerror.SetErrorCode(http.StatusBadRequest),
+		internalerror.SetErrorSource(internalerror.OZZO_VALIDATION_ERR))
 }
 
 func (r RequestFindApplicationKey) FilterApplicationKey() entity.FilterApplicationKey {
