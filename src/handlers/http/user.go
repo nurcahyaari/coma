@@ -176,6 +176,13 @@ func (h *HttpHandle) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		Id: chi.URLParam(r, "id"),
 	}
 
+	if err := req.Validate(); err != nil {
+		errCustom := err.(*internalerrors.Error)
+		response.Err[string](w,
+			response.SetErr[string](errCustom.Error()))
+		return
+	}
+
 	resp, err := h.userSvc.UpdateUser(r.Context(), req)
 	if err != nil {
 		response.Err[string](w,

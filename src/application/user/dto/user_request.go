@@ -15,6 +15,16 @@ type RequestUser struct {
 	UserType entity.UserType `json:"-"`
 }
 
+func (r RequestUser) Validate() error {
+	err := validation.ValidateStruct(&r,
+		validation.Field(&r.Id, validation.Required),
+		validation.Field(&r.Username, validation.Required),
+	)
+
+	return internalerror.NewError(err,
+		internalerror.SetErrorCode(http.StatusBadRequest))
+}
+
 func (r RequestUser) User() entity.User {
 	return entity.User{
 		Id:       r.Id,
