@@ -1,7 +1,11 @@
 package dto
 
 import (
+	"net/http"
+
+	internalerror "github.com/coma/coma/internal/utils/errors"
 	"github.com/coma/coma/src/domain/entity"
+	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/google/uuid"
 )
 
@@ -9,6 +13,16 @@ type RequestCreateUserApplicationScope struct {
 	UserId        string                    `json:"userId"`
 	ApplicationId string                    `json:"applicationId"`
 	Rbac          *UserApplicationScopeRbac `json:"rbac"`
+}
+
+func (r RequestCreateUserApplicationScope) Validate() error {
+	err := validation.ValidateStruct(&r,
+		validation.Field(&r.UserId, validation.Required),
+		validation.Field(&r.ApplicationId, validation.Required),
+	)
+
+	return internalerror.NewError(err,
+		internalerror.SetErrorCode(http.StatusBadRequest))
 }
 
 func (r RequestCreateUserApplicationScope) UserApplicationScope() entity.UserApplicationScope {
