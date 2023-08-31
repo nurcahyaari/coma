@@ -34,14 +34,14 @@ import (
 //@in header
 //@name Authorization
 
-func initHttpProtocol(c container.Service) *http.Http {
+func initHttpProtocol(cfg config.Config, c container.Service) *http.Http {
 	handler := httphandler.NewHttpHandler(c)
 
 	websocketHandler := websockethandler.NewWebsocketHandler(c)
 	router := httprouter.NewHttpRouter(
 		handler,
 		websocketHandler)
-	return http.New(router)
+	return http.New(cfg, router)
 }
 
 func main() {
@@ -168,7 +168,7 @@ func main() {
 
 	localPubsubHandler := localpubsub.NewLocalPubsub(&cfg, c)
 
-	httpProtocol := initHttpProtocol(*c.Service)
+	httpProtocol := initHttpProtocol(cfg, *c.Service)
 
 	// init http protocol
 	go httpProtocol.Listen()

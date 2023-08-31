@@ -26,6 +26,9 @@ type Config struct {
 			ShutdownPeriod time.Duration `mapstructure:"SHUTDOWN_PERIOD"`
 			WarnPeriod     time.Duration `mapstructure:"WARN_PERIOD"`
 		} `mapstructure:"GRACEFUL"`
+		Pprof struct {
+			Enable bool `mapstructure:"ENABLE"`
+		} `mapstructure:"PPROF"`
 	} `mapstructure:"APPLICATION"`
 
 	DB struct {

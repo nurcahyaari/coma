@@ -21,13 +21,17 @@ import (
 )
 
 type Http struct {
+	cfg         config.Config
 	HttpRouter  *router.HttpRoute
 	httpServer  *http.Server
 	serverState graceful.ServerState
 }
 
-func New(httpRouter *router.HttpRoute) *Http {
-	return &Http{HttpRouter: httpRouter}
+func New(cfg config.Config, httpRouter *router.HttpRoute) *Http {
+	return &Http{
+		cfg:        cfg,
+		HttpRouter: httpRouter,
+	}
 }
 
 func (p *Http) router(app *chi.Mux) {
@@ -59,6 +63,10 @@ func (h *Http) shutdownStateMiddleware(next http.Handler) http.Handler {
 }
 
 func (h *Http) pprof(r *chi.Mux) {
+	if !h.cfg.Application.Pprof.Enable {
+		return
+	}
+
 	r.HandleFunc("/debug/pprof/", pprof.Index)
 	r.HandleFunc("/debug/pprof/heap", pprof.Index)
 	r.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
