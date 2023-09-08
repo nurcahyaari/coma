@@ -22,7 +22,6 @@ func (r RequestSetConfiguration) Validate() error {
 
 	validationFieldRules = append(validationFieldRules, validation.Field(&r.XClientKey, validation.Required))
 	validationFieldRules = append(validationFieldRules, validation.Field(&r.Field, validation.Required, validation.Match(regexp.MustCompile("^[a-zA-Z_]+$"))))
-	validationFieldRules = append(validationFieldRules, validation.Field(&r.Value, validation.Required))
 
 	err := validation.ValidateStruct(&r, validationFieldRules...)
 	if err == nil {
