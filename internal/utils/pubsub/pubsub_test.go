@@ -211,6 +211,8 @@ func TestPubsub(t *testing.T) {
 		ps.Publish("test-topic-1", pubsub.SendBytes([]byte("hello bytes")))
 		ps.Publish("test-topic-1", pubsub.SendBytes([]byte("hello bytes")))
 
+		go ps.Listen()
+
 		assert.Equal(t, 5, ps.Len("test-topic-1"))
 	})
 }
@@ -226,6 +228,25 @@ func TestShutdown(t *testing.T) {
 		ps.ConsumerRegister("test-topic-1", func(id string, r io.Reader) {
 			fmt.Println(id, r)
 		}, pubsub.PubsubSetMaxWorker(5))
+
+		go ps.Listen()
+
+		err := ps.Shutdown(context.TODO())
+		assert.NoError(t, err)
+	})
+
+	t.Run("after shutdown it should backup the message", func(t *testing.T) {
+		ps := pubsub.NewPubsub()
+		ps.TopicRegister(
+			"test-topic-1",
+			pubsub.PubsubSetMaxBufferCapacity(100),
+		)
+
+		ps.Publish("test-topic-1", pubsub.SendBytes([]byte("hello bytes")))
+		ps.Publish("test-topic-1", pubsub.SendBytes([]byte("hello bytes")))
+		ps.Publish("test-topic-1", pubsub.SendBytes([]byte("hello bytes")))
+		ps.Publish("test-topic-1", pubsub.SendBytes([]byte("hello bytes")))
+		ps.Publish("test-topic-1", pubsub.SendBytes([]byte("hello bytes")))
 
 		go ps.Listen()
 

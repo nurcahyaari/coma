@@ -205,6 +205,7 @@ func (ps *Pubsub) shutdownPublisher(topic string) {
 
 func (ps *Pubsub) Shutdown(ctx context.Context) error {
 	if ps.database == nil {
+		log.Println("no database was selected")
 		return nil
 	}
 	log.Println("backup message from queue")
