@@ -38,28 +38,26 @@ func SetSubscriberRetryWaitTime(retryWaitTime time.Duration) SubscriberOpt {
 }
 
 type subscriber struct {
-	id                 string
-	shutdownDispatcher chan bool
-	shutdownListener   chan bool
-	async              bool
-	maxWorker          int
-	maxElapsedTime     time.Duration
-	retryWaitTime      time.Duration
-	handler            SubscriberHandler
-	message            chan io.Reader
+	id               string
+	shutdownListener chan bool
+	async            bool
+	maxWorker        int
+	maxElapsedTime   time.Duration
+	retryWaitTime    time.Duration
+	handler          SubscriberHandler
+	message          chan io.Reader
 }
 
 func newSubscriber() *subscriber {
 	id := uuid.New()
 	sub := &subscriber{
-		id:                 id.String(),
-		shutdownDispatcher: make(chan bool),
-		shutdownListener:   make(chan bool),
-		async:              false,
-		maxWorker:          1,
-		maxElapsedTime:     1 * time.Second,
-		retryWaitTime:      3 * time.Second,
-		message:            make(chan io.Reader),
+		id:               id.String(),
+		shutdownListener: make(chan bool),
+		async:            false,
+		maxWorker:        1,
+		maxElapsedTime:   1 * time.Second,
+		retryWaitTime:    3 * time.Second,
+		message:          make(chan io.Reader),
 	}
 
 	if sub.maxWorker == 0 {
@@ -147,5 +145,4 @@ func (s *subscriber) close() {
 		return
 	}
 	s.shutdownListener <- true
-	s.shutdownDispatcher <- true
 }

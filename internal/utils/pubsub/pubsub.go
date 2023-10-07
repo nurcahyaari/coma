@@ -194,6 +194,7 @@ func (ps *Pubsub) CheckBackup(topic string) error {
 }
 
 func (ps *Pubsub) shutdownSubscriber(topic string) {
+	ps.shutdown <- true
 	for idx, _ := range ps.subscriber[topic] {
 		ps.subscriber[topic][idx].close()
 	}
@@ -204,6 +205,7 @@ func (ps *Pubsub) shutdownPublisher(topic string) {
 }
 
 func (ps *Pubsub) Shutdown(ctx context.Context) error {
+	log.Println("Shutting down pubsub")
 	if ps.database == nil {
 		log.Println("no database was selected")
 		return nil
@@ -214,6 +216,7 @@ func (ps *Pubsub) Shutdown(ctx context.Context) error {
 	for topic, publisher := range ps.publisher {
 		ps.shutdownSubscriber(topic)
 		ps.shutdownPublisher(topic)
+		log.Printf("Topic: %s has already been shutdown\n", topic)
 		messages, err := publisher.retrieveMessages()
 		if err != nil {
 			return err
