@@ -38,6 +38,7 @@ func SetSubscriberRetryWaitTime(retryWaitTime time.Duration) SubscriberOpt {
 }
 
 type subscriber struct {
+	id                 string
 	shutdownDispatcher chan bool
 	shutdownListener   chan bool
 	async              bool
@@ -49,7 +50,9 @@ type subscriber struct {
 }
 
 func newSubscriber() *subscriber {
+	id := uuid.New()
 	sub := &subscriber{
+		id:                 id.String(),
 		shutdownDispatcher: make(chan bool),
 		shutdownListener:   make(chan bool),
 		async:              false,
@@ -105,16 +108,8 @@ func (s *subscriber) listen() {
 	}
 }
 
-func (s *subscriber) dispatcher(publisher *publisher) {
-	for {
-		select {
-		case <-s.shutdownDispatcher:
-			return
-		case message := <-publisher.message:
-			s.message <- message
-		}
-
-	}
+func (s *subscriber) dispatcher(data io.Reader) {
+	s.message <- data
 }
 
 func (s *subscriber) consume() {
@@ -122,7 +117,7 @@ func (s *subscriber) consume() {
 		select {
 		case <-s.shutdownListener:
 			return
-		case message := <-s.message:
+		case messageReader := <-s.message:
 			id := uuid.New()
 			backoffExponential := backoff.NewExponentialBackOff()
 			backoffExponential.MaxInterval = s.retryWaitTime
@@ -130,14 +125,14 @@ func (s *subscriber) consume() {
 
 			if s.async {
 				go backoff.Retry(func() error {
-					s.handler(id.String(), message)
+					s.handler(id.String(), messageReader)
 					return nil
 				}, backoffExponential)
 				continue
 			}
 
 			err := backoff.Retry(func() error {
-				s.handler(id.String(), message)
+				s.handler(id.String(), messageReader)
 				return nil
 			}, backoffExponential)
 			if err != nil {

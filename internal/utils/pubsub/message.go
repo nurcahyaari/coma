@@ -33,3 +33,19 @@ func SendJSON(data json.RawMessage) MessageHandler {
 		return &buff, nil
 	}
 }
+
+func ReaderToReaderSeeker(reader io.Reader) (io.ReadSeeker, error) {
+	// Create a buffer to hold the entire content
+	var buffer bytes.Buffer
+
+	// Copy the content from the reader to the buffer
+	_, err := io.Copy(&buffer, reader)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a ReadSeeker from the buffer
+	readSeeker := bytes.NewReader(buffer.Bytes())
+
+	return readSeeker, nil
+}

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/coma/coma/internal/utils/pubsub"
@@ -15,6 +16,32 @@ import (
 func TestPubsub(t *testing.T) {
 	t.Run("test consumer string", func(t *testing.T) {
 		actual := make(chan string)
+		fmt.Println("0")
+		ps := pubsub.NewPubsub()
+		fmt.Println("1")
+		ps.TopicRegister(
+			"test-topic-1",
+			pubsub.PubsubSetMaxBufferCapacity(5),
+		)
+		fmt.Println("2")
+		ps.ConsumerRegister("test-topic-1", func(id string, r io.Reader) {
+			buf := new(strings.Builder)
+			io.Copy(buf, r)
+			actual <- buf.String()
+			close(actual)
+		}, pubsub.PubsubSetMaxWorker(5))
+		fmt.Println("3")
+		go ps.Listen()
+		fmt.Println("4")
+		ps.Publish("test-topic-1", pubsub.SendString("hello world"))
+		fmt.Println("5")
+		assert.Equal(t, "hello world", <-actual)
+	})
+
+	t.Run("test multi consumer string", func(t *testing.T) {
+		actual := make(chan string, 2)
+		wg := sync.WaitGroup{}
+		wg.Add(2)
 		ps := pubsub.NewPubsub()
 		ps.TopicRegister(
 			"test-topic-1",
@@ -22,17 +49,34 @@ func TestPubsub(t *testing.T) {
 		)
 
 		ps.ConsumerRegister("test-topic-1", func(id string, r io.Reader) {
-			buf := new(strings.Builder)
-			io.Copy(buf, r)
-			actual <- buf.String()
-			close(actual)
-		}, pubsub.PubsubSetMaxWorker(5))
+			defer wg.Done()
+			fmt.Println(r, id, "consumer 1")
+			buf1 := new(strings.Builder)
+			io.Copy(buf1, r)
+			actual <- buf1.String()
+		}, pubsub.PubsubSetMaxWorker(1))
+
+		ps.ConsumerRegister("test-topic-1", func(id string, r io.Reader) {
+			defer wg.Done()
+			fmt.Println(r, id, "consumer 2")
+			buf2 := new(strings.Builder)
+			io.Copy(buf2, r)
+			actual <- buf2.String()
+		}, pubsub.PubsubSetMaxWorker(2))
 
 		go ps.Listen()
 
 		ps.Publish("test-topic-1", pubsub.SendString("hello world"))
 
-		assert.Equal(t, "hello world", <-actual)
+		wg.Wait()
+		close(actual)
+
+		exp := "hello world"
+		counter := 1
+		for val := range actual {
+			assert.Equal(t, exp, val, fmt.Sprintf("consumer %d", counter))
+			counter++
+		}
 	})
 
 	t.Run("test consumer bytes", func(t *testing.T) {
@@ -86,6 +130,54 @@ func TestPubsub(t *testing.T) {
 		assert.Equal(t, expected, <-actual)
 	})
 
+	t.Run("test multi consumer json", func(t *testing.T) {
+		type JSON struct {
+			Message string `json:"message"`
+		}
+
+		actual := make(chan JSON, 2)
+		wg := sync.WaitGroup{}
+		wg.Add(2)
+
+		ps := pubsub.NewPubsub()
+		ps.TopicRegister(
+			"test-topic-1",
+			pubsub.PubsubSetMaxBufferCapacity(5),
+		)
+
+		ps.ConsumerRegister("test-topic-1", func(id string, r io.Reader) {
+			defer wg.Done()
+			var resp JSON
+			json.NewDecoder(r).Decode(&resp)
+			actual <- resp
+		}, pubsub.PubsubSetMaxWorker(5))
+
+		ps.ConsumerRegister("test-topic-1", func(id string, r io.Reader) {
+			defer wg.Done()
+			var resp JSON
+			json.NewDecoder(r).Decode(&resp)
+			actual <- resp
+		}, pubsub.PubsubSetMaxWorker(2))
+
+		go ps.Listen()
+
+		text := "{\"message\":\"Hello Json\"}"
+		ps.Publish("test-topic-1", pubsub.SendJSON(json.RawMessage(text)))
+
+		expected := JSON{
+			Message: "Hello Json",
+		}
+
+		wg.Wait()
+		close(actual)
+
+		counter := 1
+		for val := range actual {
+			assert.Equal(t, expected, val, fmt.Sprintf("consumer %d", counter))
+			counter++
+		}
+	})
+
 	t.Run("test publisher capacity", func(t *testing.T) {
 		ps := pubsub.NewPubsub()
 		ps.TopicRegister(
@@ -104,6 +196,23 @@ func TestPubsub(t *testing.T) {
 		)
 
 		assert.Equal(t, 0, ps.Len("test-topic-1"))
+	})
+
+	t.Run("test publisher len more than 0", func(t *testing.T) {
+		ps := pubsub.NewPubsub()
+		ps.TopicRegister(
+			"test-topic-1",
+			pubsub.PubsubSetMaxBufferCapacity(100),
+		)
+
+		ps.Publish("test-topic-1", pubsub.SendBytes([]byte("hello bytes")))
+		ps.Publish("test-topic-1", pubsub.SendBytes([]byte("hello bytes")))
+		ps.Publish("test-topic-1", pubsub.SendBytes([]byte("hello bytes")))
+		ps.Publish("test-topic-1", pubsub.SendBytes([]byte("hello bytes")))
+		ps.Publish("test-topic-1", pubsub.SendBytes([]byte("hello bytes")))
+		ps.Publish("test-topic-1", pubsub.SendBytes([]byte("hello bytes")))
+
+		assert.Equal(t, 5, ps.Len("test-topic-1"))
 	})
 }
 
@@ -124,4 +233,5 @@ func TestShutdown(t *testing.T) {
 		err := ps.Shutdown(context.TODO())
 		assert.NoError(t, err)
 	})
+
 }

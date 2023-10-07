@@ -1,8 +1,10 @@
 package pubsub
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"io"
 	"log"
 
 	"github.com/coma/coma/internal/utils/pubsub/database"
@@ -15,10 +17,11 @@ var (
 )
 
 type Pubsub struct {
-	shutdown   chan bool
-	database   database.Databaser
-	publisher  map[string]*publisher
-	subscriber map[string]*subscriber
+	shutdown          chan bool
+	database          database.Databaser
+	publisher         map[string]*publisher
+	subscriber        map[string][]*subscriber
+	subscriberCounter int
 }
 
 type PubsubOption func(pb *Pubsub)
@@ -36,7 +39,7 @@ func NewPubsub(opts ...PubsubOption) *Pubsub {
 	pubsub := &Pubsub{
 		shutdown:   make(chan bool),
 		publisher:  make(map[string]*publisher),
-		subscriber: make(map[string]*subscriber),
+		subscriber: make(map[string][]*subscriber),
 	}
 
 	for _, opt := range opts {
@@ -59,7 +62,7 @@ func PubsubSetMaxBufferCapacity(max int) PubsubRegisterOpt {
 }
 
 // register the callback
-func (ps Pubsub) TopicRegister(topic string, opts ...PubsubRegisterOpt) {
+func (ps *Pubsub) TopicRegister(topic string, opts ...PubsubRegisterOpt) {
 	var pubsubRegisterOption PubsubRegisterOptions
 
 	for _, opt := range opts {
@@ -70,41 +73,87 @@ func (ps Pubsub) TopicRegister(topic string, opts ...PubsubRegisterOpt) {
 		bufferCapacity: pubsubRegisterOption.maxBufferCapacity,
 	})
 
-	ps.subscriber[topic] = newSubscriber()
+	ps.subscriber[topic] = append(ps.subscriber[topic], newSubscriber())
+
+	ps.subscriberCounter++
+
+	go ps.dispatcher(topic)
 
 	// check is there backup for this topic
 	go ps.CheckBackup(topic)
 }
 
-func (ps Pubsub) ConsumerRegister(topic string, handler SubscriberHandler, opts ...SubscriberOption) error {
+func (ps *Pubsub) ConsumerRegister(topic string, handler SubscriberHandler, opts ...SubscriberOption) error {
+	defer func() {
+		ps.subscriberCounter++
+	}()
 	_, exists := ps.subscriber[topic]
 	if !exists {
 		return ErrTopicIsNotExists
 	}
-	ps.subscriber[topic].registerSubscriberHandler(handler, opts...)
+
+	if ps.subscriberCounter == 1 {
+		ps.subscriber[topic][ps.subscriberCounter-1].registerSubscriberHandler(handler, opts...)
+		return nil
+	}
+
+	newSubscriber := newSubscriber()
+	newSubscriber.registerSubscriberHandler(handler, opts...)
+	ps.subscriber[topic] = append(ps.subscriber[topic], newSubscriber)
+
 	return nil
 }
 
 // consume the message
-func (ps Pubsub) Listen() error {
-	for topic, publisher := range ps.publisher {
-		subscriber, exists := ps.subscriber[topic]
-		if !exists || subscriber == nil {
+func (ps *Pubsub) Listen() error {
+	for topic, _ := range ps.publisher {
+		subscribers, exists := ps.subscriber[topic]
+		if !exists || subscribers == nil || len(subscribers) == 0 {
 			return ErrTopicIsNotExists
 		}
 
-		if subscriber.handler == nil {
-			continue
-		}
-
-		go subscriber.dispatcher(publisher)
-		go subscriber.listen()
+		go ps.listener(topic)
 	}
 
 	return nil
 }
 
-func (ps Pubsub) Publish(topic string, message MessageHandler) error {
+func (ps Pubsub) dispatcher(topic string) {
+	for {
+		select {
+		case <-ps.shutdown:
+			return
+		case message := <-ps.publisher[topic].message:
+			buff := new(bytes.Buffer)
+			_, err := io.Copy(buff, message)
+			if err != nil {
+				continue
+			}
+
+			for _, subscriber := range ps.subscriber[topic] {
+				if subscriber.handler == nil {
+					continue
+				}
+
+				duplicateMessage := bytes.NewBufferString(buff.String())
+
+				go subscriber.dispatcher(duplicateMessage)
+			}
+		}
+	}
+}
+
+func (ps Pubsub) listener(topic string) {
+	for _, subscriber := range ps.subscriber[topic] {
+		if subscriber.handler == nil {
+			continue
+		}
+
+		go subscriber.listen()
+	}
+}
+
+func (ps *Pubsub) Publish(topic string, message MessageHandler) error {
 	pub, exists := ps.publisher[topic]
 	if !exists {
 		return ErrTopicIsNotExists
@@ -127,7 +176,7 @@ func (ps Pubsub) Len(topic string) int {
 	return ps.publisher[topic].len()
 }
 
-func (ps Pubsub) CheckBackup(topic string) error {
+func (ps *Pubsub) CheckBackup(topic string) error {
 	if ps.database == nil {
 		return nil
 	}
@@ -153,16 +202,17 @@ func (ps Pubsub) CheckBackup(topic string) error {
 	return nil
 }
 
-func (ps Pubsub) shutdownSubscriber(topic string) {
-	ps.subscriber[topic].close()
+func (ps *Pubsub) shutdownSubscriber(topic string) {
+	for idx, _ := range ps.subscriber[topic] {
+		ps.subscriber[topic][idx].close()
+	}
 }
 
-func (ps Pubsub) shutdownPublisher(topic string) {
+func (ps *Pubsub) shutdownPublisher(topic string) {
 	ps.publisher[topic].close()
 }
 
-func (ps Pubsub) Shutdown(ctx context.Context) error {
-	// todo: implement later
+func (ps *Pubsub) Shutdown(ctx context.Context) error {
 	if ps.database == nil {
 		return nil
 	}
