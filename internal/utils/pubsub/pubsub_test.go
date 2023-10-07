@@ -16,25 +16,25 @@ import (
 func TestPubsub(t *testing.T) {
 	t.Run("test consumer string", func(t *testing.T) {
 		actual := make(chan string)
-		fmt.Println("0")
+
 		ps := pubsub.NewPubsub()
-		fmt.Println("1")
+
 		ps.TopicRegister(
 			"test-topic-1",
 			pubsub.PubsubSetMaxBufferCapacity(5),
 		)
-		fmt.Println("2")
+
 		ps.ConsumerRegister("test-topic-1", func(id string, r io.Reader) {
 			buf := new(strings.Builder)
 			io.Copy(buf, r)
 			actual <- buf.String()
 			close(actual)
 		}, pubsub.PubsubSetMaxWorker(5))
-		fmt.Println("3")
+
 		go ps.Listen()
-		fmt.Println("4")
+
 		ps.Publish("test-topic-1", pubsub.SendString("hello world"))
-		fmt.Println("5")
+
 		assert.Equal(t, "hello world", <-actual)
 	})
 
@@ -205,7 +205,6 @@ func TestPubsub(t *testing.T) {
 			pubsub.PubsubSetMaxBufferCapacity(100),
 		)
 
-		ps.Publish("test-topic-1", pubsub.SendBytes([]byte("hello bytes")))
 		ps.Publish("test-topic-1", pubsub.SendBytes([]byte("hello bytes")))
 		ps.Publish("test-topic-1", pubsub.SendBytes([]byte("hello bytes")))
 		ps.Publish("test-topic-1", pubsub.SendBytes([]byte("hello bytes")))

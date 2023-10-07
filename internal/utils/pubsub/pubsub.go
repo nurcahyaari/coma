@@ -73,12 +73,6 @@ func (ps *Pubsub) TopicRegister(topic string, opts ...PubsubRegisterOpt) {
 		bufferCapacity: pubsubRegisterOption.maxBufferCapacity,
 	})
 
-	ps.subscriber[topic] = append(ps.subscriber[topic], newSubscriber())
-
-	ps.subscriberCounter++
-
-	go ps.dispatcher(topic)
-
 	// check is there backup for this topic
 	go ps.CheckBackup(topic)
 }
@@ -87,20 +81,12 @@ func (ps *Pubsub) ConsumerRegister(topic string, handler SubscriberHandler, opts
 	defer func() {
 		ps.subscriberCounter++
 	}()
-	_, exists := ps.subscriber[topic]
-	if !exists {
-		return ErrTopicIsNotExists
-	}
-
-	if ps.subscriberCounter == 1 {
-		ps.subscriber[topic][ps.subscriberCounter-1].registerSubscriberHandler(handler, opts...)
-		return nil
-	}
 
 	newSubscriber := newSubscriber()
 	newSubscriber.registerSubscriberHandler(handler, opts...)
 	ps.subscriber[topic] = append(ps.subscriber[topic], newSubscriber)
 
+	go ps.dispatcher(topic)
 	return nil
 }
 
@@ -159,13 +145,18 @@ func (ps *Pubsub) Publish(topic string, message MessageHandler) error {
 		return ErrTopicIsNotExists
 	}
 
+	if err := pub.publish(message); err != nil {
+		return err
+	}
+
 	if _, exists := ps.subscriber[topic]; !exists {
+		log.Printf("topic %s doesn have subscriber the message will store to the memory, current message: %d\n", topic, pub.len())
 		return ErrConsumerIsNotExists
 	}
 
-	log.Printf("publish message to %s, current message: %d\n", topic, pub.len())
+	log.Printf("success publishing the message to %s, current message: %d\n", topic, pub.len())
 
-	return pub.publish(message)
+	return nil
 }
 
 func (ps Pubsub) Capacity(topic string) int {
