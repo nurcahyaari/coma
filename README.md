@@ -6,12 +6,17 @@ Coma is a configuration manager that stores, manages, and distributes your confi
 
 - [Getting Started]()
 - [Features]()
+- [Roadmaps]
 
 ## 🚀 Getting Started
 
 ### Manual Installation
 
+under construction
+
 ### Containerize with Docker
+
+under construction
 
 ## Features
 - 👨‍💻 Managing user with their access control
@@ -21,4 +26,21 @@ Coma is a configuration manager that stores, manages, and distributes your confi
 
 ## Roadmaps
 
-Underconstruction
+Coma has its biggest roadmap that we want to achieve, here are several planning for coma to make it better:
+
+- [x] Create websocket connection
+- [x] Create basic feature of coma (create application, stage, configuration)
+- [x] Create authentication and application key
+- [x] Distribute data through websocket within application key
+- [x] Create local publisher/ subscriber pattern for handling queuing data through Golang Channel
+- [ ] Create coma as a server apps, installable and make as a binary distribution
+  - [ ] Change how coma to communicate and store its configuration
+- [ ] Create coma as installable through Package manager such as brew
+- [ ] Create UI for managing its data
+- [ ] Create coma as a distributed system
+  - [ ] set the load balancer
+
+# How to use
+
+
+
