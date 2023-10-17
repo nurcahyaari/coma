@@ -33,14 +33,31 @@ Coma has its biggest roadmap that we want to achieve, here are several planning 
 - [x] Create authentication and application key
 - [x] Distribute data through websocket within application key
 - [x] Create local publisher/ subscriber pattern for handling queuing data through Golang Channel
+- [x] Create SDK
+  - [x] Nodejs
+  - [x] Golang
+  - [ ] etc
 - [ ] Create coma as a server apps, installable and make as a binary distribution
   - [ ] Change how coma to communicate and store its configuration
 - [ ] Create coma as installable through Package manager such as brew
+- [ ] Create a concise beauty documentation
 - [ ] Create UI for managing its data
 - [ ] Create coma as a distributed system
   - [ ] set the load balancer
+- [ ] etc
+
 
 # How to use
+
+This is the general case of how to use coma, 
+- first you need to run the service
+- Open swagger http://localhost:YOUR_PORT_SETTING/swagger/index.html
+- Create user root [POST /v1/users/root]
+- Create stage [POST /v1/stages]
+- Create your application [POST /v1/applications]
+- Create your application's key [POST /v1/keys]
+- Set the configuration [POST /v1/configuration/upsert]
+
 
 
 
