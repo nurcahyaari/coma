@@ -3,7 +3,7 @@
 .env
 .env-*
 .env.yaml
-*.env
+*.env*
 *.yaml
 
 build/
