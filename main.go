@@ -16,7 +16,7 @@ import (
 	"github.com/coma/coma/internal/logger"
 	"github.com/coma/coma/internal/protocols/http"
 	httprouter "github.com/coma/coma/internal/protocols/http/router"
-	"github.com/coma/coma/internal/utils/pubsub"
+	"github.com/coma/coma/internal/x/pubsub"
 	applicationrepo "github.com/coma/coma/src/application/application/repository"
 	applicationsvc "github.com/coma/coma/src/application/application/service"
 	authrepo "github.com/coma/coma/src/application/auth/repository"

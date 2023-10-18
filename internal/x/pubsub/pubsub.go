@@ -7,7 +7,7 @@ import (
 	"io"
 	"log"
 
-	"github.com/coma/coma/internal/utils/pubsub/database"
+	"github.com/coma/coma/internal/x/pubsub/database"
 	"github.com/ostafen/clover"
 )
 

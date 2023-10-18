@@ -7,7 +7,7 @@ import (
 	"github.com/coma/coma/config"
 	"github.com/coma/coma/container"
 	"github.com/coma/coma/infrastructure/integration/coma"
-	"github.com/coma/coma/internal/utils/pubsub"
+	"github.com/coma/coma/internal/x/pubsub"
 	"github.com/coma/coma/src/application/application/dto"
 	"github.com/coma/coma/src/domain/entity"
 	domainrepository "github.com/coma/coma/src/domain/repository"

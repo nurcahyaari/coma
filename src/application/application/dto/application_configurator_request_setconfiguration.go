@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"regexp"
 
-	internalerror "github.com/coma/coma/internal/utils/errors"
+	internalerror "github.com/coma/coma/internal/x/errors"
 	"github.com/coma/coma/src/domain/entity"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/google/uuid"

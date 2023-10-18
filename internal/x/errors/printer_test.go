@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"testing"
 
-	internalerror "github.com/coma/coma/internal/utils/errors"
+	internalerror "github.com/coma/coma/internal/x/errors"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/stretchr/testify/assert"
 )

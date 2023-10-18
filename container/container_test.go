@@ -5,7 +5,7 @@ import (
 
 	"github.com/coma/coma/container"
 	"github.com/coma/coma/infrastructure/integration/coma"
-	"github.com/coma/coma/internal/utils/pubsub"
+	"github.com/coma/coma/internal/x/pubsub"
 	applicationsvc "github.com/coma/coma/src/application/application/service"
 	authsvc "github.com/coma/coma/src/application/auth/service"
 	"github.com/coma/coma/src/domain/repository/repositoryfakes"
