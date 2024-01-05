@@ -4,9 +4,11 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 
 	"github.com/coma/coma/config"
 	"github.com/coma/coma/container"
@@ -16,6 +18,8 @@ import (
 	"github.com/coma/coma/internal/logger"
 	"github.com/coma/coma/internal/protocols/http"
 	httprouter "github.com/coma/coma/internal/protocols/http/router"
+	darwinconfig "github.com/coma/coma/internal/system/os/darwin/config"
+	linuxconfig "github.com/coma/coma/internal/system/os/linux/config"
 	"github.com/coma/coma/internal/x/pubsub"
 	applicationrepo "github.com/coma/coma/src/application/application/repository"
 	applicationsvc "github.com/coma/coma/src/application/application/service"
@@ -44,12 +48,42 @@ func initHttpProtocol(cfg config.Config, c container.Service) *http.Http {
 	return http.New(cfg, router)
 }
 
+func initFD(fd string) error {
+	cmd := exec.Command("mkdir", "-m", "0777", "-p", fd)
+	cmd.Env = append(os.Environ(), "SUDO_COMMAND=true")
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	if err := cmd.Run(); err != nil {
+		log.Error().Err(err).
+			Str("path", fd).
+			Msg("creating file directory")
+		return err
+	}
+
+	cmd = exec.Command("chmod", "755", fd)
+	cmd.Env = append(os.Environ(), "SUDO_COMMAND=true")
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	if err := cmd.Run(); err != nil {
+		log.Error().Err(err).
+			Str("path", fd).
+			Msg("creating access file directory")
+		return err
+	}
+	return nil
+}
+
 func main() {
 	logger.InitLogger()
+	goos := runtime.GOOS
+
+	log.Info().Msgf("Running on operating system: %s\n", goos)
+	fmt.Println("development: ", os.Getenv("development"))
 
 	var (
-		cfg         = config.Get()
-		wd          = "/var/lib/coma"
+		cfg         = config.Config{}
+		wd          = ""
+		cfgPath     = ""
 		storagePath = filepath.Join(wd, "coma", cfg.DB.Clover.Path)
 		c           = container.Container{
 			Repository:  &container.Repository{},
@@ -59,30 +93,34 @@ func main() {
 		}
 	)
 
+	switch goos {
+	case "linux":
+		wd = linuxconfig.DATA_PATH
+		cfgPath = linuxconfig.CFG_PATH
+		cfg = config.Set(linuxconfig.New())
+	case "darwin":
+		wd = darwinconfig.DATA_PATH
+		cfgPath = darwinconfig.CFG_PATH
+		cfg = config.Set(darwinconfig.New())
+	case "windows":
+	}
+
 	// init database
 	if cfg.Application.Development {
 		wd, _ = os.Getwd()
 	}
 	storagePath = filepath.Join(wd, cfg.DB.Clover.Path)
 
-	cmd := exec.Command("mkdir", "-m", "0777", "-p", filepath.Join(storagePath, cfg.DB.Clover.Name))
-	cmd.Env = append(os.Environ(), "SUDO_COMMAND=true")
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
-	if err := cmd.Run(); err != nil {
+	// creating database
+	if err := initFD(filepath.Join(wd, cfg.DB.Clover.Name)); err != nil {
 		log.Fatal().Err(err).
-			Str("path", storagePath).
-			Msg("creating database directory")
+			Msg("creating access database directory")
 	}
 
-	cmd = exec.Command("chmod", "755", filepath.Join(storagePath, cfg.DB.Clover.Name))
-	cmd.Env = append(os.Environ(), "SUDO_COMMAND=true")
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
-	if err := cmd.Run(); err != nil {
+	// creating configuration path
+	if err := initFD(cfgPath); err != nil {
 		log.Fatal().Err(err).
-			Str("path", storagePath).
-			Msg("creating access database directory")
+			Msg("creating access configuration directory")
 	}
 
 	log.Info().Msgf("initialization database on path: %s", storagePath)
@@ -98,11 +136,7 @@ func main() {
 	}
 	c.Event = &containerEvent
 
-	distributorExtSvc := coma.New(
-		coma.Config{
-			URL: config.Get().External.Coma.Websocket.Url,
-		},
-	)
+	distributorExtSvc := coma.New(cfg)
 
 	authRepo := authrepo.New(cloverDB)
 	applicationRepo := applicationrepo.New(cloverDB)

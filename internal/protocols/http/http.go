@@ -63,7 +63,7 @@ func (h *Http) shutdownStateMiddleware(next http.Handler) http.Handler {
 }
 
 func (h *Http) pprof(r *chi.Mux) {
-	if !h.cfg.Application.Pprof.Enable {
+	if !h.cfg.Application.EnablePprof {
 		return
 	}
 
@@ -86,7 +86,7 @@ func (p *Http) Listen() {
 	p.swagger(app)
 	p.pprof(app)
 
-	serverPort := fmt.Sprintf(":%d", config.Get().Application.Port)
+	serverPort := fmt.Sprintf(":%d", p.cfg.Application.Port)
 	p.httpServer = &http.Server{
 		Addr:    serverPort,
 		Handler: app,

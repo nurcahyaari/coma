@@ -117,7 +117,7 @@ func (s *ApplicationConfigurationService) SetConfiguration(ctx context.Context, 
 	}
 
 	// after success writing to the db distribute to the client
-	s.pubSub.Publish(s.config.Pubsub.Local.Publisher.ConfigDistributor.Topic,
+	s.pubSub.Publish(s.config.Pubsub.ConfigDistributor.Publisher.Topic,
 		pubsub.SendString(req.XClientKey))
 
 	return dto.ResponseSetConfiguration{
@@ -166,7 +166,7 @@ func (s *ApplicationConfigurationService) UpdateConfiguration(ctx context.Contex
 	}
 
 	// after success writing to the db distribute to the client
-	s.pubSub.Publish(s.config.Pubsub.Local.Publisher.ConfigDistributor.Topic,
+	s.pubSub.Publish(s.config.Pubsub.ConfigDistributor.Publisher.Topic,
 		pubsub.SendString(req.XClientKey))
 
 	return nil
@@ -226,7 +226,7 @@ func (s *ApplicationConfigurationService) DeleteConfiguration(ctx context.Contex
 	}
 
 	// after success writing to the db distribute to the client
-	s.pubSub.Publish(s.config.Pubsub.Local.Publisher.ConfigDistributor.Topic,
+	s.pubSub.Publish(s.config.Pubsub.ConfigDistributor.Publisher.Topic,
 		pubsub.SendString(req.XClientKey))
 
 	return nil

@@ -4,32 +4,14 @@ go 1.18
 
 require (
 	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible
+	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/stretchr/testify v1.8.4
 )
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
-	github.com/bep/godartsass v0.16.0 // indirect
-	github.com/bep/golibsass v1.1.0 // indirect
-	github.com/cli/safeexec v1.0.0 // indirect
-	github.com/cosmtrek/air v1.44.0 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
-	github.com/creack/pty v1.1.18 // indirect
-	github.com/fatih/color v1.14.1 // indirect
-	github.com/frankban/quicktest v1.14.4 // indirect
-	github.com/gohugoio/hugo v0.111.3 // indirect
-	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
-	github.com/imdario/mergo v0.3.13 // indirect
-	github.com/maxbrunsfeld/counterfeiter/v6 v6.6.2 // indirect
-	github.com/pelletier/go-toml v1.9.5 // indirect
-	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
-	github.com/tdewolff/parse/v2 v2.6.5 // indirect
-	github.com/urfave/cli v1.22.14 // indirect
-	github.com/urfave/cli/v2 v2.3.0 // indirect
 	golang.org/x/mod v0.11.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
-	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
 require (
@@ -49,7 +31,6 @@ require (
 	github.com/go-openapi/spec v0.20.6 // indirect
 	github.com/go-openapi/swag v0.19.15 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang/glog v1.0.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
