@@ -6,8 +6,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/exec"
-	"path/filepath"
 	"runtime"
 
 	"github.com/coma/coma/config"
@@ -18,6 +16,7 @@ import (
 	"github.com/coma/coma/internal/logger"
 	"github.com/coma/coma/internal/protocols/http"
 	httprouter "github.com/coma/coma/internal/protocols/http/router"
+	"github.com/coma/coma/internal/x/file"
 	"github.com/coma/coma/internal/x/pubsub"
 	applicationrepo "github.com/coma/coma/src/application/application/repository"
 	applicationsvc "github.com/coma/coma/src/application/application/service"
@@ -46,32 +45,7 @@ func initHttpProtocol(cfg config.Config, c container.Service) *http.Http {
 	return http.New(cfg, router)
 }
 
-func initFD(fd string) error {
-	cmd := exec.Command("mkdir", "-m", "0777", "-p", fd)
-	cmd.Env = append(os.Environ(), "SUDO_COMMAND=true")
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
-	if err := cmd.Run(); err != nil {
-		log.Error().Err(err).
-			Str("path", fd).
-			Msg("creating file directory")
-		return err
-	}
-
-	cmd = exec.Command("chmod", "755", fd)
-	cmd.Env = append(os.Environ(), "SUDO_COMMAND=true")
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
-	if err := cmd.Run(); err != nil {
-		log.Error().Err(err).
-			Str("path", fd).
-			Msg("creating access file directory")
-		return err
-	}
-	return nil
-}
-
-func initDependencies() container.Container {
+func initDependencies(cfg config.Config) container.Container {
 	var (
 		c = container.Container{
 			Repository:  &container.Repository{},
@@ -81,46 +55,13 @@ func initDependencies() container.Container {
 		}
 	)
 
-	return c
-}
-
-func main() {
-	logger.InitLogger()
-	goos := runtime.GOOS
-
-	log.Info().Msgf("Running on operating system: %s\n", goos)
-	fmt.Println("development: ", os.Getenv("development"))
-
-	var (
-		cfgName     = "coma.cfg"
-		cfg         = config.Config{}
-		wd          = ""
-		cfgPath     = ""
-		storagePath = filepath.Join(wd, "coma", cfg.DB.Clover.Path)
-	)
-
-	// init database
-	wd, _ = os.Getwd()
-	cfgPath = filepath.Join(wd, cfgName)
-	cfg = config.New(cfgPath)
-
-	storagePath = filepath.Join(wd, cfg.DB.Clover.Path)
-
-	// creating database
-	if err := initFD(filepath.Join(wd, cfg.DB.Clover.Name)); err != nil {
-		log.Fatal().Err(err).
-			Msg("creating access database directory")
-	}
-
-	log.Info().Msgf("initialization database on path: %s", storagePath)
+	log.Info().Msgf("initialization database on path: %s", cfg.DB.Clover.Path)
 	cloverDB := database.NewClover(database.Config{
-		Path: storagePath,
+		Path: cfg.DB.Clover.Path,
 		Name: cfg.DB.Clover.Name,
 	})
 
 	pubsub := pubsub.NewPubsub(pubsub.SetCloverForBackup(cloverDB.DB))
-
-	c := initDependencies()
 
 	containerEvent := container.Event{
 		LocalPubsub: pubsub,
@@ -157,7 +98,7 @@ func main() {
 	}
 
 	containerIntegration := container.Integration{
-		WebsocketClient: distributorExtSvc,
+		Coma: distributorExtSvc,
 	}
 
 	c.Repository = &containerRepo
@@ -187,19 +128,50 @@ func main() {
 	c.Service.AuthServicer = userAuthSvc
 	c.Service.LocalUserAuthServicer = userAuthSvc
 
-	if err := c.Service.Validate(); err != nil {
+	if err := c.Validate(); err != nil {
 		log.Fatal().Errs("error", err).Msg("container service")
 	}
+
+	return c
+}
+
+func main() {
+	logger.InitLogger()
+	goos := runtime.GOOS
+
+	log.Info().Msgf("Running on operating system: %s\n", goos)
+	fmt.Println("development: ", os.Getenv("development"))
+
+	wd, _ := os.Getwd()
+
+	// init base dir
+	if err := file.NewDir(config.GetBaseWorkingDir(wd)); err != nil {
+		log.Fatal().Err(err).
+			Msg("creating base directory")
+	}
+
+	// init database
+	cfg := config.New(wd)
+
+	// creating database
+	if err := file.NewDir(cfg.DB.Clover.Path); err != nil {
+		log.Fatal().Err(err).
+			Msg("creating access database directory")
+	}
+
+	c := initDependencies(cfg)
 
 	localPubsubHandler := localpubsub.NewLocalPubsub(&cfg, c)
 
 	httpProtocol := initHttpProtocol(cfg, *c.Service)
 
+	wait := make(chan bool)
 	// init http protocol
-	go httpProtocol.Listen()
-
+	go httpProtocol.Listen(wait)
+	<-wait
 	// init other protocols here
-	go distributorExtSvc.Connect()
+	go c.Integration.Coma.Connect(wait)
+	<-wait
 
 	localPubsubHandler.TopicRegistry()
 
@@ -215,7 +187,7 @@ func main() {
 			Operations: map[string]graceful.Operation{
 				// place your service that need to graceful shutdown here
 				"http":        httpProtocol.Shutdown,
-				"localPubsub": pubsub.Shutdown,
+				"localPubsub": c.Event.LocalPubsub.Shutdown,
 			},
 		},
 	)

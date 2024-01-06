@@ -48,7 +48,7 @@ func TestIntegrationValidate(t *testing.T) {
 
 	t.Run("test no error", func(t *testing.T) {
 		r := container.Integration{
-			WebsocketClient: &coma.WebsocketClient{},
+			Coma: &coma.WebsocketClient{},
 		}
 		err := r.Validate()
 		assert.Equal(t, 0, len(err))
@@ -86,7 +86,7 @@ func TestContainerValidate(t *testing.T) {
 				AuthServicer:                     &authsvc.UserAuthService{},
 			},
 			Integration: &container.Integration{
-				WebsocketClient: &coma.WebsocketClient{},
+				Coma: &coma.WebsocketClient{},
 			},
 			Event: &container.Event{
 				LocalPubsub: &pubsub.Pubsub{},

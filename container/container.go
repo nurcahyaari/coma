@@ -76,7 +76,7 @@ func (c Service) Validate() []error {
 }
 
 type Integration struct {
-	*coma.WebsocketClient
+	Coma *coma.WebsocketClient
 }
 
 func (c Integration) Validate() []error {

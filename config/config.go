@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -76,17 +77,19 @@ var doOnce sync.Once
 
 func New(path string) Config {
 	doOnce.Do(func() {
-		byt, err := os.ReadFile(path)
+		cfgDirPath := filepath.Join(path, BASE_PATH)
+		cfgPath := filepath.Join(cfgDirPath, CFG_NAME)
+		byt, err := os.ReadFile(cfgPath)
 		if err != nil {
 			// set default config
-			cfg = defaultConfig()
+			cfg = defaultConfig(path)
 			data, err := toml.Marshal(cfg)
 			if err != nil {
 				log.Fatalln("cannot marshal config")
 				return
 			}
 
-			err = os.WriteFile(path, data, 0644)
+			err = os.WriteFile(cfgPath, data, 0777)
 			if err != nil {
 				log.Fatalln("cannot write config")
 				return
@@ -100,6 +103,9 @@ func New(path string) Config {
 			log.Fatalln("cannot unmarshaling config")
 			return
 		}
+
+		cfg.Pubsub = defaultPubsubConfig(PUBSUB_MAX_WORKER, PUBSUB_MAX_BUFFER_CAPACITY)
+		cfg.External.Coma.Websocket = defaultExternalComaWSConnection(cfg.Application.Port)
 	})
 
 	return cfg

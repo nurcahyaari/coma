@@ -21,7 +21,7 @@ func New(cfg config.Config) *WebsocketClient {
 	}
 }
 
-func (w *WebsocketClient) Connect() error {
+func (w *WebsocketClient) Connect(wait chan bool) error {
 	cfg := config.New("")
 	conn, err := websocket.Dial(
 		fmt.Sprintf("%s?self=true", w.url),
@@ -35,6 +35,8 @@ func (w *WebsocketClient) Connect() error {
 	}
 	log.Info().Msg("websocket external connected")
 	w.ws = conn
+
+	wait <- true
 	return nil
 }
 

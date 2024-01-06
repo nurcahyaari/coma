@@ -29,7 +29,7 @@ func NewApplicationConfiguration(
 	svc := &ApplicationConfigurationService{
 		config:            cfg,
 		pubSub:            c.LocalPubsub,
-		comaClient:        c.Integration.WebsocketClient,
+		comaClient:        c.Integration.Coma,
 		readerRepo:        c.Repository.RepositoryApplicationConfigurationReader,
 		writerRepo:        c.Repository.RepositoryApplicationConfigurationWriter,
 		applicationKeySvc: c.Service.ApplicationKeyServicer,
