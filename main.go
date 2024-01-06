@@ -18,8 +18,6 @@ import (
 	"github.com/coma/coma/internal/logger"
 	"github.com/coma/coma/internal/protocols/http"
 	httprouter "github.com/coma/coma/internal/protocols/http/router"
-	darwinconfig "github.com/coma/coma/internal/system/os/darwin/config"
-	linuxconfig "github.com/coma/coma/internal/system/os/linux/config"
 	"github.com/coma/coma/internal/x/pubsub"
 	applicationrepo "github.com/coma/coma/src/application/application/repository"
 	applicationsvc "github.com/coma/coma/src/application/application/service"
@@ -73,6 +71,19 @@ func initFD(fd string) error {
 	return nil
 }
 
+func initDependencies() container.Container {
+	var (
+		c = container.Container{
+			Repository:  &container.Repository{},
+			Service:     &container.Service{},
+			Integration: &container.Integration{},
+			Event:       &container.Event{},
+		}
+	)
+
+	return c
+}
+
 func main() {
 	logger.InitLogger()
 	goos := runtime.GOOS
@@ -81,46 +92,24 @@ func main() {
 	fmt.Println("development: ", os.Getenv("development"))
 
 	var (
+		cfgName     = "coma.cfg"
 		cfg         = config.Config{}
 		wd          = ""
 		cfgPath     = ""
 		storagePath = filepath.Join(wd, "coma", cfg.DB.Clover.Path)
-		c           = container.Container{
-			Repository:  &container.Repository{},
-			Service:     &container.Service{},
-			Integration: &container.Integration{},
-			Event:       &container.Event{},
-		}
 	)
 
-	switch goos {
-	case "linux":
-		wd = linuxconfig.DATA_PATH
-		cfgPath = linuxconfig.CFG_PATH
-		cfg = config.Set(linuxconfig.New())
-	case "darwin":
-		wd = darwinconfig.DATA_PATH
-		cfgPath = darwinconfig.CFG_PATH
-		cfg = config.Set(darwinconfig.New())
-	case "windows":
-	}
-
 	// init database
-	if cfg.Application.Development {
-		wd, _ = os.Getwd()
-	}
+	wd, _ = os.Getwd()
+	cfgPath = filepath.Join(wd, cfgName)
+	cfg = config.New(cfgPath)
+
 	storagePath = filepath.Join(wd, cfg.DB.Clover.Path)
 
 	// creating database
 	if err := initFD(filepath.Join(wd, cfg.DB.Clover.Name)); err != nil {
 		log.Fatal().Err(err).
 			Msg("creating access database directory")
-	}
-
-	// creating configuration path
-	if err := initFD(cfgPath); err != nil {
-		log.Fatal().Err(err).
-			Msg("creating access configuration directory")
 	}
 
 	log.Info().Msgf("initialization database on path: %s", storagePath)
@@ -130,6 +119,8 @@ func main() {
 	})
 
 	pubsub := pubsub.NewPubsub(pubsub.SetCloverForBackup(cloverDB.DB))
+
+	c := initDependencies()
 
 	containerEvent := container.Event{
 		LocalPubsub: pubsub,
@@ -220,7 +211,7 @@ func main() {
 	graceful.GracefulShutdown(
 		ctx,
 		graceful.RequestGraceful{
-			ShutdownPeriod: config.Get().Application.Graceful.ShutdownPeriod,
+			ShutdownPeriod: cfg.Application.GracefulShutdownPeriod,
 			Operations: map[string]graceful.Operation{
 				// place your service that need to graceful shutdown here
 				"http":        httpProtocol.Shutdown,
