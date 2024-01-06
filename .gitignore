@@ -3,7 +3,7 @@
 .env
 .env-*
 .env.yaml
-*.env
+*.env*
 *.yaml
 
 build/
@@ -27,3 +27,6 @@ wire_gen.go
 
 __debug_bin
 .vscode
+coma.cfg
+
+coma

@@ -3,7 +3,7 @@ package localpubsub
 import (
 	"github.com/coma/coma/config"
 	"github.com/coma/coma/container"
-	"github.com/coma/coma/internal/utils/pubsub"
+	"github.com/coma/coma/internal/x/pubsub"
 	"github.com/coma/coma/src/domain/service"
 )
 
@@ -23,12 +23,12 @@ func NewLocalPubsub(config *config.Config, c container.Container) *LocalPubsub {
 }
 
 func (h LocalPubsub) Consumer() {
-	h.pubSub.ConsumerRegister(h.config.Pubsub.Local.Consumer.ConfigDistributor.Topic, h.ConfigDistributor)
+	h.pubSub.ConsumerRegister(h.config.Pubsub.ConfigDistributor.Consumer.Topic, h.ConfigDistributor)
 }
 
 func (h LocalPubsub) TopicRegistry() {
-	h.pubSub.TopicRegister(h.config.Pubsub.Local.Publisher.ConfigDistributor.Topic,
-		pubsub.PubsubSetMaxBufferCapacity(h.config.Pubsub.Local.Publisher.ConfigDistributor.MaxBufferCapacity))
+	h.pubSub.TopicRegister(h.config.Pubsub.ConfigDistributor.Publisher.Topic,
+		pubsub.PubsubSetMaxBufferCapacity(h.config.Pubsub.ConfigDistributor.Publisher.MaxBufferCapacity))
 }
 
 func (h LocalPubsub) Listen() {

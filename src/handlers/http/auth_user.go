@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/coma/coma/internal/protocols/http/response"
-	internalerrors "github.com/coma/coma/internal/utils/errors"
+	internalerrors "github.com/coma/coma/internal/x/errors"
 	"github.com/coma/coma/src/application/auth/dto"
 )
 

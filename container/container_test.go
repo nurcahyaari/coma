@@ -5,7 +5,7 @@ import (
 
 	"github.com/coma/coma/container"
 	"github.com/coma/coma/infrastructure/integration/coma"
-	"github.com/coma/coma/internal/utils/pubsub"
+	"github.com/coma/coma/internal/x/pubsub"
 	applicationsvc "github.com/coma/coma/src/application/application/service"
 	authsvc "github.com/coma/coma/src/application/auth/service"
 	"github.com/coma/coma/src/domain/repository/repositoryfakes"
@@ -48,7 +48,7 @@ func TestIntegrationValidate(t *testing.T) {
 
 	t.Run("test no error", func(t *testing.T) {
 		r := container.Integration{
-			WebsocketClient: &coma.WebsocketClient{},
+			Coma: &coma.WebsocketClient{},
 		}
 		err := r.Validate()
 		assert.Equal(t, 0, len(err))
@@ -86,7 +86,7 @@ func TestContainerValidate(t *testing.T) {
 				AuthServicer:                     &authsvc.UserAuthService{},
 			},
 			Integration: &container.Integration{
-				WebsocketClient: &coma.WebsocketClient{},
+				Coma: &coma.WebsocketClient{},
 			},
 			Event: &container.Event{
 				LocalPubsub: &pubsub.Pubsub{},

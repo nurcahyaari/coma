@@ -7,7 +7,7 @@ import (
 	"github.com/coma/coma/config"
 	"github.com/coma/coma/container"
 	"github.com/coma/coma/infrastructure/integration/coma"
-	"github.com/coma/coma/internal/utils/pubsub"
+	"github.com/coma/coma/internal/x/pubsub"
 	"github.com/coma/coma/src/application/application/dto"
 	"github.com/coma/coma/src/domain/entity"
 	domainrepository "github.com/coma/coma/src/domain/repository"
@@ -29,7 +29,7 @@ func NewApplicationConfiguration(
 	svc := &ApplicationConfigurationService{
 		config:            cfg,
 		pubSub:            c.LocalPubsub,
-		comaClient:        c.Integration.WebsocketClient,
+		comaClient:        c.Integration.Coma,
 		readerRepo:        c.Repository.RepositoryApplicationConfigurationReader,
 		writerRepo:        c.Repository.RepositoryApplicationConfigurationWriter,
 		applicationKeySvc: c.Service.ApplicationKeyServicer,
@@ -117,7 +117,7 @@ func (s *ApplicationConfigurationService) SetConfiguration(ctx context.Context, 
 	}
 
 	// after success writing to the db distribute to the client
-	s.pubSub.Publish(s.config.Pubsub.Local.Publisher.ConfigDistributor.Topic,
+	s.pubSub.Publish(s.config.Pubsub.ConfigDistributor.Publisher.Topic,
 		pubsub.SendString(req.XClientKey))
 
 	return dto.ResponseSetConfiguration{
@@ -166,7 +166,7 @@ func (s *ApplicationConfigurationService) UpdateConfiguration(ctx context.Contex
 	}
 
 	// after success writing to the db distribute to the client
-	s.pubSub.Publish(s.config.Pubsub.Local.Publisher.ConfigDistributor.Topic,
+	s.pubSub.Publish(s.config.Pubsub.ConfigDistributor.Publisher.Topic,
 		pubsub.SendString(req.XClientKey))
 
 	return nil
@@ -226,7 +226,7 @@ func (s *ApplicationConfigurationService) DeleteConfiguration(ctx context.Contex
 	}
 
 	// after success writing to the db distribute to the client
-	s.pubSub.Publish(s.config.Pubsub.Local.Publisher.ConfigDistributor.Topic,
+	s.pubSub.Publish(s.config.Pubsub.ConfigDistributor.Publisher.Topic,
 		pubsub.SendString(req.XClientKey))
 
 	return nil

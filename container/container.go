@@ -5,7 +5,7 @@ import (
 	"reflect"
 
 	"github.com/coma/coma/infrastructure/integration/coma"
-	"github.com/coma/coma/internal/utils/pubsub"
+	"github.com/coma/coma/internal/x/pubsub"
 	"github.com/coma/coma/src/domain/repository"
 	"github.com/coma/coma/src/domain/service"
 )
@@ -76,7 +76,7 @@ func (c Service) Validate() []error {
 }
 
 type Integration struct {
-	*coma.WebsocketClient
+	Coma *coma.WebsocketClient
 }
 
 func (c Integration) Validate() []error {

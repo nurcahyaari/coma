@@ -11,19 +11,22 @@ import (
 type WebsocketClient struct {
 	url string
 	ws  *websocket.Conn
+	cfg config.Config
 }
 
-func New(config Config) *WebsocketClient {
+func New(cfg config.Config) *WebsocketClient {
 	return &WebsocketClient{
-		url: config.URL,
+		url: cfg.External.Coma.Websocket.Url,
+		cfg: cfg,
 	}
 }
 
-func (w *WebsocketClient) Connect() error {
+func (w *WebsocketClient) Connect(wait chan bool) error {
+	cfg := config.New("")
 	conn, err := websocket.Dial(
 		fmt.Sprintf("%s?self=true", w.url),
 		"",
-		config.Get().External.Coma.Websocket.OriginUrl)
+		cfg.External.Coma.Websocket.OriginUrl)
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -32,6 +35,8 @@ func (w *WebsocketClient) Connect() error {
 	}
 	log.Info().Msg("websocket external connected")
 	w.ws = conn
+
+	wait <- true
 	return nil
 }
 

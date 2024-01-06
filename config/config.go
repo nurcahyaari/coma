@@ -2,103 +2,110 @@ package config
 
 import (
 	"log"
+	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
-	"github.com/spf13/viper"
+	"github.com/pelletier/go-toml/v2"
 )
 
+type DBConfig struct {
+	Path string `toml:"PATH"`
+	Name string `toml:"NAME"`
+}
+
+type ApplicationConfig struct {
+	Port                   int           `toml:"PORT"`
+	Development            bool          `toml:"DEVELOPMENT"`
+	LogPath                string        `toml:"LOG_PATH"`
+	GracefulShutdownPeriod time.Duration `toml:"GRACEFUL_SHUTDOWN_PERIOD"`
+	GracefulWarnPeriod     time.Duration `toml:"GRACEFUL_WARN_PERIOD"`
+	EnablePprof            bool          `toml:"ENABLE_PPROF"`
+}
+
+type ExternalWebsocketConfigOptions struct {
+	Url       string `toml:"URL"`
+	OriginUrl string `toml:"ORIGIN_URL"`
+}
+
+type PublisherOptions struct {
+	Topic             string
+	MaxBufferCapacity int
+}
+
+type ConsumerOptions struct {
+	Topic          string
+	MaxElapsedTime time.Duration
+	RetryWaitTime  time.Duration
+	MaxWorker      int
+}
+
+type ConfigDistributorPubsub struct {
+	Consumer  ConsumerOptions
+	Publisher PublisherOptions
+}
+
+type PubsubConfig struct {
+	ConfigDistributor ConfigDistributorPubsub
+}
+
 type Config struct {
-	Application struct {
-		Port        int  `mapstructure:"PORT"`
-		Development bool `mapstructure:"DEVELOPMENT"`
-		Log         struct {
-			Path string `mapstructure:"PATH"`
-		} `mapstructure:"LOG"`
-		Key struct {
-			Default string `mapstructure:"DEFAULT"`
-			Rsa     struct {
-				Public  string `mapstructure:"PUBLIC"`
-				Private string `mapstructure:"PRIVATE"`
-			}
-		} `mapstructure:"KEY"`
-		Graceful struct {
-			ShutdownPeriod time.Duration `mapstructure:"SHUTDOWN_PERIOD"`
-			WarnPeriod     time.Duration `mapstructure:"WARN_PERIOD"`
-		} `mapstructure:"GRACEFUL"`
-		Pprof struct {
-			Enable bool `mapstructure:"ENABLE"`
-		} `mapstructure:"PPROF"`
-	} `mapstructure:"APPLICATION"`
-
-	DB struct {
-		Mysql struct {
-			Host string `mapstructure:"HOST"`
-			Port int    `mapstructure:"PORT"`
-			Name string `mapstructure:"NAME"`
-			User string `mapstructure:"USER"`
-			Pass string `mapstructure:"PASS"`
-		} `mapstructure:"MYSQL"`
-
-		Clover struct {
-			Path string `mapstructure:"PATH"`
-			Name string `mapstructure:"NAME"`
-		} `mapstructure:"CLOVER"`
-	} `mapstructure:"DB"`
-
+	Application ApplicationConfig
+	DB          struct {
+		Clover DBConfig
+	}
 	External struct {
 		Coma struct {
-			Websocket struct {
-				Url       string `mapstructure:"URL"`
-				OriginUrl string `mapstructure:"ORIGIN_URL"`
-			} `mapstructure:"WEBSOCKET"`
-		} `mapstructure:"COMA"`
-	} `mapstructure:"EXTERNAL"`
-
-	Pubsub struct {
-		Local struct {
-			Publisher struct {
-				ConfigDistributor struct {
-					Topic             string `mapstructure:"TOPIC"`
-					MaxBufferCapacity int    `mapstructure:"MAX_BUFFER_CAPACITY"`
-				} `mapstructure:"CONFIG_DISTRIBUTOR"`
-			} `mapstructure:"PUBLISHER"`
-			Consumer struct {
-				ConfigDistributor struct {
-					Topic          string        `mapstructure:"TOPIC"`
-					MaxElapsedTime time.Duration `mapstructure:"MAX_ELAPSED_TIME"`
-					RetryWaitTime  time.Duration `mapstructure:"RETRY_WAIT_TIME"`
-					MaxWorker      int           `mapstructure:"MAX_WORKER"`
-				} `mapstructure:"CONFIG_DISTRIBUTOR"`
-			} `mapstructure:"CONSUMER"`
-		} `mapstructure:"LOCAL"`
-	} `mapstructure:"PUBSUB"`
+			Websocket ExternalWebsocketConfigOptions
+		} `toml:"-"`
+	}
+	Pubsub PubsubConfig `toml:"-"`
 
 	Auth struct {
 		User struct {
-			AccessTokenKey       string        `mapstructure:"ACCESS_TOKEN_KEY"`
-			RefreshTokenKey      string        `mapstructure:"REFRESH_TOKEN_KEY"`
-			AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
-			RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
-		} `mapstructure:"USER"`
-	} `mapstructure:"AUTH"`
+			AccessTokenKey       string        `toml:"ACCESS_TOKEN_KEY"`
+			RefreshTokenKey      string        `toml:"REFRESH_TOKEN_KEY"`
+			AccessTokenDuration  time.Duration `toml:"ACCESS_TOKEN_DURATION"`
+			RefreshTokenDuration time.Duration `toml:"REFRESH_TOKEN_DURATION"`
+		}
+	}
 }
 
 var cfg Config
 var doOnce sync.Once
 
-func Get() Config {
-	viper.SetConfigFile(".env")
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Fatalln("cannot read .env file")
-	}
-
+func New(path string) Config {
 	doOnce.Do(func() {
-		err := viper.Unmarshal(&cfg)
+		cfgDirPath := filepath.Join(path, BASE_PATH)
+		cfgPath := filepath.Join(cfgDirPath, CFG_NAME)
+		byt, err := os.ReadFile(cfgPath)
+		if err != nil {
+			// set default config
+			cfg = defaultConfig(path)
+			data, err := toml.Marshal(cfg)
+			if err != nil {
+				log.Fatalln("cannot marshal config")
+				return
+			}
+
+			err = os.WriteFile(cfgPath, data, 0777)
+			if err != nil {
+				log.Fatalln("cannot write config")
+				return
+			}
+
+			return
+		}
+
+		err = toml.Unmarshal(byt, &cfg)
 		if err != nil {
 			log.Fatalln("cannot unmarshaling config")
+			return
 		}
+
+		cfg.Pubsub = defaultPubsubConfig(PUBSUB_MAX_WORKER, PUBSUB_MAX_BUFFER_CAPACITY)
+		cfg.External.Coma.Websocket = defaultExternalComaWSConnection(cfg.Application.Port)
 	})
 
 	return cfg
