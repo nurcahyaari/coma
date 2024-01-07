@@ -75,7 +75,7 @@ func (h *Http) pprof(r *chi.Mux) {
 	r.HandleFunc("/debug/pprof/trace", pprof.Trace)
 }
 
-func (p *Http) Listen(wait chan bool) {
+func (p *Http) Listen() {
 	app := chi.NewRouter()
 
 	app.Use(middleware.Logger)
@@ -93,7 +93,6 @@ func (p *Http) Listen(wait chan bool) {
 	}
 
 	log.Info().Msgf("Server started on Port %s ", serverPort)
-	wait <- true
 	if err := p.httpServer.ListenAndServe(); err != nil {
 		log.Fatal().Err(err).Msg("cannot establish HTTP connection")
 	}
