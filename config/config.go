@@ -25,8 +25,10 @@ type ApplicationConfig struct {
 }
 
 type ExternalWebsocketConfigOptions struct {
-	Url       string `toml:"URL"`
-	OriginUrl string `toml:"ORIGIN_URL"`
+	Url           string        `toml:"URL"`
+	OriginUrl     string        `toml:"ORIGIN_URL"`
+	RetryTime     time.Duration `toml:"-"`
+	RetryWaitTime time.Duration `toml:"-"`
 }
 
 type PublisherOptions struct {

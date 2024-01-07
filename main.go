@@ -165,13 +165,11 @@ func main() {
 
 	httpProtocol := initHttpProtocol(cfg, *c.Service)
 
-	wait := make(chan bool)
 	// init http protocol
-	go httpProtocol.Listen(wait)
-	<-wait
+	go httpProtocol.Listen()
+
 	// init other protocols here
-	go c.Integration.Coma.Connect(wait)
-	<-wait
+	go c.Integration.Coma.Connect()
 
 	localPubsubHandler.TopicRegistry()
 

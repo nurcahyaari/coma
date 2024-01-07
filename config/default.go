@@ -39,6 +39,7 @@ func defaultExternalComaWSConnection(appPort int) ExternalWebsocketConfigOptions
 	return ExternalWebsocketConfigOptions{
 		Url:       fmt.Sprintf("ws://127.0.0.1:%d/websocket", appPort),
 		OriginUrl: fmt.Sprintf("http://127.0.0.1:%d/external-coma-connection", appPort),
+		RetryTime: 60 * time.Second,
 	}
 }
 
