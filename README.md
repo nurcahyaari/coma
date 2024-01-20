@@ -43,7 +43,6 @@ Coma has its biggest roadmap that we want to achieve, here are several planning 
 - [ ] Create a concise beauty documentation
 - [ ] Create UI for managing its data
 - [ ] Create coma as a distributed system
-  - [ ] set the load balancer
 - [ ] etc
 
 
