@@ -34,15 +34,13 @@ func (a ApplicationType) Validate(value any) error {
 }
 
 type RequestCreateApplication struct {
-	StageId string          `json:"stageId"`
-	Type    ApplicationType `json:"type"`
-	Name    string          `json:"name"`
+	Type ApplicationType `json:"type"`
+	Name string          `json:"name"`
 }
 
 func (r RequestCreateApplication) Validate() error {
 	validationFieldRules := []*validation.FieldRules{}
 
-	validationFieldRules = append(validationFieldRules, validation.Field(&r.StageId, validation.Required))
 	validationFieldRules = append(validationFieldRules, validation.Field(&r.Name, validation.Required))
 	validationFieldRules = append(validationFieldRules, validation.Field(&r.Type, validation.Required, validation.By(r.Type.Validate)))
 
@@ -60,26 +58,28 @@ func (r RequestCreateApplication) Validate() error {
 func (r RequestCreateApplication) NewApplication() entity.Application {
 	uuid := uuid.New()
 	return entity.Application{
-		Id:      uuid.String(),
-		StageId: r.StageId,
-		Type:    r.Type.String(),
-		Name:    r.Name,
+		Id:   uuid.String(),
+		Type: r.Type.String(),
+		Name: r.Name,
 	}
 }
 
 type ResponseApplication struct {
-	Id      string `json:"id"`
-	StageId string `json:"stageId"`
-	Type    string `json:"type"`
-	Name    string `json:"name"`
+	Id             string                     `json:"id"`
+	Type           string                     `json:"type"`
+	Name           string                     `json:"name"`
+	ApplicationKey ResponseFindApplicationKey `json:"applicationKey"`
+}
+
+func (r *ResponseApplication) AttachApplicationKey(applicationKey ResponseFindApplicationKey) {
+	r.ApplicationKey = applicationKey
 }
 
 func NewResponseApplication(data entity.Application) ResponseApplication {
 	return ResponseApplication{
-		Id:      data.Id,
-		StageId: data.StageId,
-		Name:    data.Name,
-		Type:    data.Type,
+		Id:   data.Id,
+		Name: data.Name,
+		Type: data.Type,
 	}
 }
 
@@ -94,7 +94,6 @@ func NewResponseApplications(datas entity.Applications) ResponseApplications {
 }
 
 type RequestFindApplication struct {
-	Id      string
-	Name    string
-	StageId string
+	Id   string
+	Name string
 }

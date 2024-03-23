@@ -80,8 +80,6 @@ func initDependencies(cfg config.Config) container.Container {
 		AuthRepositorier:                         authRepo,
 		RepositoryApplicationWriter:              applicationRepo.NewRepositoryApplicationWriter(),
 		RepositoryApplicationReader:              applicationRepo.NewRepositoryApplicationReader(),
-		RepositoryApplicationStageReader:         applicationRepo.NewRepositoryApplicationStageReader(),
-		RepositoryApplicationStageWriter:         applicationRepo.NewRepositoryApplicationStageWriter(),
 		RepositoryApplicationKeyWriter:           applicationRepo.NewRepositoryApplicationKeyWriter(),
 		RepositoryApplicationKeyReader:           applicationRepo.NewRepositoryApplicationKeyReader(),
 		RepositoryApplicationConfigurationWriter: applicationRepo.NewRepositoryApplicationConfigurationWriter(),
@@ -104,14 +102,11 @@ func initDependencies(cfg config.Config) container.Container {
 	c.Repository = &containerRepo
 	c.Integration = &containerIntegration
 
-	applicationStageSvc := applicationsvc.NewApplicationStage(&cfg, c)
-	c.Service.ApplicationStageServicer = applicationStageSvc
+	applicationKeySvc := applicationsvc.NewApplicationKey(&cfg, c)
+	c.Service.ApplicationKeyServicer = applicationKeySvc
 
 	applicationSvc := applicationsvc.NewApplication(&cfg, c)
 	c.Service.ApplicationServicer = applicationSvc
-
-	applicationKeySvc := applicationsvc.NewApplicationKey(&cfg, c)
-	c.Service.ApplicationKeyServicer = applicationKeySvc
 
 	configurationSvc := applicationsvc.NewApplicationConfiguration(&cfg, c)
 	c.Service.ApplicationConfigurationServicer = configurationSvc

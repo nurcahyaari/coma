@@ -14,15 +14,13 @@ import (
 // @Summary get applications
 // @Security comaStandardAuth
 // @Description get applications
-// @Param stageId query string false "<Stage id>"
 // @Param applicationName query string false "<application name>"
 // @Tags Applications
 // @Produce json
 // @Router /v1/applications [GET]
 func (h *HttpHandle) FindApplications(w http.ResponseWriter, r *http.Request) {
 	request := applicationdto.RequestFindApplication{
-		Name:    r.FormValue("applicationName"),
-		StageId: r.FormValue("stageId"),
+		Name: r.FormValue("applicationName"),
 	}
 
 	resp, err := h.applicationSvc.FindApplications(r.Context(), request)
@@ -37,7 +35,7 @@ func (h *HttpHandle) FindApplications(w http.ResponseWriter, r *http.Request) {
 		response.SetData[applicationdto.ResponseApplications](resp))
 }
 
-// CreateApplicationStages set new applications
+// CreateApplication set new applications
 // @Summary set new applications
 // @Security comaStandardAuth
 // @Description Set new applications

@@ -12,24 +12,23 @@ import (
 	"github.com/coma/coma/src/domain/entity"
 	domainrepository "github.com/coma/coma/src/domain/repository"
 	"github.com/coma/coma/src/domain/service"
+	domainservice "github.com/coma/coma/src/domain/service"
 	"github.com/rs/zerolog/log"
 )
 
 type ApplicationService struct {
-	config      *config.Config
-	reader      domainrepository.RepositoryApplicationReader
-	writer      domainrepository.RepositoryApplicationWriter
-	stageReader domainrepository.RepositoryApplicationStageReader
-	stageWriter domainrepository.RepositoryApplicationStageWriter
+	config            *config.Config
+	reader            domainrepository.RepositoryApplicationReader
+	writer            domainrepository.RepositoryApplicationWriter
+	applicationKeySvc domainservice.ApplicationKeyServicer
 }
 
 func NewApplication(config *config.Config, c container.Container) service.ApplicationServicer {
 	svc := &ApplicationService{
-		config:      config,
-		reader:      c.Repository.RepositoryApplicationReader,
-		writer:      c.Repository.RepositoryApplicationWriter,
-		stageReader: c.Repository.RepositoryApplicationStageReader,
-		stageWriter: c.Repository.RepositoryApplicationStageWriter,
+		config:            config,
+		reader:            c.Repository.RepositoryApplicationReader,
+		writer:            c.Repository.RepositoryApplicationWriter,
+		applicationKeySvc: c.ApplicationKeyServicer,
 	}
 	return svc
 }
@@ -40,8 +39,7 @@ func (s *ApplicationService) FindApplications(ctx context.Context, request dto.R
 	)
 
 	applications, err := s.reader.FindApplications(ctx, entity.FilterApplication{
-		Name:    request.Name,
-		StageId: request.StageId,
+		Name: request.Name,
 	})
 	if err != nil {
 		log.Error().
@@ -67,45 +65,20 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, request dto.
 			internalerrors.SetErrorSource(internalerrors.OZZO_VALIDATION_ERR))
 	}
 
-	stage, exist, err := s.stageReader.FindStage(ctx, entity.FilterApplicationStage{
-		Id: request.StageId,
-	})
-	if err != nil {
-		log.Error().
-			Err(err).
-			Msg("[CreateApplication.FindStage] error finding stage")
-		return response, internalerrors.NewError(err)
-	}
-	if !exist {
-		err = errors.New("err: stage doesn't found")
-		log.Error().
-			Err(err).
-			Msg("[CreateApplication.FindStages] error not found")
-		return response, internalerrors.NewError(err,
-			internalerrors.SetErrorCode(http.StatusNotFound))
-	}
-	if stage.Empty() {
-		log.Error().
-			Err(err).
-			Msg("[CreateApplication.FindStage] error stage doesn't found")
-		return response, internalerrors.NewError(err,
-			internalerrors.SetErrorCode(http.StatusNotFound))
-	}
-
-	_, exist, err = s.reader.FindApplication(ctx, entity.FilterApplication{
+	_, exist, err := s.reader.FindApplication(ctx, entity.FilterApplication{
 		Name: request.Name,
 	})
 	if err != nil {
 		log.Error().
 			Err(err).
-			Msg("[CreateApplication.FindApplication] error finding stage")
+			Msg("[CreateApplication.FindApplication] error finding")
 		return response, internalerrors.NewError(err)
 	}
 	if exist {
 		err = errors.New("err: application already exists")
 		log.Error().
 			Err(err).
-			Msg("[CreateApplication.FindApplication] error finding stage")
+			Msg("[CreateApplication.FindApplication] error finding")
 		return response, internalerrors.NewError(err,
 			internalerrors.SetErrorCode(http.StatusConflict))
 	}
@@ -118,7 +91,20 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, request dto.
 		return response, internalerrors.NewError(err)
 	}
 
+	applicationKey, err := s.applicationKeySvc.GenerateOrUpdateApplicationKey(ctx, dto.RequestCreateApplicationKey{
+		ApplicationId: application.Id,
+	})
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("[CreateApplication.GenerateOrUpdateApplicationKey] error generating key")
+		return response, internalerrors.NewError(err)
+	}
+
 	response = dto.NewResponseApplication(application)
+	response.AttachApplicationKey(dto.ResponseFindApplicationKey{
+		Key: applicationKey.Key,
+	})
 
 	return response, nil
 }
