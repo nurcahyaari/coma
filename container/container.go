@@ -16,8 +16,6 @@ type Repository struct {
 	repository.AuthRepositorier
 	repository.RepositoryApplicationWriter
 	repository.RepositoryApplicationReader
-	repository.RepositoryApplicationStageReader
-	repository.RepositoryApplicationStageWriter
 	repository.RepositoryApplicationKeyWriter
 	repository.RepositoryApplicationKeyReader
 	repository.RepositoryApplicationConfigurationWriter
@@ -49,7 +47,6 @@ func (c Repository) Validate() []error {
 type Service struct {
 	service.ApplicationConfigurationServicer
 	service.ApplicationKeyServicer
-	service.ApplicationStageServicer
 	service.ApplicationServicer
 	service.AuthServicer
 	service.LocalUserAuthServicer

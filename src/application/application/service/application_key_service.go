@@ -21,8 +21,6 @@ type ApplicationKeyService struct {
 	writer            domainrepository.RepositoryApplicationKeyWriter
 	applicationReader domainrepository.RepositoryApplicationReader
 	applicationWriter domainrepository.RepositoryApplicationWriter
-	stageReader       domainrepository.RepositoryApplicationStageReader
-	stageWriter       domainrepository.RepositoryApplicationStageWriter
 }
 
 func NewApplicationKey(config *config.Config, c container.Container) service.ApplicationKeyServicer {
@@ -32,8 +30,6 @@ func NewApplicationKey(config *config.Config, c container.Container) service.App
 		writer:            c.Repository.RepositoryApplicationKeyWriter,
 		applicationReader: c.Repository.RepositoryApplicationReader,
 		applicationWriter: c.Repository.RepositoryApplicationWriter,
-		stageReader:       c.Repository.RepositoryApplicationStageReader,
-		stageWriter:       c.Repository.RepositoryApplicationStageWriter,
 	}
 	return svc
 }
@@ -72,11 +68,10 @@ func (s *ApplicationKeyService) IsExistsApplicationKey(ctx context.Context, requ
 
 func (s *ApplicationKeyService) FindApplicationKey(ctx context.Context, request dto.RequestFindApplicationKey) (dto.ResponseFindApplicationKey, error) {
 	var (
-		response         dto.ResponseFindApplicationKey
-		filter           = request.FilterApplicationKey()
-		application      entity.Application
-		applicationStage entity.ApplicationStage
-		applicationKey   entity.ApplicationKey
+		response       dto.ResponseFindApplicationKey
+		filter         = request.FilterApplicationKey()
+		application    entity.Application
+		applicationKey entity.ApplicationKey
 	)
 
 	if err := request.Validate(); err != nil {
@@ -109,27 +104,6 @@ func (s *ApplicationKeyService) FindApplicationKey(ctx context.Context, request 
 		return &resp, nil
 	}, request.ApplicationId)
 
-	rtn.Add("findStage", &applicationStage, func(params ...any) (any, error) {
-		resp, exist, err := s.stageReader.FindStage(ctx, entity.FilterApplicationStage{
-			Id: request.StageId,
-		})
-		if err != nil {
-			log.Error().
-				Err(err).
-				Msg("[GenerateOrUpdateApplicationKey.FindStages] error find stage")
-			return nil, err
-		}
-		if !exist {
-			err = errors.New("err: stage doesn't found")
-			log.Error().
-				Err(err).
-				Msg("[GenerateOrUpdateApplicationKey.FindStages] error not found")
-			return nil, err
-		}
-
-		return &resp, nil
-	}, request.StageId)
-
 	rtn.Add("findKey", &applicationKey, func(params ...any) (any, error) {
 		resp, err := s.reader.FindApplicationKey(ctx, filter)
 		if err != nil {
@@ -150,18 +124,16 @@ func (s *ApplicationKeyService) FindApplicationKey(ctx context.Context, request 
 	}
 
 	response = dto.NewResponseFindApplicationKey(applicationKey)
-	response.AttachApplication(application).
-		AttachApplicationStage(applicationStage)
+	response.AttachApplication(application)
 
 	return response, nil
 }
 
 func (s *ApplicationKeyService) GenerateOrUpdateApplicationKey(ctx context.Context, request dto.RequestCreateApplicationKey) (dto.ResponseCreateApplicationKey, error) {
 	var (
-		response         dto.ResponseCreateApplicationKey
-		applicationKey   = request.ApplicationKey()
-		application      entity.Application
-		applicationStage entity.ApplicationStage
+		response       dto.ResponseCreateApplicationKey
+		applicationKey = request.ApplicationKey()
+		application    entity.Application
 	)
 
 	if err := request.Validate(); err != nil {
@@ -197,27 +169,6 @@ func (s *ApplicationKeyService) GenerateOrUpdateApplicationKey(ctx context.Conte
 		return &resp, nil
 	}, request.ApplicationId)
 
-	rtn.Add("findStage", &applicationStage, func(params ...any) (any, error) {
-		stageId := params[0].(string)
-		resp, exist, err := s.stageReader.FindStage(ctx, entity.FilterApplicationStage{
-			Id: stageId,
-		})
-		if err != nil {
-			log.Error().
-				Err(err).
-				Msg("[GenerateOrUpdateApplicationKey.FindStages] error find stage")
-			return nil, internalerrors.NewError(err)
-		}
-		if !exist {
-			err = errors.New("err: stage doesn't found")
-			log.Error().
-				Err(err).
-				Msg("[GenerateOrUpdateApplicationKey.FindStages] error not found")
-			return nil, err
-		}
-		return &resp, nil
-	}, request.StageId)
-
 	rtn.Start()
 	if rtn.IsError() {
 		log.Error().
@@ -236,7 +187,6 @@ func (s *ApplicationKeyService) GenerateOrUpdateApplicationKey(ctx context.Conte
 
 	response = dto.ResponseCreateApplicationKey{
 		ApplicationName: application.Name,
-		StageName:       applicationStage.Name,
 		Key:             applicationKey.Key,
 	}
 

@@ -9,7 +9,6 @@ import (
 type HttpHandle struct {
 	authSvc                 service.LocalUserAuthServicer
 	configurationSvc        service.ApplicationConfigurationServicer
-	applicationStageSvc     service.ApplicationStageServicer
 	applicationSvc          service.ApplicationServicer
 	applicationKeySvc       service.ApplicationKeyServicer
 	userSvc                 service.UserServicer
@@ -26,16 +25,6 @@ func (h HttpHandle) Router(r *chi.Mux) {
 			r.Get("/", h.FindApplications)
 			r.Post("/", h.CreateApplication)
 			r.Delete("/{applicationId}", h.DeleteApplications)
-		})
-
-		r.Route("/stages", func(r chi.Router) {
-			r.Use(
-				h.MiddlewareLocalAuthAccessTokenValidate,
-				// h.MiddlewareLocalAuthUserApplicationScope, TODO: uncomment later
-				h.MiddlewareLocalAuthUserScope)
-			r.Get("/", h.FindApplicationStages)
-			r.Post("/", h.CreateApplicationStages)
-			r.Delete("/{stageName}", h.DeleteApplicationStages)
 		})
 
 		r.Route("/keys", func(r chi.Router) {
@@ -94,7 +83,6 @@ func NewHttpHandler(c container.Service) *HttpHandle {
 	httpHandle := &HttpHandle{
 		authSvc:                 c.LocalUserAuthServicer,
 		configurationSvc:        c.ApplicationConfigurationServicer,
-		applicationStageSvc:     c.ApplicationStageServicer,
 		applicationSvc:          c.ApplicationServicer,
 		applicationKeySvc:       c.ApplicationKeyServicer,
 		userSvc:                 c.UserServicer,

@@ -13,8 +13,11 @@ const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 type ApplicationKey struct {
 	Id            string `json:"_id"`
 	ApplicationId string `json:"applicationId"`
-	StageId       string `json:"stageId"`
 	Key           string `json:"key"`
+}
+
+func (r ApplicationKey) Exist() bool {
+	return r.Id != "" && r.ApplicationId != "" && r.Key != ""
 }
 
 func (r *ApplicationKey) GenerateKey(length int) {
@@ -46,7 +49,6 @@ type ApplicationKeys []ApplicationKey
 type FilterApplicationKey struct {
 	SkipValidation bool
 	ApplicationId  string
-	StageId        string
 	Key            string
 }
 
@@ -54,7 +56,7 @@ func (f FilterApplicationKey) Validation() bool {
 	if f.SkipValidation {
 		return true
 	}
-	return f.ApplicationId != "" && f.StageId != ""
+	return f.ApplicationId != ""
 }
 
 func (f FilterApplicationKey) Filter() *clover.Criteria {
@@ -65,10 +67,6 @@ func (f FilterApplicationKey) Filter() *clover.Criteria {
 
 	if f.ApplicationId != "" {
 		criterias = append(criterias, clover.Field("applicationId").Eq(f.ApplicationId))
-	}
-
-	if f.StageId != "" {
-		criterias = append(criterias, clover.Field("stageId").Eq(f.StageId))
 	}
 
 	if f.Key != "" {

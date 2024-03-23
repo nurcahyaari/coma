@@ -11,14 +11,12 @@ import (
 
 type RequestCreateApplicationKey struct {
 	ApplicationId string `json:"applicationId"`
-	StageId       string `json:"stageId"`
 }
 
 func (r RequestCreateApplicationKey) Validate() error {
 	validationFieldRules := []*validation.FieldRules{}
 
 	validationFieldRules = append(validationFieldRules, validation.Field(&r.ApplicationId, validation.Required))
-	validationFieldRules = append(validationFieldRules, validation.Field(&r.StageId, validation.Required))
 
 	err := validation.ValidateStruct(&r, validationFieldRules...)
 	if err == nil {
@@ -35,21 +33,23 @@ func (r RequestCreateApplicationKey) ApplicationKey() entity.ApplicationKey {
 	return entity.ApplicationKey{
 		Id:            id.String(),
 		ApplicationId: r.ApplicationId,
-		StageId:       r.StageId,
 	}
 }
 
 type ResponseCreateApplicationKey struct {
 	ApplicationName string `json:"applicationName"`
-	StageName       string `json:"stageName"`
 	Key             string `json:"key"`
+}
+
+type RequestInternalFindApplicationKey struct {
+	ApplicationId  string
+	Key            string
+	SkipValidation bool
 }
 
 type RequestFindApplicationKey struct {
 	ApplicationId   string `json:"applicationId"`
 	ApplicationName string `json:"applicationName"`
-	StageId         string `json:"stageId"`
-	StageName       string `json:"stageName"`
 	Key             string `json:"key"`
 }
 
@@ -72,7 +72,6 @@ func (r RequestFindApplicationKey) Validate() error {
 	validationFieldRules := []*validation.FieldRules{}
 
 	validationFieldRules = append(validationFieldRules, validation.Field(&r.ApplicationId, validation.Required))
-	validationFieldRules = append(validationFieldRules, validation.Field(&r.StageId, validation.Required))
 
 	err := validation.ValidateStruct(&r, validationFieldRules...)
 	if err == nil {
@@ -87,7 +86,6 @@ func (r RequestFindApplicationKey) Validate() error {
 func (r RequestFindApplicationKey) FilterApplicationKey() entity.FilterApplicationKey {
 	return entity.FilterApplicationKey{
 		ApplicationId: r.ApplicationId,
-		StageId:       r.StageId,
 		Key:           r.Key,
 	}
 }
@@ -98,18 +96,10 @@ func (r RequestFindApplicationKey) FilterApplication() entity.FilterApplication 
 	}
 }
 
-func (r RequestFindApplicationKey) FilterApplicationStage() entity.FilterApplicationStage {
-	return entity.FilterApplicationStage{
-		Id: r.StageId,
-	}
-}
-
 type ResponseFindApplicationKey struct {
 	Id              string `json:"id"`
 	ApplicationId   string `json:"applicationId"`
 	ApplicationName string `json:"applicationName"`
-	StageId         string `json:"stageId"`
-	StageName       string `json:"stageName"`
 	Key             string `json:"key"`
 }
 
@@ -118,16 +108,10 @@ func (s *ResponseFindApplicationKey) AttachApplication(application entity.Applic
 	return s
 }
 
-func (s *ResponseFindApplicationKey) AttachApplicationStage(applicationStage entity.ApplicationStage) *ResponseFindApplicationKey {
-	s.StageName = applicationStage.Name
-	return s
-}
-
 func NewResponseFindApplicationKey(applicationKey entity.ApplicationKey) ResponseFindApplicationKey {
 	return ResponseFindApplicationKey{
 		Id:            applicationKey.Id,
 		ApplicationId: applicationKey.ApplicationId,
-		StageId:       applicationKey.StageId,
 		Key:           applicationKey.Key,
 	}
 }

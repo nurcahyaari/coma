@@ -14,14 +14,12 @@ import (
 // @Security comaStandardAuth
 // @Description get key
 // @Param applicationId query string false "<Application Id>"
-// @Param stageId query string false "<Stage Id>"
 // @Tags Key
 // @Produce json
 // @Router /v1/keys [GET]
 func (h *HttpHandle) FindApplicationKey(w http.ResponseWriter, r *http.Request) {
 	request := applicationdto.RequestFindApplicationKey{
 		ApplicationId: r.FormValue("applicationId"),
-		StageId:       r.FormValue("stageId"),
 	}
 
 	resp, err := h.applicationKeySvc.FindApplicationKey(r.Context(), request)

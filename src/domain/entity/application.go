@@ -7,10 +7,9 @@ import (
 )
 
 type Application struct {
-	Id      string `json:"_id"`
-	StageId string `json:"stageId"`
-	Type    string `json:"type"`
-	Name    string `json:"name"`
+	Id   string `json:"_id"`
+	Type string `json:"type"`
+	Name string `json:"name"`
 }
 
 func (a Application) MapStringInterface() (map[string]interface{}, error) {
@@ -30,9 +29,8 @@ func (a Application) MapStringInterface() (map[string]interface{}, error) {
 type Applications []Application
 
 type FilterApplication struct {
-	Id      string
-	Name    string
-	StageId string
+	Id   string
+	Name string
 }
 
 func (f FilterApplication) Filter() *clover.Criteria {
@@ -44,10 +42,6 @@ func (f FilterApplication) Filter() *clover.Criteria {
 
 	if f.Name != "" {
 		criterias = append(criterias, clover.Field("name").Eq(f.Name))
-	}
-
-	if f.StageId != "" {
-		criterias = append(criterias, clover.Field("stageId").Eq(f.StageId))
 	}
 
 	filter := &clover.Criteria{}

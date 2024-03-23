@@ -28,14 +28,6 @@ func (r Repository) NewRepositoryApplicationWriter() repository.RepositoryApplic
 	return NewRepositoryApplicationWriter(r.db, r.dbName)
 }
 
-func (r Repository) NewRepositoryApplicationStageReader() repository.RepositoryApplicationStageReader {
-	return NewRepositoryApplicationStageReader(r.db, fmt.Sprintf("%s_stage", r.dbName))
-}
-
-func (r Repository) NewRepositoryApplicationStageWriter() repository.RepositoryApplicationStageWriter {
-	return NewRepositoryApplicationStageWriter(r.db, fmt.Sprintf("%s_stage", r.dbName))
-}
-
 func (r Repository) NewRepositoryApplicationKeyReader() repository.RepositoryApplicationKeyReader {
 	return NewRepositoryApplicationKeyReader(r.db, fmt.Sprintf("%s_key", r.dbName))
 }
