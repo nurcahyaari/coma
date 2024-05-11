@@ -12,7 +12,30 @@ Coma is a configuration manager that stores, manages, and distributes your confi
 
 ### Manual Installation
 
-under construction
+- make sure Go has been installed on your local machine
+- you must clone this repository
+  ```bash
+  clone with ssh
+  git@github.com:nurcahyaari/Coma.git
+
+  or clone with http
+  https://github.com/nurcahyaari/Coma.git
+  ```
+- Make this code as an executable files
+  - using make build
+    - type `make build`
+    - you'll see coma file under the build folder
+    - move the executable file into your path directory
+  - using make install
+    - type `make install`
+    ![alt text](<assets/Screenshot 2024-05-11 at 22.34.44.png>)
+
+    - coma will be installed under your $GOPATH/bin directory
+    - you can try to type `ls $GOPATH/bin`
+    - you'll see coma has already installed under this folder
+- Running coma from your local machine
+![alt text](<assets/Screenshot 2024-05-11 at 22.37.52.png>)
+
 
 ### Containerize with Docker
 
@@ -22,7 +45,7 @@ under construction
 - 👨‍💻 Managing user with their access control
 - 📦 Simpel to manage stage, application, key, and its on air configuration
 - 🚀 Real-time publishing configuration to the listener
-- 📦 SDK with many programming language implementation (currently only support Golang & Node.js)
+- 📦 SDK with many programming language implementation (currently only supports Golang & Node.js)
 
 ## Roadmaps
 
