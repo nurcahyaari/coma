@@ -142,8 +142,9 @@ func isDevelopment() bool {
 	return strings.Contains(dir, "go-build")
 }
 
-func getWd(rgoos string) string {
-	switch rgoos {
+func getWd(goos string) string {
+	// TODO: update later
+	switch goos {
 	case "darwin":
 		return "/usr/local/opt/coma"
 	}
@@ -153,13 +154,13 @@ func getWd(rgoos string) string {
 
 func main() {
 	logger.InitLogger()
-	rgoos := runtime.GOOS
+	goos := runtime.GOOS
 
 	log.Info().Msgf("Running on operating system: %s\n", rgoos)
 
 	wd, _ := os.Getwd()
 	if !isDevelopment() {
-		wd = getWd(rgoos)
+		wd = getWd(goos)
 	}
 
 	// init base dir
