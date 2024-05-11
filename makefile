@@ -8,7 +8,10 @@ generate:
 	go generate ./...
 
 build: generate
-	mkdir -p build && go build -o build/app
+	mkdir -p build && go build -o build/coma
+
+install: generate
+	go install
 
 clean:
 	@find . -name **fakes -delete

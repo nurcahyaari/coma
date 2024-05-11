@@ -4,9 +4,10 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/coma/coma/config"
 	"github.com/coma/coma/container"
@@ -130,14 +131,37 @@ func initDependencies(cfg config.Config) container.Container {
 	return c
 }
 
+func isDevelopment() bool {
+	ex, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+
+	dir := filepath.Dir(ex)
+
+	return strings.Contains(dir, "go-build")
+}
+
+func getWd(goos string) string {
+	// TODO: update later
+	switch goos {
+	case "darwin":
+		return "/usr/local/opt/coma"
+	}
+
+	return ""
+}
+
 func main() {
 	logger.InitLogger()
 	goos := runtime.GOOS
 
-	log.Info().Msgf("Running on operating system: %s\n", goos)
-	fmt.Println("development: ", os.Getenv("development"))
+	log.Info().Msgf("Running on operating system: %s\n", rgoos)
 
 	wd, _ := os.Getwd()
+	if !isDevelopment() {
+		wd = getWd(goos)
+	}
 
 	// init base dir
 	if err := file.NewDir(config.GetBaseWorkingDir(wd)); err != nil {
@@ -145,7 +169,7 @@ func main() {
 			Msg("creating base directory")
 	}
 
-	// init database
+	// creating configuration
 	cfg := config.New(wd)
 
 	// creating database
