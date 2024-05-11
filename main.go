@@ -146,7 +146,7 @@ func getWd(goos string) string {
 	// TODO: update later
 	switch goos {
 	case "darwin":
-		return "/usr/local/opt/coma"
+		return "/usr/local/opt"
 	}
 
 	return ""
