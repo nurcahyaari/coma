@@ -9,27 +9,27 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/coma/coma/config"
-	"github.com/coma/coma/container"
-	"github.com/coma/coma/infrastructure/database"
-	"github.com/coma/coma/infrastructure/integration/coma"
-	"github.com/coma/coma/internal/graceful"
-	"github.com/coma/coma/internal/logger"
-	"github.com/coma/coma/internal/protocols/http"
-	httprouter "github.com/coma/coma/internal/protocols/http/router"
-	"github.com/coma/coma/internal/x/file"
-	"github.com/coma/coma/internal/x/pubsub"
-	applicationrepo "github.com/coma/coma/src/application/application/repository"
-	applicationsvc "github.com/coma/coma/src/application/application/service"
-	authrepo "github.com/coma/coma/src/application/auth/repository"
-	authsvc "github.com/coma/coma/src/application/auth/service"
-	userrepo "github.com/coma/coma/src/application/user/repository"
-	usersvc "github.com/coma/coma/src/application/user/service"
+	"github.com/nurcahyaari/coma/config"
+	"github.com/nurcahyaari/coma/container"
+	"github.com/nurcahyaari/coma/infrastructure/database"
+	"github.com/nurcahyaari/coma/infrastructure/integration/coma"
+	"github.com/nurcahyaari/coma/internal/graceful"
+	"github.com/nurcahyaari/coma/internal/logger"
+	"github.com/nurcahyaari/coma/internal/protocols/http"
+	httprouter "github.com/nurcahyaari/coma/internal/protocols/http/router"
+	"github.com/nurcahyaari/coma/internal/x/file"
+	"github.com/nurcahyaari/coma/internal/x/pubsub"
+	applicationrepo "github.com/nurcahyaari/coma/src/application/application/repository"
+	applicationsvc "github.com/nurcahyaari/coma/src/application/application/service"
+	authrepo "github.com/nurcahyaari/coma/src/application/auth/repository"
+	authsvc "github.com/nurcahyaari/coma/src/application/auth/service"
+	userrepo "github.com/nurcahyaari/coma/src/application/user/repository"
+	usersvc "github.com/nurcahyaari/coma/src/application/user/service"
 	"github.com/rs/zerolog/log"
 
-	httphandler "github.com/coma/coma/src/handlers/http"
-	"github.com/coma/coma/src/handlers/localpubsub"
-	websockethandler "github.com/coma/coma/src/handlers/websocket"
+	httphandler "github.com/nurcahyaari/coma/src/handlers/http"
+	"github.com/nurcahyaari/coma/src/handlers/localpubsub"
+	websockethandler "github.com/nurcahyaari/coma/src/handlers/websocket"
 )
 
 //@securityDefinitions.apikey comaStandardAuth
@@ -145,7 +145,9 @@ func isDevelopment() bool {
 func getWd(goos string) string {
 	// TODO: update later
 	switch goos {
-	case "darwin":
+	case
+		"linux",
+		"darwin":
 		return "/usr/local/opt"
 	}
 
@@ -156,13 +158,9 @@ func main() {
 	logger.InitLogger()
 	goos := runtime.GOOS
 
-	log.Info().Msgf("Running on operating system: %s\n", rgoos)
+	log.Info().Msgf("Running on operating system: %s\n", goos)
 
-	wd, _ := os.Getwd()
-	if !isDevelopment() {
-		wd = getWd(goos)
-	}
-
+	wd := getWd(goos)
 	// init base dir
 	if err := file.NewDir(config.GetBaseWorkingDir(wd)); err != nil {
 		log.Fatal().Err(err).
@@ -171,6 +169,7 @@ func main() {
 
 	// creating configuration
 	cfg := config.New(wd)
+	cfg.Application.Development = isDevelopment()
 
 	// creating database
 	if err := file.NewDir(cfg.DB.Clover.Path); err != nil {

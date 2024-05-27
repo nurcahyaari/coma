@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/coma/coma/src/handlers/websocket"
+	"github.com/nurcahyaari/coma/src/handlers/websocket"
 	"github.com/stretchr/testify/assert"
 )
 

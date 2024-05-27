@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"github.com/coma/coma/infrastructure/database"
-	"github.com/coma/coma/src/domain/repository"
+	"github.com/nurcahyaari/coma/infrastructure/database"
+	"github.com/nurcahyaari/coma/src/domain/repository"
 )
 
 type Repository struct {

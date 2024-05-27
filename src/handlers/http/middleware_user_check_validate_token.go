@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/coma/coma/internal/protocols/http/response"
-	"github.com/coma/coma/src/application/auth/dto"
-	"github.com/coma/coma/src/domain/entity"
+	"github.com/nurcahyaari/coma/internal/protocols/http/response"
+	"github.com/nurcahyaari/coma/src/application/auth/dto"
+	"github.com/nurcahyaari/coma/src/domain/entity"
 	"github.com/rs/zerolog/log"
 )
 

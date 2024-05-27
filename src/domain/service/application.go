@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	"github.com/coma/coma/src/application/application/dto"
+	"github.com/nurcahyaari/coma/src/application/application/dto"
 )
 
 type ApplicationServicer interface {

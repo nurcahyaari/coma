@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/coma/coma/internal/protocols/http/response"
-	internalerrors "github.com/coma/coma/internal/x/errors"
-	userdto "github.com/coma/coma/src/application/user/dto"
+	"github.com/nurcahyaari/coma/internal/protocols/http/response"
+	internalerrors "github.com/nurcahyaari/coma/internal/x/errors"
+	userdto "github.com/nurcahyaari/coma/src/application/user/dto"
 )
 
 // FindUserApplicationScope find user scope to application

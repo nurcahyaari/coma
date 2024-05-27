@@ -3,8 +3,8 @@ package http
 import (
 	"net/http"
 
-	"github.com/coma/coma/internal/protocols/http/response"
-	"github.com/coma/coma/src/application/application/dto"
+	"github.com/nurcahyaari/coma/internal/protocols/http/response"
+	"github.com/nurcahyaari/coma/src/application/application/dto"
 )
 
 func (h *HttpHandle) MiddlewareCheckIsClientKeyExists(next http.Handler) http.Handler {

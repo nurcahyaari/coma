@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	internalerror "github.com/coma/coma/internal/x/errors"
+	internalerror "github.com/nurcahyaari/coma/internal/x/errors"
 	"github.com/stretchr/testify/assert"
 )
 

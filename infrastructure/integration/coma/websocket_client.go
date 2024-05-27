@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/coma/coma/config"
+	"github.com/nurcahyaari/coma/config"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/websocket"
 )

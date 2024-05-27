@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"github.com/coma/coma/src/domain/entity"
+	"github.com/nurcahyaari/coma/src/domain/entity"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
