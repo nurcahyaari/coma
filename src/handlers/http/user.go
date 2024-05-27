@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/coma/coma/internal/protocols/http/response"
-	internalerrors "github.com/coma/coma/internal/x/errors"
-	userdto "github.com/coma/coma/src/application/user/dto"
 	"github.com/go-chi/chi/v5"
+	"github.com/nurcahyaari/coma/internal/protocols/http/response"
+	internalerrors "github.com/nurcahyaari/coma/internal/x/errors"
+	userdto "github.com/nurcahyaari/coma/src/application/user/dto"
 )
 
 // FindUser find user

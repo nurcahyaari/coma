@@ -1,9 +1,9 @@
 package http
 
 import (
-	"github.com/coma/coma/container"
-	service "github.com/coma/coma/src/domain/service"
 	"github.com/go-chi/chi/v5"
+	"github.com/nurcahyaari/coma/container"
+	service "github.com/nurcahyaari/coma/src/domain/service"
 )
 
 type HttpHandle struct {

@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"regexp"
 
-	internalerror "github.com/coma/coma/internal/x/errors"
-	"github.com/coma/coma/src/domain/entity"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/google/uuid"
+	internalerror "github.com/nurcahyaari/coma/internal/x/errors"
+	"github.com/nurcahyaari/coma/src/domain/entity"
 )
 
 type RequestSetConfiguration struct {

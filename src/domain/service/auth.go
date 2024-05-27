@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	"github.com/coma/coma/src/application/auth/dto"
+	"github.com/nurcahyaari/coma/src/application/auth/dto"
 )
 
 type AuthServicer interface {

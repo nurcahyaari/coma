@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/coma/coma/src/domain/entity"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/nurcahyaari/coma/src/domain/entity"
 	"github.com/stretchr/testify/assert"
 )
 

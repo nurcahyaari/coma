@@ -1,10 +1,10 @@
 package localpubsub
 
 import (
-	"github.com/coma/coma/config"
-	"github.com/coma/coma/container"
-	"github.com/coma/coma/internal/x/pubsub"
-	"github.com/coma/coma/src/domain/service"
+	"github.com/nurcahyaari/coma/config"
+	"github.com/nurcahyaari/coma/container"
+	"github.com/nurcahyaari/coma/internal/x/pubsub"
+	"github.com/nurcahyaari/coma/src/domain/service"
 )
 
 type LocalPubsub struct {

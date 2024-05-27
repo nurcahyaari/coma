@@ -3,9 +3,9 @@ package repository
 import (
 	"context"
 
-	"github.com/coma/coma/infrastructure/database"
-	"github.com/coma/coma/src/domain/entity"
-	"github.com/coma/coma/src/domain/repository"
+	"github.com/nurcahyaari/coma/infrastructure/database"
+	"github.com/nurcahyaari/coma/src/domain/entity"
+	"github.com/nurcahyaari/coma/src/domain/repository"
 	"github.com/ostafen/clover"
 )
 

@@ -3,12 +3,12 @@ package container_test
 import (
 	"testing"
 
-	"github.com/coma/coma/container"
-	"github.com/coma/coma/infrastructure/integration/coma"
-	"github.com/coma/coma/internal/x/pubsub"
-	applicationsvc "github.com/coma/coma/src/application/application/service"
-	authsvc "github.com/coma/coma/src/application/auth/service"
-	"github.com/coma/coma/src/domain/repository/repositoryfakes"
+	"github.com/nurcahyaari/coma/container"
+	"github.com/nurcahyaari/coma/infrastructure/integration/coma"
+	"github.com/nurcahyaari/coma/internal/x/pubsub"
+	applicationsvc "github.com/nurcahyaari/coma/src/application/application/service"
+	authsvc "github.com/nurcahyaari/coma/src/application/auth/service"
+	"github.com/nurcahyaari/coma/src/domain/repository/repositoryfakes"
 	"github.com/stretchr/testify/assert"
 )
 

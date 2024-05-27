@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	"github.com/coma/coma/src/application/user/dto"
-	"github.com/coma/coma/src/domain/entity"
+	"github.com/nurcahyaari/coma/src/application/user/dto"
+	"github.com/nurcahyaari/coma/src/domain/entity"
 )
 
 type InternalUserServicer interface {

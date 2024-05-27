@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/coma/coma/infrastructure/integration/coma"
-	"github.com/coma/coma/internal/x/pubsub"
-	"github.com/coma/coma/src/domain/repository"
-	"github.com/coma/coma/src/domain/service"
+	"github.com/nurcahyaari/coma/infrastructure/integration/coma"
+	"github.com/nurcahyaari/coma/internal/x/pubsub"
+	"github.com/nurcahyaari/coma/src/domain/repository"
+	"github.com/nurcahyaari/coma/src/domain/service"
 )
 
 type Repository struct {

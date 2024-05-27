@@ -1,9 +1,9 @@
 package router
 
 import (
-	httphandler "github.com/coma/coma/src/handlers/http"
-	websockethandler "github.com/coma/coma/src/handlers/websocket"
 	"github.com/go-chi/chi/v5"
+	httphandler "github.com/nurcahyaari/coma/src/handlers/http"
+	websockethandler "github.com/nurcahyaari/coma/src/handlers/websocket"
 )
 
 type HttpRoute struct {

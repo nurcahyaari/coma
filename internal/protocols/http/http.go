@@ -5,18 +5,18 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/coma/coma/config"
-	"github.com/coma/coma/internal/graceful"
-	"github.com/coma/coma/internal/protocols/http/response"
-	"github.com/coma/coma/internal/protocols/http/router"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/nurcahyaari/coma/config"
+	"github.com/nurcahyaari/coma/internal/graceful"
+	"github.com/nurcahyaari/coma/internal/protocols/http/response"
+	"github.com/nurcahyaari/coma/internal/protocols/http/router"
 	"github.com/rs/zerolog/log"
 
 	"net/http/pprof"
 
-	_ "github.com/coma/coma/docs"
+	_ "github.com/nurcahyaari/coma/docs"
 	httpswagger "github.com/swaggo/http-swagger"
 )
 

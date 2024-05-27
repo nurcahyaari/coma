@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"testing"
 
-	internalerror "github.com/coma/coma/internal/x/errors"
 	validation "github.com/go-ozzo/ozzo-validation"
+	internalerror "github.com/nurcahyaari/coma/internal/x/errors"
 	"github.com/stretchr/testify/assert"
 )
 

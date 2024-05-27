@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/coma/coma/internal/x/rand"
+	"github.com/nurcahyaari/coma/internal/x/rand"
 )
 
 const BASE_PATH = "coma"

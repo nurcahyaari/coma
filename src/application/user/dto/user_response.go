@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/coma/coma/src/domain/entity"
+import "github.com/nurcahyaari/coma/src/domain/entity"
 
 type ResponseUser struct {
 	Id       string `json:"id"`

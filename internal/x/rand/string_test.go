@@ -3,7 +3,7 @@ package rand_test
 import (
 	"testing"
 
-	"github.com/coma/coma/internal/x/rand"
+	"github.com/nurcahyaari/coma/internal/x/rand"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -9,7 +9,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/coma/coma/internal/x/pubsub"
+	"github.com/nurcahyaari/coma/internal/x/pubsub"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"github.com/coma/coma/src/domain/entity"
+	"github.com/nurcahyaari/coma/src/domain/entity"
 )
 
 //counterfeiter:generate . RepositoryApplicationWriter

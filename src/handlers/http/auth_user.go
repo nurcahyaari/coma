@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/coma/coma/internal/protocols/http/response"
-	internalerrors "github.com/coma/coma/internal/x/errors"
-	"github.com/coma/coma/src/application/auth/dto"
+	"github.com/nurcahyaari/coma/internal/protocols/http/response"
+	internalerrors "github.com/nurcahyaari/coma/internal/x/errors"
+	"github.com/nurcahyaari/coma/src/application/auth/dto"
 )
 
 // AuthUserLogin login auth user by username and password
