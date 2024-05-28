@@ -19,16 +19,16 @@ clean:
 
 
 # Docker
-start-docker: build-docker run-docker
+docker-start: docker-build docker-run
 	docker start coma
 
-stop-docker:
+docker-stop:
 	docker stop coma
 
-build-docker:
+docker-build:
 	docker build -f docker/Dockerfile -t coma .
 
-run-docker:
+docker-run:
 	docker run -d --name coma -p 5899:5899 coma
 
 docker-clean:

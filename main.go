@@ -4,10 +4,7 @@ package main
 
 import (
 	"context"
-	"os"
-	"path/filepath"
 	"runtime"
-	"strings"
 
 	"github.com/nurcahyaari/coma/config"
 	"github.com/nurcahyaari/coma/container"
@@ -131,45 +128,22 @@ func initDependencies(cfg config.Config) container.Container {
 	return c
 }
 
-func isDevelopment() bool {
-	ex, err := os.Executable()
-	if err != nil {
-		panic(err)
-	}
-
-	dir := filepath.Dir(ex)
-
-	return strings.Contains(dir, "go-build")
-}
-
-func getWd(goos string) string {
-	// TODO: update later
-	switch goos {
-	case
-		"linux",
-		"darwin":
-		return "/usr/local/opt"
-	}
-
-	return ""
-}
-
 func main() {
 	logger.InitLogger()
 	goos := runtime.GOOS
 
 	log.Info().Msgf("Running on operating system: %s\n", goos)
 
-	wd := getWd(goos)
-	// init base dir
-	if err := file.NewDir(config.GetBaseWorkingDir(wd)); err != nil {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// creating configuration
+	if err := config.CreateBaseDir(ctx); err != nil {
 		log.Fatal().Err(err).
 			Msg("creating base directory")
 	}
 
-	// creating configuration
-	cfg := config.New(wd)
-	cfg.Application.Development = isDevelopment()
+	cfg := config.New()
 
 	// creating database
 	if err := file.NewDir(cfg.DB.Clover.Path); err != nil {
@@ -194,8 +168,6 @@ func main() {
 	// listen local pubsub
 	go localPubsubHandler.Listen()
 
-	ctx, cancel := context.WithCancel(context.TODO())
-	defer cancel()
 	graceful.GracefulShutdown(
 		ctx,
 		graceful.RequestGraceful{
