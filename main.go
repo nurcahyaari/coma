@@ -14,7 +14,6 @@ import (
 	"github.com/nurcahyaari/coma/internal/logger"
 	"github.com/nurcahyaari/coma/internal/protocols/http"
 	httprouter "github.com/nurcahyaari/coma/internal/protocols/http/router"
-	"github.com/nurcahyaari/coma/internal/x/file"
 	"github.com/nurcahyaari/coma/internal/x/pubsub"
 	applicationrepo "github.com/nurcahyaari/coma/src/application/application/repository"
 	applicationsvc "github.com/nurcahyaari/coma/src/application/application/service"
@@ -144,12 +143,6 @@ func main() {
 	}
 
 	cfg := config.New()
-
-	// creating database
-	if err := file.NewDir(cfg.DB.Clover.Path); err != nil {
-		log.Fatal().Err(err).
-			Msg("creating access database directory")
-	}
 
 	c := initDependencies(cfg)
 
