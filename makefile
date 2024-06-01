@@ -10,8 +10,13 @@ generate:
 build: generate
 	mkdir -p build && go build -o build/coma
 
-install: generate
-	go install
+install:
+	@chmod +x install.sh
+	@./install.sh
+
+uninstall:
+	@chmod +x uninstall.sh
+	@./uninstall.sh
 
 clean:
 	@find . -name **fakes -delete
