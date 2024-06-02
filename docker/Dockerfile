@@ -10,12 +10,19 @@ RUN GOFLAGS="-buildvcs=false" go build -o coma .
 FROM alpine:latest
 
 RUN apk update && \
-    apk --update add bash
+    apk --update add bash nano
+    
+RUN adduser -D -g '' comauser
 
-WORKDIR /app 
+WORKDIR /usr/local/opt/coma
+WORKDIR /var/lib/coma
+COPY --from=builder /app/coma /usr/local/bin/coma
 
-EXPOSE 5899
+RUN chown comauser:comauser /var/lib/coma \
+    && chmod 750 /var/lib/coma
+RUN chown comauser:comauser /usr/local/opt/coma \
+    && chmod 750 /usr/local/opt/coma
 
-COPY --from=builder /app/coma /app
+USER comauser
 
-CMD /app/coma
+CMD /usr/local/bin/coma

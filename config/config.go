@@ -1,11 +1,12 @@
 package config
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"sync"
 	"time"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/pelletier/go-toml/v2"
 )
@@ -77,23 +78,22 @@ type Config struct {
 var cfg Config
 var doOnce sync.Once
 
-func New(path string) Config {
+func New() Config {
 	doOnce.Do(func() {
-		cfgDirPath := filepath.Join(path, BASE_PATH)
-		cfgPath := filepath.Join(cfgDirPath, CFG_NAME)
-		byt, err := os.ReadFile(cfgPath)
+		configPath := filepath.Join(CFG_PATH, CFG_NAME)
+		byt, err := os.ReadFile(configPath)
 		if err != nil {
 			// set default config
-			cfg = defaultConfig(path)
+			cfg = defaultConfig()
 			data, err := toml.Marshal(cfg)
 			if err != nil {
-				log.Fatalln("cannot marshal config")
+				log.Fatal().Err(err).Msg("cannot marshal config")
 				return
 			}
 
-			err = os.WriteFile(cfgPath, data, 0777)
+			err = os.WriteFile(configPath, data, 0777)
 			if err != nil {
-				log.Fatalln("cannot write config")
+				log.Fatal().Err(err).Msg("cannot write config")
 				return
 			}
 
@@ -102,7 +102,7 @@ func New(path string) Config {
 
 		err = toml.Unmarshal(byt, &cfg)
 		if err != nil {
-			log.Fatalln("cannot unmarshaling config")
+			log.Fatal().Err(err).Msg("cannot unmarshaling config")
 			return
 		}
 

@@ -1,22 +1,75 @@
 package config
 
 import (
+	"context"
 	"fmt"
+	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"time"
 
+	"github.com/nurcahyaari/coma/internal/x/file"
 	"github.com/nurcahyaari/coma/internal/x/rand"
+	"golang.org/x/sync/errgroup"
 )
 
-const BASE_PATH = "coma"
 const CFG_NAME = "coma.cfg"
+const CFG_PATH = "/usr/local/opt/coma"
 const DB_PATH = "database"
 const APP_PORT = 5899
 const PUBSUB_MAX_WORKER = 1000000
 const PUBSUB_MAX_BUFFER_CAPACITY = 1000
 
-func GetBaseWorkingDir(path string) string {
-	return filepath.Join(path, BASE_PATH)
+func isDevelopment() bool {
+	ex, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+
+	dir := filepath.Dir(ex)
+
+	return strings.Contains(dir, "go-build")
+}
+
+func getDBDir(goos string) string {
+	// TODO: update later
+	switch goos {
+	case
+		"linux",
+		"darwin":
+		return "/var/lib/coma"
+	}
+
+	return ""
+}
+
+// init db dir
+func CreateBaseDir(ctx context.Context) error {
+	goos := runtime.GOOS
+	wd := getDBDir(goos)
+
+	group, _ := errgroup.WithContext(ctx)
+	// create dir for database
+	group.Go(func() error {
+		if err := file.NewDir(wd); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// create dir for configuration
+	group.Go(func() error {
+		if err := file.NewDir(CFG_PATH); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err := group.Wait(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func defaultPubsubConfig(maxWorker int, maxBufferCapacity int) PubsubConfig {
@@ -43,14 +96,15 @@ func defaultExternalComaWSConnection(appPort int) ExternalWebsocketConfigOptions
 	}
 }
 
-func defaultConfig(path string) Config {
+func defaultConfig() Config {
+	goos := runtime.GOOS
 	accessTokenKey := rand.RandStr(65)
 	refreshTokenKey := rand.RandStr(65)
-	dbPath := filepath.Join(path, BASE_PATH, DB_PATH)
+	dbPath := filepath.Join(getDBDir(goos), DB_PATH)
 	return Config{
 		Application: ApplicationConfig{
 			Port:                   APP_PORT,
-			Development:            false,
+			Development:            isDevelopment(),
 			GracefulShutdownPeriod: 30 * time.Second,
 			GracefulWarnPeriod:     30 * time.Second,
 			EnablePprof:            false,
