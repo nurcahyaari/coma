@@ -79,10 +79,25 @@ var cfg Config
 var doOnce sync.Once
 
 func New() Config {
+	initConst()
+
 	doOnce.Do(func() {
-		configPath := filepath.Join(CFG_PATH, CFG_NAME)
+		// check and create db dir
+		if err := createDBDirIfNotExist(); err != nil {
+			log.Fatal().Err(err).
+				Msg("creating db directory")
+			return
+		}
+
+		configPath := filepath.Join(CONST.CFG_PATH, CONST.CFG_NAME)
 		byt, err := os.ReadFile(configPath)
 		if err != nil {
+			// creating configuration directory
+			if err := createCFGDirIfNotExist(); err != nil {
+				log.Fatal().Err(err).
+					Msg("creating cfg directory")
+			}
+
 			// set default config
 			cfg = defaultConfig()
 			data, err := toml.Marshal(cfg)
@@ -106,7 +121,7 @@ func New() Config {
 			return
 		}
 
-		cfg.Pubsub = defaultPubsubConfig(PUBSUB_MAX_WORKER, PUBSUB_MAX_BUFFER_CAPACITY)
+		cfg.Pubsub = defaultPubsubConfig(CONST.PUBSUB_MAX_WORKER, CONST.PUBSUB_MAX_BUFFER_CAPACITY)
 		cfg.External.Coma.Websocket = defaultExternalComaWSConnection(cfg.Application.Port)
 	})
 
