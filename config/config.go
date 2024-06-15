@@ -1,6 +1,7 @@
 package config
 
 import (
+	"crypto/rsa"
 	"os"
 	"path/filepath"
 	"sync"
@@ -67,10 +68,12 @@ type Config struct {
 
 	Auth struct {
 		User struct {
-			AccessTokenKey       string        `toml:"ACCESS_TOKEN_KEY"`
-			RefreshTokenKey      string        `toml:"REFRESH_TOKEN_KEY"`
-			AccessTokenDuration  time.Duration `toml:"ACCESS_TOKEN_DURATION"`
-			RefreshTokenDuration time.Duration `toml:"REFRESH_TOKEN_DURATION"`
+			PublicKeyLocation    string          `toml:"PUBLIC_KEY_LOCATION"`
+			PrivateKeyLocation   string          `toml:"PRIVATE_KEY_LOCATION"`
+			PrivateKey           *rsa.PrivateKey `toml:"-"`
+			PublicKey            *rsa.PublicKey  `toml:"-"`
+			AccessTokenDuration  time.Duration   `toml:"ACCESS_TOKEN_DURATION"`
+			RefreshTokenDuration time.Duration   `toml:"REFRESH_TOKEN_DURATION"`
 		}
 	}
 }
@@ -79,10 +82,25 @@ var cfg Config
 var doOnce sync.Once
 
 func New() Config {
+	initConst()
+
 	doOnce.Do(func() {
-		configPath := filepath.Join(CFG_PATH, CFG_NAME)
+		// check and create storage dir
+		if err := createStorageDirIfNotExist(); err != nil {
+			log.Fatal().Err(err).
+				Msg("creating data directory")
+			return
+		}
+
+		configPath := filepath.Join(CONST.CFG_PATH, CONST.CFG_NAME)
 		byt, err := os.ReadFile(configPath)
 		if err != nil {
+			// creating configuration directory
+			if err := createCFGDirIfNotExist(); err != nil {
+				log.Fatal().Err(err).
+					Msg("creating cfg directory")
+			}
+
 			// set default config
 			cfg = defaultConfig()
 			data, err := toml.Marshal(cfg)
@@ -106,8 +124,15 @@ func New() Config {
 			return
 		}
 
-		cfg.Pubsub = defaultPubsubConfig(PUBSUB_MAX_WORKER, PUBSUB_MAX_BUFFER_CAPACITY)
+		cfg.Pubsub = defaultPubsubConfig(CONST.PUBSUB_MAX_WORKER, CONST.PUBSUB_MAX_BUFFER_CAPACITY)
 		cfg.External.Coma.Websocket = defaultExternalComaWSConnection(cfg.Application.Port)
+		cfg.Auth.User.PrivateKey = readRSAPrivateKey()
+		cfg.Auth.User.PublicKey = readRSAPublicKey()
+
+		if cfg.Auth.User.PrivateKey == nil || cfg.Auth.User.PublicKey == nil {
+			log.Fatal().Msg("PrivateKey or PublicKey is empty")
+			return
+		}
 	})
 
 	return cfg

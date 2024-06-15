@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"crypto/rsa"
 	"errors"
 	"net/http"
 	"time"
@@ -109,7 +110,7 @@ func (s *UserAuthService) GenerateToken(ctx context.Context, request dto.Request
 	localUserAccessToken := user.LocalUserAuthToken(entity.AccessToken, s.config.Auth.User.AccessTokenDuration)
 	localUserRefreshToken := user.LocalUserAuthToken(entity.AccessToken, s.config.Auth.User.RefreshTokenDuration)
 
-	accessToken, err := localUserAccessToken.GenerateToken(s.config.Auth.User.AccessTokenKey)
+	accessToken, err := localUserAccessToken.GenerateJWTToken(s.config.Auth.User.PrivateKey)
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -117,14 +118,7 @@ func (s *UserAuthService) GenerateToken(ctx context.Context, request dto.Request
 		return dto.ResponseGenerateToken{}, internalerrors.NewError(err)
 	}
 
-	refreshToken, err := localUserRefreshToken.GenerateToken(s.config.Auth.User.RefreshTokenKey)
-	if err != nil {
-		log.Error().
-			Err(err).
-			Msg("[ValidateToken.GenerateToken] error generate refresh token")
-		return dto.ResponseGenerateToken{}, internalerrors.NewError(err)
-	}
-
+	refreshToken := localUserRefreshToken.GenerateUuidToken()
 	userAuth := entity.CreateUserAuth(user.Id)
 	userAuth.AccessToken = accessToken
 	userAuth.RefreshToken = refreshToken
@@ -148,13 +142,12 @@ func (s *UserAuthService) GenerateToken(ctx context.Context, request dto.Request
 }
 
 func (s *UserAuthService) ExtractToken(ctx context.Context, req dto.RequestValidateToken) (dto.ResponseExtractedToken, error) {
-	var key string
+	var key *rsa.PublicKey
 
 	switch req.TokenType {
-	case entity.AccessToken:
-		key = s.config.Auth.User.AccessTokenKey
-	case entity.RefreshToken:
-		key = s.config.Auth.User.RefreshTokenKey
+	case entity.AccessToken,
+		entity.RefreshToken:
+		key = s.config.Auth.User.PublicKey
 	default:
 		return dto.ResponseExtractedToken{}, errors.New("err: token type is not valid")
 	}

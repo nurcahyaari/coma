@@ -136,12 +136,6 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// creating configuration
-	if err := config.CreateBaseDir(ctx); err != nil {
-		log.Fatal().Err(err).
-			Msg("creating base directory")
-	}
-
 	cfg := config.New()
 
 	c := initDependencies(cfg)
