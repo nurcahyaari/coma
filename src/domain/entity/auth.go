@@ -1,8 +1,10 @@
 package entity
 
 import (
+	"crypto/rsa"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -96,10 +98,15 @@ type LocalUserAuthToken struct {
 	UserType string    `json:"userType"`
 }
 
-func NewLocalUserAuthTokenFromToken(token, key string) (LocalUserAuthToken, error) {
+func NewLocalUserAuthTokenFromToken(token string, key *rsa.PublicKey) (LocalUserAuthToken, error) {
 	localUserAuthToken := LocalUserAuthToken{}
+
 	jwtToken, err := jwt.ParseWithClaims(token, &localUserAuthToken, func(t *jwt.Token) (interface{}, error) {
-		return []byte(key), nil
+		if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+		}
+
+		return key, nil
 	})
 	if err != nil {
 		return localUserAuthToken, err
@@ -112,14 +119,18 @@ func NewLocalUserAuthTokenFromToken(token, key string) (LocalUserAuthToken, erro
 	return localUserAuthToken, nil
 }
 
-func (a LocalUserAuthToken) GenerateToken(key string) (string, error) {
-	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, a)
-	token, err := jwtToken.SignedString([]byte(key))
+func (a LocalUserAuthToken) GenerateJWTToken(key *rsa.PrivateKey) (string, error) {
+	jwtToken := jwt.NewWithClaims(jwt.SigningMethodRS256, a)
+	token, err := jwtToken.SignedString(key)
 	if err != nil {
 		return "", err
 	}
 
 	return token, nil
+}
+
+func (a LocalUserAuthToken) GenerateUuidToken() string {
+	return uuid.New().String()
 }
 
 func (a LocalUserAuthToken) ValidTokenType(tokenType TokenType) bool {

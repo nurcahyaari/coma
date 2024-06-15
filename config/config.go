@@ -1,6 +1,7 @@
 package config
 
 import (
+	"crypto/rsa"
 	"os"
 	"path/filepath"
 	"sync"
@@ -67,10 +68,12 @@ type Config struct {
 
 	Auth struct {
 		User struct {
-			AccessTokenKey       string        `toml:"ACCESS_TOKEN_KEY"`
-			RefreshTokenKey      string        `toml:"REFRESH_TOKEN_KEY"`
-			AccessTokenDuration  time.Duration `toml:"ACCESS_TOKEN_DURATION"`
-			RefreshTokenDuration time.Duration `toml:"REFRESH_TOKEN_DURATION"`
+			PublicKeyLocation    string          `toml:"PUBLIC_KEY_LOCATION"`
+			PrivateKeyLocation   string          `toml:"PRIVATE_KEY_LOCATION"`
+			PrivateKey           *rsa.PrivateKey `toml:"-"`
+			PublicKey            *rsa.PublicKey  `toml:"-"`
+			AccessTokenDuration  time.Duration   `toml:"ACCESS_TOKEN_DURATION"`
+			RefreshTokenDuration time.Duration   `toml:"REFRESH_TOKEN_DURATION"`
 		}
 	}
 }
@@ -82,10 +85,10 @@ func New() Config {
 	initConst()
 
 	doOnce.Do(func() {
-		// check and create db dir
-		if err := createDBDirIfNotExist(); err != nil {
+		// check and create storage dir
+		if err := createStorageDirIfNotExist(); err != nil {
 			log.Fatal().Err(err).
-				Msg("creating db directory")
+				Msg("creating data directory")
 			return
 		}
 
@@ -123,6 +126,13 @@ func New() Config {
 
 		cfg.Pubsub = defaultPubsubConfig(CONST.PUBSUB_MAX_WORKER, CONST.PUBSUB_MAX_BUFFER_CAPACITY)
 		cfg.External.Coma.Websocket = defaultExternalComaWSConnection(cfg.Application.Port)
+		cfg.Auth.User.PrivateKey = readRSAPrivateKey()
+		cfg.Auth.User.PublicKey = readRSAPublicKey()
+
+		if cfg.Auth.User.PrivateKey == nil || cfg.Auth.User.PublicKey == nil {
+			log.Fatal().Msg("PrivateKey or PublicKey is empty")
+			return
+		}
 	})
 
 	return cfg

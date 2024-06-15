@@ -11,7 +11,7 @@ import (
 
 func TestLocalUserAuthToken(t *testing.T) {
 	t.Run("full token", func(t *testing.T) {
-		Key := "12345"
+		// Key := "12345"
 
 		now := time.Now()
 		localUserAuthToken := entity.LocalUserAuthToken{
@@ -24,19 +24,19 @@ func TestLocalUserAuthToken(t *testing.T) {
 			UserType: "admin",
 		}
 
-		token, err := localUserAuthToken.GenerateToken(Key)
+		token, err := localUserAuthToken.GenerateJWTToken(nil)
 
 		assert.NoError(t, err)
 		assert.NotEqual(t, "", token)
 
-		parseLocalUserAuthToken, err := entity.NewLocalUserAuthTokenFromToken(token, Key)
+		parseLocalUserAuthToken, err := entity.NewLocalUserAuthTokenFromToken(token, nil)
 		assert.NoError(t, err)
 		assert.Equal(t, localUserAuthToken, parseLocalUserAuthToken)
 	})
 
 	t.Run("empty token", func(t *testing.T) {
-		Key := "12345"
-		_, err := entity.NewLocalUserAuthTokenFromToken("", Key)
+		// Key := "12345"
+		_, err := entity.NewLocalUserAuthTokenFromToken("", nil)
 		assert.Error(t, err)
 	})
 }
