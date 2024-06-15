@@ -5,13 +5,15 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/nurcahyaari/coma/config"
 	"github.com/nurcahyaari/coma/src/domain/entity"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestLocalUserAuthToken(t *testing.T) {
 	t.Run("full token", func(t *testing.T) {
-		// Key := "12345"
+
+		privateKey, _ := config.CreateDefaultRSAPrivateKey()
 
 		now := time.Now()
 		localUserAuthToken := entity.LocalUserAuthToken{
@@ -24,19 +26,19 @@ func TestLocalUserAuthToken(t *testing.T) {
 			UserType: "admin",
 		}
 
-		token, err := localUserAuthToken.GenerateJWTToken(nil)
+		token, err := localUserAuthToken.GenerateJWTToken(privateKey)
 
 		assert.NoError(t, err)
 		assert.NotEqual(t, "", token)
 
-		parseLocalUserAuthToken, err := entity.NewLocalUserAuthTokenFromToken(token, nil)
+		parseLocalUserAuthToken, err := entity.NewLocalUserAuthTokenFromToken(token, &privateKey.PublicKey)
 		assert.NoError(t, err)
 		assert.Equal(t, localUserAuthToken, parseLocalUserAuthToken)
 	})
 
 	t.Run("empty token", func(t *testing.T) {
-		// Key := "12345"
-		_, err := entity.NewLocalUserAuthTokenFromToken("", nil)
+		privateKey, _ := config.CreateDefaultRSAPrivateKey()
+		_, err := entity.NewLocalUserAuthTokenFromToken("", &privateKey.PublicKey)
 		assert.Error(t, err)
 	})
 }

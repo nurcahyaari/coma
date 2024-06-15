@@ -23,7 +23,7 @@ func createDefaultRSAIfNotExist() error {
 		return nil
 	}
 
-	privateRsaKey, err := createDefaultRSAPrivateKey()
+	privateRsaKey, err := CreateDefaultRSAPrivateKey()
 	if err != nil {
 		return err
 	}
@@ -57,8 +57,12 @@ func createDefaultRSAIfNotExist() error {
 	return nil
 }
 
-func createDefaultRSAPrivateKey() (*rsa.PrivateKey, error) {
-	privateKey, err := rsa.GenerateKey(rand.Reader, CONST.DEFAULT_RSA_BITSIZE)
+func CreateDefaultRSAPrivateKey() (*rsa.PrivateKey, error) {
+	bitSize := 1028
+	if CONST.DEFAULT_RSA_BITSIZE != 0 {
+		bitSize = CONST.DEFAULT_RSA_BITSIZE
+	}
+	privateKey, err := rsa.GenerateKey(rand.Reader, bitSize)
 	if err != nil {
 		return nil, err
 	}
