@@ -183,7 +183,7 @@ func (s *ApplicationKeyService) GenerateOrUpdateApplicationKey(ctx context.Conte
 		log.Error().
 			Err(err).
 			Msg("[GenerateOrUpdateApplicationKey] error create or save application key")
-		return response, err
+		return response, internalerrors.New(err)
 	}
 
 	response = dto.ResponseCreateApplicationKey{

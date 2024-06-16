@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"net/http"
 
 	"github.com/nurcahyaari/coma/config"
 	"github.com/nurcahyaari/coma/container"
@@ -108,7 +109,9 @@ func (s *ApplicationConfigurationService) SetConfiguration(ctx context.Context, 
 			Err(err).
 			Str("field", req.Field).
 			Msg("[SetConfiguration] error duplicate field name")
-		return dto.ResponseSetConfiguration{}, internalerrors.New(errors.New("err: duplicate field name"))
+		return dto.ResponseSetConfiguration{}, internalerrors.New(
+			errors.New("err: duplicate field name"),
+			internalerrors.SetErrorCode(http.StatusConflict))
 	}
 
 	insertedId, err := s.writerRepo.SetConfiguration(ctx, configuration)
@@ -144,7 +147,7 @@ func (s *ApplicationConfigurationService) UpdateConfiguration(ctx context.Contex
 			Err(err).
 			Str("field", req.Field).
 			Msg("[UpdateConfiguration] error configuration is empty")
-		return internalerrors.New(errors.New("err: configuration is empty"))
+		return internalerrors.New(errors.New("err: configuration is empty"), internalerrors.SetErrorCode(http.StatusNotFound))
 	}
 
 	var (
@@ -247,7 +250,7 @@ func (s *ApplicationConfigurationService) DistributeConfiguration(ctx context.Co
 		err = errors.New("err: data is empty")
 		log.Error().Err(err).
 			Msg("[distributeConfiguration.GetConfigurationViewTypeJSON] data is empty")
-		return internalerrors.New(err)
+		return internalerrors.New(err, internalerrors.SetErrorCode(http.StatusNotFound))
 	}
 
 	err = s.comaClient.Send(coma.RequestSendMessage{
