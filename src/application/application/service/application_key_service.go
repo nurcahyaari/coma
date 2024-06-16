@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"net/http"
 
 	"github.com/nurcahyaari/coma/config"
 	"github.com/nurcahyaari/coma/container"
@@ -50,15 +51,15 @@ func (s *ApplicationKeyService) IsExistsApplicationKey(ctx context.Context, requ
 		log.Error().
 			Err(err).
 			Msg("[FindApplicationKey.FindApplicationKey] error find application key")
-		return response, internalerrors.NewError(err)
+		return response, internalerrors.New(err)
 	}
 
 	if applicationKey.Id == "" {
 		err = errors.New("err: application key doesn't exists")
 		log.Error().
-			Err(errors.New("application key doesn't found")).
-			Msg("[FindApplicationKey.FindApplicationKey] error application key doesn't found")
-		return response, internalerrors.NewError(err)
+			Err(errors.New("application key not found")).
+			Msg("[FindApplicationKey.FindApplicationKey] error application key not found")
+		return response, internalerrors.New(err, internalerrors.SetErrorCode(http.StatusNotFound))
 	}
 
 	response = true
@@ -75,7 +76,7 @@ func (s *ApplicationKeyService) FindApplicationKey(ctx context.Context, request 
 	)
 
 	if err := request.Validate(); err != nil {
-		return response, internalerrors.NewError(
+		return response, internalerrors.New(
 			err,
 			internalerrors.SetErrorSource(internalerrors.OZZO_VALIDATION_ERR))
 	}
@@ -91,14 +92,14 @@ func (s *ApplicationKeyService) FindApplicationKey(ctx context.Context, request 
 			log.Error().
 				Err(err).
 				Msg("[GenerateOrUpdateApplicationKey.FindApplications] error find application")
-			return nil, internalerrors.NewError(err)
+			return nil, internalerrors.New(err)
 		}
 		if !exist {
-			err = errors.New("err: application doesn't found")
+			err = errors.New("err: application not found")
 			log.Error().
 				Err(err).
-				Msg("[GenerateOrUpdateApplicationKey.FindApplications] error: application doesn't found")
-			return nil, internalerrors.NewError(err)
+				Msg("[GenerateOrUpdateApplicationKey.FindApplications] error: application not found")
+			return nil, internalerrors.New(err, internalerrors.SetErrorCode(http.StatusNotFound))
 		}
 
 		return &resp, nil
@@ -110,7 +111,7 @@ func (s *ApplicationKeyService) FindApplicationKey(ctx context.Context, request 
 			log.Error().
 				Err(err).
 				Msg("[FindApplicationKey.FindApplicationKey] error find application key")
-			return nil, internalerrors.NewError(err)
+			return nil, internalerrors.New(err)
 		}
 		return &resp, nil
 	})
@@ -120,7 +121,7 @@ func (s *ApplicationKeyService) FindApplicationKey(ctx context.Context, request 
 		log.Error().
 			Errs("routine error", rtn.Errors()).
 			Msg("[GenerateOrUpdateApplicationKey] eror on goroutine")
-		return response, internalerrors.NewError(rtn.Error())
+		return response, internalerrors.New(rtn.Error())
 	}
 
 	response = dto.NewResponseFindApplicationKey(applicationKey)
@@ -137,7 +138,7 @@ func (s *ApplicationKeyService) GenerateOrUpdateApplicationKey(ctx context.Conte
 	)
 
 	if err := request.Validate(); err != nil {
-		return response, internalerrors.NewError(
+		return response, internalerrors.New(
 			err,
 			internalerrors.SetErrorSource(internalerrors.OZZO_VALIDATION_ERR))
 	}
@@ -156,14 +157,14 @@ func (s *ApplicationKeyService) GenerateOrUpdateApplicationKey(ctx context.Conte
 			log.Error().
 				Err(err).
 				Msg("[GenerateOrUpdateApplicationKey.FindApplications] error find application")
-			return nil, internalerrors.NewError(err)
+			return nil, internalerrors.New(err)
 		}
 		if !exist {
-			err = errors.New("err: application doesn't found")
+			err = errors.New("err: application not found")
 			log.Error().
 				Err(err).
-				Msg("[GenerateOrUpdateApplicationKey.FindApplications] error: application doesn't found")
-			return nil, internalerrors.NewError(err)
+				Msg("[GenerateOrUpdateApplicationKey.FindApplications] error: application not found")
+			return nil, internalerrors.New(err, internalerrors.SetErrorCode(http.StatusNotFound))
 		}
 
 		return &resp, nil
@@ -174,7 +175,7 @@ func (s *ApplicationKeyService) GenerateOrUpdateApplicationKey(ctx context.Conte
 		log.Error().
 			Errs("routine error", rtn.Errors()).
 			Msg("[GenerateOrUpdateApplicationKey] eror on goroutine")
-		return response, internalerrors.NewError(rtn.Error())
+		return response, internalerrors.New(rtn.Error())
 	}
 
 	err := s.writer.CreateOrSaveApplicationKey(ctx, applicationKey)
@@ -182,7 +183,7 @@ func (s *ApplicationKeyService) GenerateOrUpdateApplicationKey(ctx context.Conte
 		log.Error().
 			Err(err).
 			Msg("[GenerateOrUpdateApplicationKey] error create or save application key")
-		return response, err
+		return response, internalerrors.New(err)
 	}
 
 	response = dto.ResponseCreateApplicationKey{

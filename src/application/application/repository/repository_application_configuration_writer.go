@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/nurcahyaari/coma/infrastructure/database"
+	internalerrors "github.com/nurcahyaari/coma/internal/x/errors"
 	"github.com/nurcahyaari/coma/src/domain/entity"
 	"github.com/nurcahyaari/coma/src/domain/repository"
 	"github.com/ostafen/clover"
-	"github.com/rs/zerolog/log"
 )
 
 type RepositoryApplicationConfigurationWrite struct {
@@ -26,6 +26,7 @@ func NewApplicationConfigurationRepositoryWriter(db *database.Clover, name strin
 func (r *RepositoryApplicationConfigurationWrite) SetConfiguration(ctx context.Context, data entity.Configuration) (string, error) {
 	dataMap, err := data.MapStringInterface()
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return "", err
 	}
 	doc := clover.NewDocument()
@@ -33,6 +34,7 @@ func (r *RepositoryApplicationConfigurationWrite) SetConfiguration(ctx context.C
 
 	lastId, err := r.db.DB.InsertOne(r.dbName, doc)
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return "", err
 	}
 
@@ -44,6 +46,9 @@ func (r *RepositoryApplicationConfigurationWrite) DeleteConfiguration(ctx contex
 		Query(r.dbName).
 		Where(filter.Filter()).
 		Delete()
+	if err != nil {
+		internalerrors.StackTrace(err)
+	}
 
 	return err
 }
@@ -51,8 +56,7 @@ func (r *RepositoryApplicationConfigurationWrite) DeleteConfiguration(ctx contex
 func (r *RepositoryApplicationConfigurationWrite) UpdateConfiguration(ctx context.Context, data entity.Configuration) error {
 	dataMap, err := data.MapStringInterface()
 	if err != nil {
-		log.Error().Err(err).
-			Msg("[UpdateConfiguration] error on create map string interface")
+		internalerrors.StackTrace(err)
 		return err
 	}
 
@@ -61,8 +65,7 @@ func (r *RepositoryApplicationConfigurationWrite) UpdateConfiguration(ctx contex
 		Where(data.FilterConfiguration().Filter()).
 		Update(dataMap)
 	if err != nil {
-		log.Error().Err(err).
-			Msg("[UpdateConfiguration] error on delete configuration")
+		internalerrors.StackTrace(err)
 		return err
 	}
 

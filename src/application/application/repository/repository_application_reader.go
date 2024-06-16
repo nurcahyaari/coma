@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/nurcahyaari/coma/infrastructure/database"
+	internalerrors "github.com/nurcahyaari/coma/internal/x/errors"
 	"github.com/nurcahyaari/coma/src/domain/entity"
 	"github.com/nurcahyaari/coma/src/domain/repository"
 )
@@ -24,6 +25,7 @@ func NewRepositoryApplicationReader(db *database.Clover, name string) repository
 func (r *RepositoryApplicationRead) FindApplication(ctx context.Context, filter entity.FilterApplication) (entity.Application, bool, error) {
 	applications, err := r.FindApplications(ctx, filter)
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return entity.Application{}, false, err
 	}
 	if len(applications) == 0 {
@@ -41,6 +43,7 @@ func (r *RepositoryApplicationRead) FindApplications(ctx context.Context, filter
 		Where(filter.Filter()).
 		FindAll()
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return nil, err
 	}
 
@@ -48,6 +51,7 @@ func (r *RepositoryApplicationRead) FindApplications(ctx context.Context, filter
 		application := entity.Application{}
 		err := doc.Unmarshal(&application)
 		if err != nil {
+			internalerrors.StackTrace(err)
 			return nil, err
 		}
 		applications = append(applications, application)

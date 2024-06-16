@@ -25,7 +25,7 @@ func TestErrorAsObject(t *testing.T) {
 			actual: func() any {
 				add := Address{}
 				err := add.Validate()
-				err = internalerror.NewError(err,
+				err = internalerror.New(err,
 					internalerror.SetErrorSource(internalerror.OZZO_VALIDATION_ERR))
 				errCustom := err.(*internalerror.Error)
 				return errCustom.ErrorAsObject()
@@ -37,7 +37,7 @@ func TestErrorAsObject(t *testing.T) {
 				"": "Name cannot be blank",
 			},
 			actual: func() any {
-				err := internalerror.NewError(errors.New("Name cannot be blank"),
+				err := internalerror.New(errors.New("Name cannot be blank"),
 					internalerror.SetErrorSource(internalerror.PLAIN_ERR_TEXT))
 				errCustom := err.(*internalerror.Error)
 				return errCustom.ErrorAsObject()
@@ -49,7 +49,7 @@ func TestErrorAsObject(t *testing.T) {
 				"Name": "cannot be blank",
 			},
 			actual: func() any {
-				err := internalerror.NewError(errors.New("Name cannot be blank"),
+				err := internalerror.New(errors.New("Name cannot be blank"),
 					internalerror.SetErrorSource(internalerror.PLAIN_ERR_TEXT),
 					internalerror.WithField(true))
 				errCustom := err.(*internalerror.Error)
@@ -60,7 +60,7 @@ func TestErrorAsObject(t *testing.T) {
 			name:     "test4 - without source",
 			expected: errors.New("Name cannot be blank"),
 			actual: func() any {
-				err := internalerror.NewError(errors.New("Name cannot be blank"))
+				err := internalerror.New(errors.New("Name cannot be blank"))
 				errCustom := err.(*internalerror.Error)
 				return errCustom.ErrorAsObject()
 			},

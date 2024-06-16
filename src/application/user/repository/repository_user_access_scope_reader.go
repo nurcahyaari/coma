@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/nurcahyaari/coma/infrastructure/database"
+	internalerrors "github.com/nurcahyaari/coma/internal/x/errors"
 	"github.com/nurcahyaari/coma/src/domain/entity"
 	"github.com/nurcahyaari/coma/src/domain/repository"
 )
@@ -30,6 +31,7 @@ func (r *RepositoryUserApplicationScopeRead) FindUserApplicationScope(ctx contex
 
 	userApplicationsScope, err := r.FindUserApplicationsScope(ctx, filter)
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return userApplicationScope, false, err
 	}
 	if len(userApplicationsScope) == 0 {
@@ -48,12 +50,14 @@ func (r *RepositoryUserApplicationScopeRead) FindUserApplicationsScope(ctx conte
 		Where(filter.Filter()).
 		FindAll()
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return userApplicationsScope, err
 	}
 
 	for _, doc := range docs {
 		userApplicationScope := entity.UserApplicationScope{}
 		if err := doc.Unmarshal(&userApplicationScope); err != nil {
+			internalerrors.StackTrace(err)
 			return userApplicationsScope, err
 		}
 

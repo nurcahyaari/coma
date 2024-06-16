@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/nurcahyaari/coma/infrastructure/database"
+	internalerrors "github.com/nurcahyaari/coma/internal/x/errors"
 	"github.com/nurcahyaari/coma/src/domain/entity"
 	"github.com/nurcahyaari/coma/src/domain/repository"
 	"github.com/ostafen/clover"
@@ -25,6 +26,7 @@ func NewRepositoryApplicationKeyWriter(db *database.Clover, name string) reposit
 func (r *RepositoryApplicationKeyWrite) CreateOrSaveApplicationKey(ctx context.Context, data entity.ApplicationKey) error {
 	dataMap, err := data.MapStringInterface()
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return err
 	}
 
@@ -33,6 +35,7 @@ func (r *RepositoryApplicationKeyWrite) CreateOrSaveApplicationKey(ctx context.C
 
 	_, err = r.db.DB.InsertOne(r.dbName, doc)
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return err
 	}
 

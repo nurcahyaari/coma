@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/nurcahyaari/coma/infrastructure/database"
+	internalerrors "github.com/nurcahyaari/coma/internal/x/errors"
 	"github.com/nurcahyaari/coma/src/domain/entity"
 	"github.com/nurcahyaari/coma/src/domain/repository"
 	"github.com/ostafen/clover"
@@ -25,6 +26,7 @@ func NewRepositoryUserWriter(name string, db *database.Clover) repository.Reposi
 func (r *RepositoryUserWrite) SaveUser(ctx context.Context, user entity.User) error {
 	dataMap, err := user.MapStringInterface()
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return err
 	}
 
@@ -33,6 +35,7 @@ func (r *RepositoryUserWrite) SaveUser(ctx context.Context, user entity.User) er
 
 	_, err = r.db.DB.InsertOne(r.name, doc)
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return err
 	}
 
@@ -44,6 +47,7 @@ func (r *RepositoryUserWrite) DeleteUser(ctx context.Context, filter entity.Filt
 		Where(filter.Filter()).
 		Delete()
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return err
 	}
 
@@ -53,12 +57,14 @@ func (r *RepositoryUserWrite) DeleteUser(ctx context.Context, filter entity.Filt
 func (r *RepositoryUserWrite) UpdateUser(ctx context.Context, user entity.User) error {
 	dataMap, err := user.MapStringInterface()
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return err
 	}
 
 	err = r.db.DB.Query(r.name).
 		UpdateById(user.Id, dataMap)
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return err
 	}
 

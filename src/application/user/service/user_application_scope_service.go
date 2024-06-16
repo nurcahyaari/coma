@@ -5,6 +5,7 @@ import (
 
 	"github.com/nurcahyaari/coma/config"
 	"github.com/nurcahyaari/coma/container"
+	internalerrors "github.com/nurcahyaari/coma/internal/x/errors"
 	"github.com/nurcahyaari/coma/src/application/user/dto"
 	"github.com/nurcahyaari/coma/src/domain/entity"
 	"github.com/nurcahyaari/coma/src/domain/repository"
@@ -34,7 +35,7 @@ func (s *UserApplicationScopeService) InternalFindUserApplicationScope(ctx conte
 		log.Error().
 			Err(err).
 			Msg("[InternalFindUserApplicationScope.FindUserApplicationScope] err: failed to find user access scope")
-		return entity.UserApplicationScope{}, false, err
+		return entity.UserApplicationScope{}, false, internalerrors.New(err)
 	}
 
 	return userApplicationScope, exists, nil
@@ -46,7 +47,7 @@ func (s *UserApplicationScopeService) FindUserApplicationsScope(ctx context.Cont
 		log.Error().
 			Err(err).
 			Msg("[FindUserApplicationScope.InternalFindUserApplicationScope] err: failed to find user access scope")
-		return dto.ResponseUserApplicationsScope{}, err
+		return dto.ResponseUserApplicationsScope{}, internalerrors.New(err)
 	}
 
 	return dto.NewResponseUserApplicationsScope(userApplicationScope), nil
@@ -84,7 +85,7 @@ func (s *UserApplicationScopeService) UpsetUserApplicationScope(ctx context.Cont
 		log.Error().
 			Err(err).
 			Msg("[UpsetUserApplicationScope.SaveUserApplicationScope] err: failed to save user access scope")
-		return err
+		return internalerrors.New(err)
 	}
 
 	return nil

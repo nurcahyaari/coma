@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/nurcahyaari/coma/internal/x/file"
-	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -83,7 +82,7 @@ func NewConstObject() ConstObject {
 func NewDevelopmentConstObject() ConstObject {
 	wd, err := os.Getwd()
 	if err != nil {
-		log.Fatal().Err(err)
+		panic(err)
 	}
 
 	wd = filepath.Join(wd, "temporary_storage")

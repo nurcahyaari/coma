@@ -44,25 +44,35 @@ func (s *UserAuthService) ValidateToken(ctx context.Context, request dto.Request
 		log.Error().
 			Err(err).
 			Msg("[ValidateToken.FindTokenByAccessToken] error find user access token")
-		return dto.ResponseValidateKey{}, errors.New("err: token doesn't found")
+		return dto.ResponseValidateKey{}, internalerrors.New(
+			errors.New("err: token not found"),
+			internalerrors.SetErrorCode(http.StatusUnauthorized))
 	}
 	if userToken == nil {
-		return dto.ResponseValidateKey{}, errors.New("err: token doesn't found")
+		return dto.ResponseValidateKey{}, internalerrors.New(
+			errors.New("err: token not found"),
+			internalerrors.SetErrorCode(http.StatusUnauthorized))
 	}
 
 	switch request.TokenType {
 	case entity.AccessToken:
 		now := time.Now()
 		if userToken.AccessTokenExpired(now) {
-			return dto.ResponseValidateKey{}, errors.New("err: token has expired")
+			return dto.ResponseValidateKey{}, internalerrors.New(
+				errors.New("err: token has expired"),
+				internalerrors.SetErrorCode(http.StatusUnauthorized))
 		}
 	case entity.RefreshToken:
 		now := time.Now()
 		if userToken.RefreshTokenExpired(now) {
-			return dto.ResponseValidateKey{}, errors.New("err: refresh token has expired")
+			return dto.ResponseValidateKey{}, internalerrors.New(
+				errors.New("err: refresh token has expired"),
+				internalerrors.SetErrorCode(http.StatusUnauthorized))
 		}
 	default:
-		return dto.ResponseValidateKey{}, errors.New("err: token type doesn't valid")
+		return dto.ResponseValidateKey{}, internalerrors.New(
+			errors.New("err: token type doesn't valid"),
+			internalerrors.SetErrorCode(http.StatusUnauthorized))
 	}
 
 	return dto.ResponseValidateKey{
@@ -78,20 +88,26 @@ func (s *UserAuthService) GenerateToken(ctx context.Context, request dto.Request
 		log.Error().
 			Err(err).
 			Msg("[ValidateToken.FindTokenByAccessToken] error find user access token")
-		return dto.ResponseGenerateToken{}, internalerrors.NewError(err)
+		return dto.ResponseGenerateToken{}, internalerrors.New(
+			err,
+			internalerrors.SetErrorCode(http.StatusUnauthorized))
 	}
 	if user.Empty() {
 		log.Warn().
 			Err(err).
 			Msg("[ValidateToken.FindTokenByAccessToken] error find user access token user not found")
-		return dto.ResponseGenerateToken{}, internalerrors.NewError(errors.New("err: user not found"), internalerrors.SetErrorCode(http.StatusNotFound))
+		return dto.ResponseGenerateToken{}, internalerrors.New(
+			errors.New("err: user not found"),
+			internalerrors.SetErrorCode(http.StatusNotFound))
 	}
 
 	if err := user.ComparePassword(request.Secret); err != nil {
 		log.Warn().
 			Err(err).
 			Msg("[ValidateToken.ComparePassword] error password didn't match")
-		return dto.ResponseGenerateToken{}, internalerrors.NewError(errors.New("err: password didn't match"), internalerrors.SetErrorCode(http.StatusNotFound))
+		return dto.ResponseGenerateToken{}, internalerrors.New(
+			errors.New("err: password didn't match"),
+			internalerrors.SetErrorCode(http.StatusNotFound))
 	}
 
 	userToken, _ := s.reader.FindTokenBy(ctx, entity.FilterUserAuth{
@@ -115,7 +131,7 @@ func (s *UserAuthService) GenerateToken(ctx context.Context, request dto.Request
 		log.Error().
 			Err(err).
 			Msg("[ValidateToken.GenerateToken] error generate access token")
-		return dto.ResponseGenerateToken{}, internalerrors.NewError(err)
+		return dto.ResponseGenerateToken{}, internalerrors.New(err)
 	}
 
 	refreshToken := localUserRefreshToken.GenerateUuidToken()
@@ -130,7 +146,7 @@ func (s *UserAuthService) GenerateToken(ctx context.Context, request dto.Request
 		log.Error().
 			Err(err).
 			Msg("[ValidateToken.CreateUserToken] error save user auth to db")
-		return dto.ResponseGenerateToken{}, internalerrors.NewError(err)
+		return dto.ResponseGenerateToken{}, internalerrors.New(err)
 	}
 
 	return dto.ResponseGenerateToken{
@@ -149,7 +165,7 @@ func (s *UserAuthService) ExtractToken(ctx context.Context, req dto.RequestValid
 		entity.RefreshToken:
 		key = s.config.Auth.User.PublicKey
 	default:
-		return dto.ResponseExtractedToken{}, errors.New("err: token type is not valid")
+		return dto.ResponseExtractedToken{}, internalerrors.New(errors.New("err: token type is not valid"))
 	}
 
 	localUserAuthToken, err := entity.NewLocalUserAuthTokenFromToken(req.Token, key)
@@ -157,13 +173,13 @@ func (s *UserAuthService) ExtractToken(ctx context.Context, req dto.RequestValid
 		log.Error().
 			Err(err).
 			Msg("[ExtractToken.NewLocalUserAuthTokenFromToken] error token is not valid")
-		return dto.ResponseExtractedToken{}, internalerrors.NewError(err)
+		return dto.ResponseExtractedToken{}, internalerrors.New(err)
 	}
 
 	if !localUserAuthToken.ValidTokenType(req.TokenType) {
 		log.Warn().
 			Msg("[ExtractToken.ValidTokenType] error token is mismatch")
-		return dto.ResponseExtractedToken{}, internalerrors.NewError(errors.New("err: token type is mismatch"))
+		return dto.ResponseExtractedToken{}, internalerrors.New(errors.New("err: token type is mismatch"))
 	}
 
 	return dto.ResponseExtractedToken{
@@ -181,7 +197,7 @@ func (s *UserAuthService) ValidateUserScope(ctx context.Context, req dto.Request
 		log.Error().
 			Err(err).
 			Msg("[ValidateUserScope.InternalFindUser] error user id is not found")
-		return dto.ResponseValidateKey{}, internalerrors.NewError(err)
+		return dto.ResponseValidateKey{}, internalerrors.New(err)
 	}
 
 	if user.UserAdmin() {
@@ -212,14 +228,14 @@ func (s *UserAuthService) ValidateUserApplicationScope(ctx context.Context, req 
 		log.Error().
 			Err(err).
 			Msg("[ValidateUserApplicationScope.InternalFindUserApplicationScope] error")
-		return dto.ResponseValidateKey{}, internalerrors.NewError(err)
+		return dto.ResponseValidateKey{}, internalerrors.New(err)
 	}
 	if !exist {
-		err := errors.New("err: user application scope is not exist")
+		err := internalerrors.New(errors.New("err: user application scope is not exist"))
 		log.Error().
 			Err(err).
 			Msg("[ValidateUserApplicationScope.InternalFindUserApplicationScope] error user application scope is not found")
-		return dto.ResponseValidateKey{}, internalerrors.NewError(err)
+		return dto.ResponseValidateKey{}, internalerrors.New(err)
 	}
 
 	if userApplicationScope.Rbac == nil {

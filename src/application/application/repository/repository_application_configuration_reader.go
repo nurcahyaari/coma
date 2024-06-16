@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/nurcahyaari/coma/infrastructure/database"
+	internalerrors "github.com/nurcahyaari/coma/internal/x/errors"
 	"github.com/nurcahyaari/coma/src/domain/entity"
 	"github.com/nurcahyaari/coma/src/domain/repository"
 )
@@ -29,6 +30,7 @@ func (r *RepositoryApplicationConfigurationRead) FindClientConfiguration(ctx con
 		Where(filter.Filter()).
 		FindAll()
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return nil, err
 	}
 
@@ -36,6 +38,7 @@ func (r *RepositoryApplicationConfigurationRead) FindClientConfiguration(ctx con
 		configuration := entity.Configuration{}
 		err := doc.Unmarshal(&configuration)
 		if err != nil {
+			internalerrors.StackTrace(err)
 			return nil, err
 		}
 		configurations = append(configurations, configuration)

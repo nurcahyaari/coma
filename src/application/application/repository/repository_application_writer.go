@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/nurcahyaari/coma/infrastructure/database"
+	internalerrors "github.com/nurcahyaari/coma/internal/x/errors"
 	"github.com/nurcahyaari/coma/src/domain/entity"
 	"github.com/nurcahyaari/coma/src/domain/repository"
 	"github.com/ostafen/clover"
@@ -25,6 +26,7 @@ func NewRepositoryApplicationWriter(db *database.Clover, name string) repository
 func (r *RepositoryApplicationWrite) CreateApplication(ctx context.Context, data entity.Application) error {
 	dataMap, err := data.MapStringInterface()
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return err
 	}
 
@@ -33,6 +35,7 @@ func (r *RepositoryApplicationWrite) CreateApplication(ctx context.Context, data
 
 	_, err = r.db.DB.InsertOne(r.dbName, doc)
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return err
 	}
 
@@ -40,8 +43,14 @@ func (r *RepositoryApplicationWrite) CreateApplication(ctx context.Context, data
 }
 
 func (r *RepositoryApplicationWrite) DeleteApplication(ctx context.Context, filter entity.FilterApplication) error {
-	return r.db.DB.
+	err := r.db.DB.
 		Query(r.dbName).
 		Where(filter.Filter()).
 		Delete()
+
+	if err != nil {
+		internalerrors.StackTrace(err)
+	}
+
+	return err
 }

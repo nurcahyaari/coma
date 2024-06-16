@@ -56,6 +56,7 @@ require (
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
 	github.com/urfave/cli/v2 v2.3.0 // indirect
+	github.com/ztrue/tracerr v0.4.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/mod v0.16.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect

@@ -66,10 +66,13 @@ func SetErrorCode(code int) ErrorOpt {
 	}
 }
 
-func NewError(err error, opts ...ErrorOpt) error {
+// New will create an error object
+// it also will print the stack trace
+func New(err error, opts ...ErrorOpt) error {
 	if err == nil {
 		return nil
 	}
+
 	resp := &Error{
 		WithField: false,
 		Err:       err,

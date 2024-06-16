@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/nurcahyaari/coma/infrastructure/database"
+	internalerrors "github.com/nurcahyaari/coma/internal/x/errors"
 	"github.com/nurcahyaari/coma/src/domain/entity"
 	"github.com/nurcahyaari/coma/src/domain/repository"
 )
@@ -30,6 +31,7 @@ func (r *RepositoryUserRead) FindUser(ctx context.Context, filter entity.FilterU
 
 	users, err := r.FindUsers(ctx, filter)
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return user, err
 	}
 	if len(users) == 0 {
@@ -48,12 +50,14 @@ func (r *RepositoryUserRead) FindUsers(ctx context.Context, filter entity.Filter
 		Where(filter.Filter()).
 		FindAll()
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return users, err
 	}
 
 	for _, doc := range docs {
 		user := entity.User{}
 		if err := doc.Unmarshal(&user); err != nil {
+			internalerrors.StackTrace(err)
 			return users, err
 		}
 

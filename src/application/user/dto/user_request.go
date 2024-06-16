@@ -21,7 +21,7 @@ func (r RequestUser) Validate() error {
 		validation.Field(&r.Username, validation.Required),
 	)
 
-	return internalerror.NewError(err,
+	return internalerror.New(err,
 		internalerror.SetErrorCode(http.StatusBadRequest))
 }
 
@@ -57,7 +57,7 @@ func (r RequestCreateUser) Validate() error {
 		return nil
 	}
 
-	return internalerror.NewError(err,
+	return internalerror.New(err,
 		internalerror.SetErrorCode(http.StatusBadRequest))
 }
 
@@ -105,6 +105,6 @@ func (r RequestPatchUserPassword) Validate() error {
 		return nil
 	}
 
-	return internalerror.NewError(err,
+	return internalerror.New(err,
 		internalerror.SetErrorCode(http.StatusBadRequest))
 }

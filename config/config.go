@@ -7,8 +7,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/rs/zerolog/log"
-
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -87,8 +85,7 @@ func New() Config {
 	doOnce.Do(func() {
 		// check and create storage dir
 		if err := createStorageDirIfNotExist(); err != nil {
-			log.Fatal().Err(err).
-				Msg("creating data directory")
+			panic("creating data directory")
 			return
 		}
 
@@ -97,21 +94,20 @@ func New() Config {
 		if err != nil {
 			// creating configuration directory
 			if err := createCFGDirIfNotExist(); err != nil {
-				log.Fatal().Err(err).
-					Msg("creating cfg directory")
+				panic("creating cfg directory")
 			}
 
 			// set default config
 			cfg = defaultConfig()
 			data, err := toml.Marshal(cfg)
 			if err != nil {
-				log.Fatal().Err(err).Msg("cannot marshal config")
+				panic("cannot marshal config")
 				return
 			}
 
 			err = os.WriteFile(configPath, data, 0777)
 			if err != nil {
-				log.Fatal().Err(err).Msg("cannot write config")
+				panic("cannot write config")
 				return
 			}
 
@@ -120,8 +116,7 @@ func New() Config {
 
 		err = toml.Unmarshal(byt, &cfg)
 		if err != nil {
-			log.Fatal().Err(err).Msg("cannot unmarshaling config")
-			return
+			panic("cannot unmarshaling config")
 		}
 
 		cfg.Pubsub = defaultPubsubConfig(CONST.PUBSUB_MAX_WORKER, CONST.PUBSUB_MAX_BUFFER_CAPACITY)
@@ -130,8 +125,7 @@ func New() Config {
 		cfg.Auth.User.PublicKey = readRSAPublicKey()
 
 		if cfg.Auth.User.PrivateKey == nil || cfg.Auth.User.PublicKey == nil {
-			log.Fatal().Msg("PrivateKey or PublicKey is empty")
-			return
+			panic("PrivateKey or PublicKey is empty")
 		}
 	})
 
