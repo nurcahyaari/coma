@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/nurcahyaari/coma/infrastructure/database"
+	internalerrors "github.com/nurcahyaari/coma/internal/x/errors"
 	"github.com/nurcahyaari/coma/src/domain/entity"
 	"github.com/nurcahyaari/coma/src/domain/repository"
 	"github.com/ostafen/clover"
@@ -31,7 +32,9 @@ func (r *RepositoryUserRead) FindTokenBy(ctx context.Context, filter entity.Filt
 	criteria := filter.Filter()
 
 	if criteria == nil {
-		return nil, errors.New("err: filter cannot be nulled")
+		err := errors.New("err: filter cannot be nulled")
+		internalerrors.StackTrace(err)
+		return nil, err
 	}
 
 	doc, err := r.db.DB.Query(r.dbName).
@@ -42,6 +45,7 @@ func (r *RepositoryUserRead) FindTokenBy(ctx context.Context, filter entity.Filt
 		}).
 		FindFirst()
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return nil, err
 	}
 	if doc == nil {
@@ -49,6 +53,7 @@ func (r *RepositoryUserRead) FindTokenBy(ctx context.Context, filter entity.Filt
 	}
 
 	if err := doc.Unmarshal(&resp); err != nil {
+		internalerrors.StackTrace(err)
 		return nil, err
 	}
 

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/nurcahyaari/coma/infrastructure/database"
+	internalerrors "github.com/nurcahyaari/coma/internal/x/errors"
 	"github.com/nurcahyaari/coma/src/domain/entity"
 	"github.com/nurcahyaari/coma/src/domain/repository"
 )
@@ -29,6 +30,7 @@ func (r *RepositoryApplicationKeyRead) FindApplicationKey(ctx context.Context, f
 		Where(filter.Filter()).
 		FindFirst()
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return applicationKey, err
 	}
 	if doc == nil {
@@ -37,6 +39,7 @@ func (r *RepositoryApplicationKeyRead) FindApplicationKey(ctx context.Context, f
 
 	err = doc.Unmarshal(&applicationKey)
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return applicationKey, err
 	}
 

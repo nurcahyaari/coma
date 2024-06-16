@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/nurcahyaari/coma/infrastructure/database"
+	internalerrors "github.com/nurcahyaari/coma/internal/x/errors"
 	"github.com/nurcahyaari/coma/src/domain/entity"
 	"github.com/nurcahyaari/coma/src/domain/repository"
 	"github.com/ostafen/clover"
@@ -27,11 +28,13 @@ func (r *RepositoryRead) FindTokenById(ctx context.Context, id int64) (entity.Ap
 	var apiKey entity.Apikey
 	doc, err := r.db.DB.Query("apikey").FindById(fmt.Sprintf("%d", id))
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return apiKey, err
 	}
 
 	err = doc.Unmarshal(&apiKey)
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return apiKey, err
 	}
 
@@ -48,11 +51,13 @@ func (r *RepositoryRead) FindTokenByToken(ctx context.Context, token string) (en
 		Where(criteria).
 		FindFirst()
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return apiKey, err
 	}
 
 	err = doc.Unmarshal(&apiKey)
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return apiKey, err
 	}
 

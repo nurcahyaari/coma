@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/nurcahyaari/coma/infrastructure/database"
+	internalerrors "github.com/nurcahyaari/coma/internal/x/errors"
 	"github.com/nurcahyaari/coma/src/domain/entity"
 	"github.com/nurcahyaari/coma/src/domain/repository"
 	"github.com/ostafen/clover"
@@ -25,6 +26,7 @@ func NewRepositoryUserApplicationScopeWrite(name string, db *database.Clover) re
 func (r *RepositoryUserApplicationScopeWrite) SaveUserApplicationScope(ctx context.Context, userApplicationScope entity.UserApplicationScope) error {
 	dataMap, err := userApplicationScope.MapStringInterface()
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return err
 	}
 
@@ -33,6 +35,7 @@ func (r *RepositoryUserApplicationScopeWrite) SaveUserApplicationScope(ctx conte
 
 	_, err = r.db.DB.InsertOne(r.name, doc)
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return err
 	}
 
@@ -48,6 +51,7 @@ func (r *RepositoryUserApplicationScopeWrite) UpdateUserApplicationScope(ctx con
 	err = r.db.DB.Query(r.name).
 		UpdateById(userApplicationScope.Id, dataMap)
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return err
 	}
 
@@ -59,6 +63,7 @@ func (r *RepositoryUserApplicationScopeWrite) RevokeUserApplicationScope(ctx con
 		Where(filter.Filter()).
 		Delete()
 	if err != nil {
+		internalerrors.StackTrace(err)
 		return err
 	}
 
