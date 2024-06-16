@@ -9,7 +9,6 @@ import (
 	"errors"
 	"os"
 
-	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -103,27 +102,23 @@ func encodePublicKeyToPEM(privateKey *rsa.PrivateKey) ([]byte, error) {
 func readRSAPublicKey() *rsa.PublicKey {
 	file, err := os.ReadFile(CONST.DEFAULT_RSA_PUBLIC_KEY_LOCATION)
 	if err != nil {
-		log.Fatal().Err(err)
-		return nil
+		panic(err)
 	}
 
 	block, _ := pem.Decode(file)
 
 	if block == nil || block.Type != PUBLIC_KEY_CODE {
-		log.Fatal().Err(errors.New("err: cannot decode file"))
-		return nil
+		panic(errors.New("err: cannot decode file"))
 	}
 
 	public, err := x509.ParsePKIXPublicKey(block.Bytes)
 	if err != nil {
-		log.Fatal().Err(err)
-		return nil
+		panic(err)
 	}
 
 	publicKey, ok := public.(*rsa.PublicKey)
 	if !ok {
-		log.Fatal().Err(errors.New("not an RSA public key"))
-		return nil
+		panic(errors.New("not an RSA public key"))
 	}
 
 	return publicKey
@@ -132,20 +127,17 @@ func readRSAPublicKey() *rsa.PublicKey {
 func readRSAPrivateKey() *rsa.PrivateKey {
 	file, err := os.ReadFile(CONST.DEFAULT_RSA_PRIVATE_KEY_LOCATION)
 	if err != nil {
-		log.Fatal().Err(err)
-		return nil
+		panic(err)
 	}
 
 	block, _ := pem.Decode(file)
 	if block == nil || block.Type != PRIVATE_KEY_CODE {
-		log.Fatal().Err(errors.New("err: cannot decode file"))
-		return nil
+		panic(errors.New("err: cannot decode file"))
 	}
 
 	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
-		log.Fatal().Err(err)
-		return nil
+		panic(err)
 	}
 
 	return privateKey
