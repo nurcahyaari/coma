@@ -3,6 +3,9 @@ package errors
 import (
 	"net/http"
 	"strings"
+
+	"github.com/rs/zerolog/log"
+	"github.com/ztrue/tracerr"
 )
 
 type ErrorSource string
@@ -15,9 +18,11 @@ const (
 type Error struct {
 	ErrorSource ErrorSource
 	WithField   bool
+	WithTracer  bool
 	Err         error
 	ErrCode     int
 	printer     Printer
+	tracer      tracerr.Error
 }
 
 func (r *Error) Error() string {
@@ -66,19 +71,37 @@ func SetErrorCode(code int) ErrorOpt {
 	}
 }
 
-func NewError(err error, opts ...ErrorOpt) error {
+func WithTracer(WithTracer bool) ErrorOpt {
+	return func(err *Error) {
+		err.WithTracer = WithTracer
+	}
+}
+
+// New will create an error object
+// it also will print the stack trace
+func New(err error, opts ...ErrorOpt) error {
 	if err == nil {
 		return nil
 	}
+
+	tracerWrapper := tracerr.Wrap(err)
+	frames := tracerr.StackTrace(tracerWrapper)
+	tracerErr := tracerr.CustomError(tracerWrapper, frames[:3])
+
 	resp := &Error{
 		WithField: false,
 		Err:       err,
 		ErrCode:   http.StatusInternalServerError,
 		printer:   NewPrinter(),
+		tracer:    tracerErr,
 	}
 
 	for _, opt := range opts {
 		opt(resp)
+	}
+
+	if resp.WithTracer {
+		log.Info().Msg(tracerr.SprintSource(resp.tracer, 1, 1))
 	}
 
 	return resp
