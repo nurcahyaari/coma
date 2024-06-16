@@ -60,7 +60,7 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, request dto.
 	)
 
 	if err := request.Validate(); err != nil {
-		return response, internalerrors.NewError(
+		return response, internalerrors.New(
 			err,
 			internalerrors.SetErrorSource(internalerrors.OZZO_VALIDATION_ERR))
 	}
@@ -72,14 +72,14 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, request dto.
 		log.Error().
 			Err(err).
 			Msg("[CreateApplication.FindApplication] error finding")
-		return response, internalerrors.NewError(err)
+		return response, internalerrors.New(err)
 	}
 	if exist {
 		err = errors.New("err: application already exists")
 		log.Error().
 			Err(err).
 			Msg("[CreateApplication.FindApplication] error finding")
-		return response, internalerrors.NewError(err,
+		return response, internalerrors.New(err,
 			internalerrors.SetErrorCode(http.StatusConflict))
 	}
 
@@ -88,7 +88,7 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, request dto.
 		log.Error().
 			Err(err).
 			Msg("[CreateApplication] error creating new environment")
-		return response, internalerrors.NewError(err)
+		return response, internalerrors.New(err)
 	}
 
 	applicationKey, err := s.applicationKeySvc.GenerateOrUpdateApplicationKey(ctx, dto.RequestCreateApplicationKey{
@@ -98,7 +98,7 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, request dto.
 		log.Error().
 			Err(err).
 			Msg("[CreateApplication.GenerateOrUpdateApplicationKey] error generating key")
-		return response, internalerrors.NewError(err)
+		return response, internalerrors.New(err)
 	}
 
 	response = dto.NewResponseApplication(application)
@@ -118,7 +118,7 @@ func (s *ApplicationService) DeleteApplication(ctx context.Context, request dto.
 		log.Error().
 			Err(err).
 			Msg("[DeleteApplication] error deleting application")
-		return internalerrors.NewError(err)
+		return internalerrors.New(err)
 	}
 	return nil
 }

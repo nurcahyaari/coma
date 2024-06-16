@@ -7,6 +7,7 @@ import (
 	"github.com/nurcahyaari/coma/config"
 	"github.com/nurcahyaari/coma/container"
 	"github.com/nurcahyaari/coma/infrastructure/integration/coma"
+	internalerrors "github.com/nurcahyaari/coma/internal/x/errors"
 	"github.com/nurcahyaari/coma/internal/x/pubsub"
 	"github.com/nurcahyaari/coma/src/application/application/dto"
 	"github.com/nurcahyaari/coma/src/domain/entity"
@@ -48,14 +49,14 @@ func (s *ApplicationConfigurationService) GetConfigurationViewTypeJSON(ctx conte
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("[GetConfiguration] error FindClientConfiguration")
-		return response, err
+		return response, internalerrors.New(err)
 	}
 
 	response = dto.NewResponseGetConfigurationViewTypeJSON(req.XClientKey)
 	err = response.SetData(configurations)
 	if err != nil {
 		log.Error().Err(err).Msg("[GetConfiguration] error NewResponseGetConfiguration")
-		return response, err
+		return response, internalerrors.New(err)
 	}
 
 	return response, nil
@@ -72,7 +73,7 @@ func (s *ApplicationConfigurationService) GetConfigurationViewTypeSchema(ctx con
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("[GetConfiguration] error FindClientConfiguration")
-		return response, err
+		return response, internalerrors.New(err)
 	}
 
 	response = dto.NewResponseGetConfigurationsViewTypeSchema(configurations)
@@ -83,7 +84,7 @@ func (s *ApplicationConfigurationService) GetConfigurationViewTypeSchema(ctx con
 func (s *ApplicationConfigurationService) SetConfiguration(ctx context.Context, req dto.RequestSetConfiguration) (dto.ResponseSetConfiguration, error) {
 	if err := req.Validate(); err != nil {
 		log.Error().Err(err).Msg("[SetConfiguration] error validate dto")
-		return dto.ResponseSetConfiguration{}, err
+		return dto.ResponseSetConfiguration{}, internalerrors.New(err)
 	}
 
 	var (
@@ -100,20 +101,20 @@ func (s *ApplicationConfigurationService) SetConfiguration(ctx context.Context, 
 			Err(err).
 			Str("field", req.Field).
 			Msg("[SetConfiguration] error on search configuration")
-		return dto.ResponseSetConfiguration{}, err
+		return dto.ResponseSetConfiguration{}, internalerrors.New(err)
 	}
 	if clientConfigurations.Exists() {
 		log.Error().
 			Err(err).
 			Str("field", req.Field).
 			Msg("[SetConfiguration] error duplicate field name")
-		return dto.ResponseSetConfiguration{}, errors.New("err: duplicate field name")
+		return dto.ResponseSetConfiguration{}, internalerrors.New(errors.New("err: duplicate field name"))
 	}
 
 	insertedId, err := s.writerRepo.SetConfiguration(ctx, configuration)
 	if err != nil {
 		log.Error().Err(err).Msg("[SetConfiguration] error SetConfiguration")
-		return dto.ResponseSetConfiguration{}, err
+		return dto.ResponseSetConfiguration{}, internalerrors.New(err)
 	}
 
 	// after success writing to the db distribute to the client
@@ -136,14 +137,14 @@ func (s *ApplicationConfigurationService) UpdateConfiguration(ctx context.Contex
 			Err(err).
 			Str("field", req.Field).
 			Msg("[UpdateConfiguration] error on search configuration")
-		return err
+		return internalerrors.New(err)
 	}
 	if !clientConfigurations.Exists() {
 		log.Error().
 			Err(err).
 			Str("field", req.Field).
 			Msg("[UpdateConfiguration] error configuration is empty")
-		return errors.New("err: configuration is empty")
+		return internalerrors.New(errors.New("err: configuration is empty"))
 	}
 
 	var (
@@ -161,7 +162,7 @@ func (s *ApplicationConfigurationService) UpdateConfiguration(ctx context.Contex
 				Err(err).
 				Str("field", req.Field).
 				Msg("[UpdateConfiguration] error on update configuration")
-			return err
+			return internalerrors.New(err)
 		}
 	}
 
@@ -200,7 +201,7 @@ func (s *ApplicationConfigurationService) UpsertConfiguration(ctx context.Contex
 				Err(err).
 				Str("field", req.Field).
 				Msg("[UpsertConfiguration] error on update configuration")
-			return err
+			return internalerrors.New(err)
 		}
 
 	default:
@@ -210,7 +211,7 @@ func (s *ApplicationConfigurationService) UpsertConfiguration(ctx context.Contex
 				Err(err).
 				Str("field", req.Field).
 				Msg("[UpsertConfiguration] error on insert configuration")
-			return err
+			return internalerrors.New(err)
 		}
 
 	}
@@ -222,7 +223,7 @@ func (s *ApplicationConfigurationService) DeleteConfiguration(ctx context.Contex
 	err := s.writerRepo.DeleteConfiguration(ctx, req.FilterConfiguration())
 	if err != nil {
 		log.Error().Err(err).Msg("[DeleteConfiguration] error when deleting configuration")
-		return err
+		return internalerrors.New(err)
 	}
 
 	// after success writing to the db distribute to the client
@@ -239,14 +240,14 @@ func (s *ApplicationConfigurationService) DistributeConfiguration(ctx context.Co
 	if err != nil {
 		log.Error().Err(err).
 			Msg("[distributeConfiguration.GetConfigurationViewTypeJSON] error when get the configuration")
-		return err
+		return internalerrors.New(err)
 	}
 
 	if clientConfiguration.Data == nil {
 		err = errors.New("err: data is empty")
 		log.Error().Err(err).
 			Msg("[distributeConfiguration.GetConfigurationViewTypeJSON] data is empty")
-		return err
+		return internalerrors.New(err)
 	}
 
 	err = s.comaClient.Send(coma.RequestSendMessage{
@@ -255,7 +256,7 @@ func (s *ApplicationConfigurationService) DistributeConfiguration(ctx context.Co
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("[distributeConfiguration.Send] error when distributing configuration to the client")
-		return err
+		return internalerrors.New(err)
 	}
 	return nil
 }

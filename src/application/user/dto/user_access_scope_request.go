@@ -21,7 +21,7 @@ func (r RequestCreateUserApplicationScope) Validate() error {
 		validation.Field(&r.ApplicationId, validation.Required),
 	)
 
-	return internalerror.NewError(err,
+	return internalerror.New(err,
 		internalerror.SetErrorCode(http.StatusBadRequest))
 }
 

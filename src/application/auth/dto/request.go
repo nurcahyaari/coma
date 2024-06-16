@@ -30,7 +30,7 @@ func (r RequestGenerateToken) Validate() error {
 		return nil
 	}
 
-	return internalerror.NewError(err,
+	return internalerror.New(err,
 		internalerror.SetErrorCode(http.StatusBadRequest))
 }
 

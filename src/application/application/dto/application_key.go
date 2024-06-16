@@ -23,7 +23,7 @@ func (r RequestCreateApplicationKey) Validate() error {
 		return nil
 	}
 
-	return internalerror.NewError(err,
+	return internalerror.New(err,
 		internalerror.SetErrorCode(http.StatusBadRequest),
 		internalerror.SetErrorSource(internalerror.OZZO_VALIDATION_ERR))
 }
@@ -63,7 +63,7 @@ func (r RequestFindApplicationKey) ValidateKey() error {
 		return nil
 	}
 
-	return internalerror.NewError(err,
+	return internalerror.New(err,
 		internalerror.SetErrorCode(http.StatusBadRequest),
 		internalerror.SetErrorSource(internalerror.OZZO_VALIDATION_ERR))
 }
@@ -78,7 +78,7 @@ func (r RequestFindApplicationKey) Validate() error {
 		return nil
 	}
 
-	return internalerror.NewError(err,
+	return internalerror.New(err,
 		internalerror.SetErrorCode(http.StatusBadRequest),
 		internalerror.SetErrorSource(internalerror.OZZO_VALIDATION_ERR))
 }
